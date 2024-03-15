@@ -1,2 +1,2 @@
 
-export { getProjects } from './hello-world';
+export { Okareo } from './okareo';
