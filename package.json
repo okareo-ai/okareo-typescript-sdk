@@ -1,6 +1,6 @@
 {
   "name": "okareo-typescript-sdk",
-  "version": "0.0.3",
+  "version": "0.0.2",
   "main": "dist/index.min.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
@@ -19,8 +19,7 @@
   },
   "scripts": {
     "start": "rollup -c rollup.config.js -w",
-    "publish": "yarn run build && yarn run version",
-    "version": "yarn version",
+    "publish": "yarn run build && yarn version",
     "build": "rm -rf dist && rollup -c rollup.config.js && yarn make:docs",
     "make:docs": "typedoc",
     "test": "jest --coverage",
