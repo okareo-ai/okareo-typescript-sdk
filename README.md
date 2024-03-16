@@ -5,14 +5,12 @@ Refer to https://docs.okareo.com/docs/sdk/okareo_python to learn more. The Types
 
 Docs are on the way...
 ```bash
-yarn add oakreo-ts-sdk --dev
+yarn add okareo-ts-sdk --dev
 ```
 
-This will create your compiled files under `./dist` folder.
-
-## Test
-
-Jest is configured and ready to use. However, you will need to add your keys.
+## CI
+Create Scenarios and Test Behaviors/LLMs/Models from CI.
+You will need to add your keys.
 
 ```bash
 yarn test
