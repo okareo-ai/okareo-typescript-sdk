@@ -1,5 +1,5 @@
 import { Okareo } from './index';
-import { TRunTest } from './okareo';
+import { RunTestProps } from './okareo';
 import { DatapointSearch, ModelUnderTest, OpenAIModel } from "./okareo_api_client/models";
 
 const OKAREO_API_KEY = "<YOUR_OKAREO_KEY>";
@@ -171,7 +171,7 @@ it('Test Evaluation', async () =>  {
       name: "TS-SDK Evaluation",
       calculate_metrics: true,
       type: "NL_GENERATION",
-    } as TRunTest
+    } as RunTestProps
   );
   expect(data).toBeDefined();
 });

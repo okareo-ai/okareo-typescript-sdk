@@ -9,13 +9,13 @@ export interface OkareoProps {
    // project_id?: string | undefined;
 }
 
-export interface TUploadScenarioSet {
+export interface UploadScenarioSetProps {
     project_id: string;
     scenario_name: string;
     file_path: string;
 }
 
-export interface TRunTest {
+export interface RunTestProps {
     project_id: string;
     scenario_id: string;
     model_api_key: string| undefined;
@@ -130,7 +130,7 @@ export class Okareo {
         return data || {};
     }
 
-    async upload_scenario_set(props: TUploadScenarioSet): Promise<components["schemas"]["ScenarioSetResponse"]> {
+    async upload_scenario_set(props: UploadScenarioSetProps): Promise<components["schemas"]["ScenarioSetResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         // shimming difference between REST API and SDK
@@ -182,7 +182,7 @@ export class Okareo {
         return data || {};
     }
 
-    async run_test(props: TRunTest): Promise<components["schemas"]["TestRunItem"]> {
+    async run_test(props: RunTestProps): Promise<components["schemas"]["TestRunItem"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         if (!this.model) { throw new Error("A registered model is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
