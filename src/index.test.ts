@@ -1,10 +1,177 @@
 import { Okareo } from './index';
+import { TRunTest } from './okareo';
+import { DatapointSearch, ModelUnderTest, OpenAIModel } from "./okareo_api_client/models";
 
-const OKAREO_API_KEY = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImE0NzE3MzQ3In0.eyJzdWIiOiI1NzY0OTRlMS1mMDdlLTQ4MjMtOGFiMS1lMDVhMjViMTRhOTYiLCJ0eXBlIjoidGVuYW50QWNjZXNzVG9rZW4iLCJ0ZW5hbnRJZCI6ImU2OTNmZDU4LTY4MTctNDU5ZC1hZDY4LWI3ODg5OTkzMWEwOCIsInJvbGVzIjpbIkZFVENILVJPTEVTLUJZLUFQSSJdLCJwZXJtaXNzaW9ucyI6WyJGRVRDSC1QRVJNSVNTSU9OUy1CWS1BUEkiXSwiYXVkIjoiYTQ3MTczNDctOWNhZS00MTRiLThmN2YtZmMwN2VkMDA2NDNkIiwiaXNzIjoiaHR0cHM6Ly9va2FyZW8tZGV2LnVzLmZyb250ZWdnLmNvbSIsImlhdCI6MTcwMTgyMjcyNn0.Qw5HQJ61Y1ZjekQcvcm5cS2OSaD5MsitDjFqmfcqjagYdU6kr3FCWJV-r47raDTLFgusDCUsK-fUnBJrVWvkE6nj6a6aCtGAEEbUj2pQN-b0DgcGuFxeJQx_Izh6uEhKd80FS1TzMpnOOnxptJZNNsoL0MdH4NjiW9qXMwh--drB5nRhpgXZL2P9suYvZtFD2DS07nQ8l7tLpIh5z_bHRlOOul1KyHP9ak3jWNfBmNC3oNQibXnIsA6rkNouqzsnfK5txO9Z7IfQ6qcPZNR0IrM07JVuqU6z5_EeDHSwZtyvLVSiTP5vBp2P7qiucpLeiFfYoqqsXuj9nLa6TfmDwA";
+const OKAREO_API_KEY = "<YOUR_OKAREO_KEY>";
+const OKAREO_BASE_URL = "https://api.okareo.com/";
+const OPENAI_API_KEY = "<YOUR_OPENAI_KEY>";
+const TEST_SEED_DATA = [
+  {
+    "input": "The quick brown fox jumps over the lazy dog",
+    "result": "dogs are lazy"
+  },
+  {
+    "input": "The quiet mouse ran under the lazy cat",
+    "result": "cats are lazy"
+  },
+  {
+    "input": "The barking dog chased the bird.",
+    "result": "birds are fast"
+  },
+  {
+    "input": "The patient cat lost the bird.",
+    "result": "birds are fast"
+  },
+  {
+    "input": "The turtle sat and was wonderfully warmed by the sun.",
+    "result": "reptiles like the sun"
+  }
+];
+
 
 it('Test Get Projects', async () =>  {
-  const okareo = new Okareo(OKAREO_API_KEY);
+  const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
   const data: any[] = await okareo.getProjects();
   expect(data.length).toBeGreaterThanOrEqual(0);
 });
 
+
+it('Create Scenario Set', async () =>  {
+  const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+  const pData: any[] = await okareo.getProjects();
+  const data: any = await okareo.create_scenario_set(
+    {
+      name: "TS-SDK Testing Scenario Set",
+      project_id: pData[0].id,
+      number_examples: 1,
+      generation_type: "REPHRASE_INVARIANT",
+      seed_data: TEST_SEED_DATA
+    }
+  );
+  expect(data).toBeDefined();
+});
+
+
+it('Generate Scenario Set From Scenario', async () =>  {
+  const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+  const pData: any[] = await okareo.getProjects();
+  const sData: any = await okareo.create_scenario_set(
+    {
+      name: "TS-SDK SEED Data",
+      project_id: pData[0].id,
+      number_examples: 1,
+      generation_type: "SEED",
+      seed_data: TEST_SEED_DATA
+    }
+  );
+  const data: any = await okareo.generate_scenario_set(
+    {
+      project_id: pData[0].id,
+      name: "TS-SDK Testing Generated Scenario",
+      source_scenario_id: sData.scenario_id,
+      number_examples: 2,
+    }
+  )
+  expect(data).toBeDefined();
+});
+
+
+it('Create Scenario Data', async () =>  {
+  const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+  const pData: any[] = await okareo.getProjects();
+  const sData: any = await okareo.create_scenario_set(
+    {
+      name: "TS-SDK SEED Data",
+      project_id: pData[0].id,
+      number_examples: 1,
+      generation_type: "SEED",
+      seed_data: TEST_SEED_DATA
+    }
+  );
+  const data: any = await okareo.get_scenario_data_points(sData.scenario_id);
+  expect(data).toBeDefined();
+});
+
+it('Find Datapoints', async () =>  {
+  const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+  const pData: any[] = await okareo.getProjects();
+  const data: any = await okareo.find_datapoints(
+    DatapointSearch({ 
+      project_id: pData[0].id,
+      mut_id: "1822ce2c-b663-4911-8bf1-8af592e63b62",
+    })
+  );
+  expect(data).toBeDefined();
+});
+
+it('Register Model', async () =>  {
+  const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+  const pData: any[] = await okareo.getProjects();
+  const data: any = await okareo.register_model(
+    ModelUnderTest({
+      name: "TS-SDK Testing Model",
+      tags: ["TS-SDK", "Testing"],
+      project_id: pData[0].id,
+      model: OpenAIModel({
+        api_key: OPENAI_API_KEY,
+        model_id:"gpt-3.5-turbo",
+        temperature:0.5,
+        system_prompt_template:"Since this is a test, always answer in a testy, snarky way.",
+        user_prompt_template:"How often have you been tested and fround wanting?"
+      }),
+    })
+  );
+  
+  expect(data).toBeDefined();
+});
+
+/*
+it('Upload Scenario Set', async () =>  {
+  const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+  const pData: any[] = await okareo.getProjects();
+  const data: any = await okareo.upload_scenario_set(
+    {
+      file_path: "test_data/seed_data.jsonl",
+      scenario_name: "TS-SDK Testing Scenario Set",
+      project_id: pData[0].id
+    }
+  );
+  expect(data).toBeDefined();
+});
+*/
+
+it('Test Evaluation', async () =>  {
+  const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+  const pData: any[] = await okareo.getProjects();
+  const sData: any = await okareo.create_scenario_set(
+    {
+      name: "TS-SDK SEED Data",
+      project_id: pData[0].id,
+      number_examples: 2,
+      generation_type: "REPHRASE_INVARIANT",
+      seed_data: TEST_SEED_DATA
+    }
+  );
+  await okareo.register_model(
+    ModelUnderTest({
+      name: "TS-SDK Eval Model v2",
+      tags: ["TS-SDK", "Testing"],
+      project_id: pData[0].id,
+      model: OpenAIModel({
+        api_key: OPENAI_API_KEY,
+        model_id:"gpt-3.5-turbo",
+        temperature:0.5,
+        system_prompt_template:"Since this is a test, always answer in a testy, snarky way. Be creatitve and have fun!",
+        user_prompt_template:"How often have you been tested and found wanting?"
+      }),
+    }));
+  const data: any = await okareo.run_test({
+      project_id: pData[0].id,
+      scenario_id: sData.scenario_id,
+      name: "TS-SDK Evaluation",
+      calculate_metrics: true,
+      type: "NL_GENERATION",
+    } as TRunTest
+  );
+  expect(data).toBeDefined();
+});
