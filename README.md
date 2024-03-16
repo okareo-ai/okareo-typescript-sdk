@@ -1,5 +1,5 @@
 # Okareo Typescript SDK
-Refer to https://docs.okareo.com/docs/sdk/okareo_python to learn more. The Typescript specific docs are on the way
+Refer to https://docs.okareo.com/docs/ to learn more. The Typescript specific docs are on the way
 
 ## Install
 
