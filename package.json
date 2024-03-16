@@ -1,6 +1,6 @@
 {
   "name": "okareo-ts-sdk",
-  "version": "0.0.4",
+  "version": "0.0.8",
   "main": "dist/index.min.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
@@ -20,8 +20,8 @@
   "scripts": {
     "start": "rollup -c rollup.config.js -w",
     "gen-api": "npx openapi-typescript https://api.okareo.com/openapi.json -o ./src/api/v1.d.ts",
-    "publish": "yarn run build && yarn version && yarn publish",
     "build": "rm -rf dist && rollup -c rollup.config.js && yarn make:docs",
+    "release": "yarn build && yarn publish",
     "make:docs": "typedoc",
     "test": "jest --coverage",
     "test:ci": "cross-env CI=1 jest",
