@@ -1,2 +1,2 @@
 
-export { paths, components } from './rest_endpoints';
+export { paths, components } from './okareo_endpoints';
