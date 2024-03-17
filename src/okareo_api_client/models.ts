@@ -64,7 +64,7 @@ export function ModelUnderTest(props: ModelUnderTestProps): components["schemas"
         models: {
             [type]: model
         }
-    };
+    } as components["schemas"]["ModelUnderTestSchema"];
 }
 
 export function OpenAIModel(props: TOpenAIModel): TOpenAIModel {

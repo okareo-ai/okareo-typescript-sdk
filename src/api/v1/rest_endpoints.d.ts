@@ -257,7 +257,7 @@ export interface paths {
   };
 }
 
-export type webhooks = any;
+export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
@@ -293,14 +293,14 @@ export interface components {
        */
       tags?: string[];
       /** Input */
-      input?: any | unknown[] | string;
+      input?: Record<string, never> | unknown[] | string;
       /**
        * Input Datetime
        * Format: date-time
        */
       input_datetime?: string;
       /** Result */
-      result?: any | unknown[] | string;
+      result?: Record<string, never> | unknown[] | string;
       /**
        * Result Datetime
        * Format: date-time
@@ -569,7 +569,7 @@ export interface components {
        * @description Models to be added for testing
        */
       models?: {
-        [key: string]: any;
+        [key: string]: Record<string, never>;
       };
       /**
        * Tags
@@ -621,9 +621,9 @@ export interface components {
        */
       id: string;
       /** Input */
-      input: any | unknown[] | string;
+      input: Record<string, never> | unknown[] | string;
       /** Result */
-      result: any | unknown[] | string;
+      result: Record<string, never> | unknown[] | string;
       /**
        * Meta Data
        * Format: json-string
@@ -847,7 +847,7 @@ export interface components {
       /** Metric Type */
       metric_type: string;
       /** Metric Value */
-      metric_value: any;
+      metric_value: Record<string, never>;
     };
     /** TestDataPointPayload */
     TestDataPointPayload: {
@@ -923,7 +923,7 @@ export interface components {
       /** Test Data Point Count */
       test_data_point_count?: number;
       /** Model Metrics */
-      model_metrics?: any;
+      model_metrics?: Record<string, never>;
       /** Error Matrix */
       error_matrix?: unknown[];
       /**
@@ -1035,7 +1035,7 @@ export interface components {
        */
       project_id?: string;
       /** Model Results */
-      model_results?: any;
+      model_results?: Record<string, never>;
     };
     /**
      * TestRunType
@@ -1051,9 +1051,9 @@ export interface components {
   pathItems: never;
 }
 
-export type $defs = any;
+export type $defs = Record<string, never>;
 
-export type external = any;
+export type external = Record<string, never>;
 
 export interface operations {
 

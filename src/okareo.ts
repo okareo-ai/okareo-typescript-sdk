@@ -188,7 +188,7 @@ export class Okareo {
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const modelKeys = Object.getOwnPropertyNames(this.model_request?.models)
         const mType = modelKeys[0];
-        const mKey = (this.model_request?.models)?this.model_request?.models[mType].api_keys[mType]:null;
+        const mKey = (this.model_request?.models)?this.model_request?.models[mType].api_keys[mType]:"NONE";
         const body:components["schemas"]["TestRunPayloadV2"] = {
             ...props,
             mut_id: this.model.id,
