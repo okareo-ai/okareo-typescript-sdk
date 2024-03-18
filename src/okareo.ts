@@ -1,5 +1,5 @@
 import createClient from "openapi-fetch";
-import type { paths, components } from "./api/v1";
+import type { paths, components } from "./api/v1/okareo_endpoints";
 
 import * as fs from "fs";
 

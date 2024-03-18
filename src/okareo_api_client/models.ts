@@ -1,5 +1,5 @@
 import { compileFunction } from "vm";
-import type { paths, components } from "../api/v1";
+import type { paths, components } from "../api/v1/okareo_endpoints";
 
 export function ScenarioSetCreate(props: components["schemas"]["ScenarioSetCreate"]): components["schemas"]["ScenarioSetCreate"] {
     return props;

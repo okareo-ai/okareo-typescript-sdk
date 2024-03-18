@@ -1,5 +1,5 @@
 import { error } from "console";
-import type { paths, components } from "../api/v1";
+import type { paths, components } from "../api/v1/okareo_endpoints";
 
 /*
     model_metrics {

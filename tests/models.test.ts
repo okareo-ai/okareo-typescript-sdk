@@ -1,6 +1,6 @@
-import { Okareo } from '../src/index';
-import { RunTestProps } from '../src/okareo';
-import { DatapointSearch, ModelUnderTest, OpenAIModel } from "../src/okareo_api_client/models";
+import { Okareo } from '../src';
+import { RunTestProps } from '../src';
+import { DatapointSearch, ModelUnderTest, OpenAIModel } from "../src";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";

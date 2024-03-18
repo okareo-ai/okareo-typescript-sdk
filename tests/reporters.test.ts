@@ -1,6 +1,4 @@
-import { components } from '../src/api/v1';
-import { Okareo } from '../src/index';
-import { classification_reporter } from '../src/reporters';
+import { Okareo, components, classification_reporter } from '../src';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
@@ -38,8 +36,8 @@ const TEST_RUN_ITEM: any = {
     app_link: 'https://app.okareo.com/project/5ff115a2-f4b0-4100-bbde-87a54428add4/eval/2eed4076-fd4e-484d-928c-c56d5a4ed4fc'
   };
 
-describe('Evaluations', () => {
-    test('E2E Generation Evaluation', async () =>  {
+describe('Reporters', () => {
+    test('E2E Classification Reporter', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         //const tData = await okareo.get_test_run(eval_id);
         const report = classification_reporter(
