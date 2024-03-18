@@ -1,6 +1,6 @@
 import { Okareo } from '../src/index';
 import { RunTestProps } from '../src/okareo';
-import { DatapointSearch, ModelUnderTest, OpenAIModel, SeedData, ScenarioType, TestRunType } from "../src/okareo_api_client/models";
+import { ModelUnderTest, OpenAIModel, SeedData, ScenarioType, TestRunType } from "../src/okareo_api_client/models";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
@@ -83,7 +83,6 @@ describe('Evaluations', () => {
                 seed_data: TEST_SEED_DATA
             }
         );
-        console.log(sData.scenario_id);
         
         await okareo.register_model(
             ModelUnderTest({
