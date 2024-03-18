@@ -210,5 +210,21 @@ export class Okareo {
         return data || {};
     }
 
+    async get_test_run(test_run_id: string): Promise<components["schemas"]["TestRunItem"]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { data, error } = await client.GET("/v0/test_runs/{test_run_id}", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+                path: { test_run_id: test_run_id }
+            }
+        });
+        if (error) {
+            throw error;
+        }
+        return data || {};
+    }
 
 }
