@@ -42,25 +42,26 @@ describe('Evaluations', () => {
         }
         );
         await okareo.register_model(
-        ModelUnderTest({
-            name: "TS-SDK Eval Model v2",
-            tags: ["TS-SDK", "Testing"],
-            project_id: pData[0].id,
-            model: OpenAIModel({
-            api_key: OPENAI_API_KEY,
-            model_id:"gpt-3.5-turbo",
-            temperature:0.5,
-            system_prompt_template:"Since this is a test, always answer in a testy, snarky way. Be creatitve and have fun!",
-            user_prompt_template:"How often have you been tested and found wanting?"
-            }),
-        }));
+          ModelUnderTest({
+              name: "TS-SDK Eval Model v2",
+              tags: ["TS-SDK", "Testing"],
+              project_id: pData[0].id,
+              model: OpenAIModel({
+              api_key: OPENAI_API_KEY,
+              model_id:"gpt-3.5-turbo",
+              temperature:0.5,
+              system_prompt_template:"Since this is a test, always answer in a testy, snarky way. Be creatitve and have fun!",
+              user_prompt_template:"How often have you been tested and found wanting?"
+              }),
+          })
+        );
         const data: any = await okareo.run_test({
-            project_id: pData[0].id,
-            scenario_id: sData.scenario_id,
-            name: "TS-SDK Evaluation",
-            calculate_metrics: true,
-            type: "NL_GENERATION",
-        } as RunTestProps
+              project_id: pData[0].id,
+              scenario_id: sData.scenario_id,
+              name: "TS-SDK Evaluation",
+              calculate_metrics: true,
+              type: "NL_GENERATION",
+          } as RunTestProps
         );
         expect(data).toBeDefined();
     });

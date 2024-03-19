@@ -17,7 +17,8 @@ export interface UploadScenarioSetProps {
 
 export interface RunTestProps {
     project_id: string;
-    scenario_id: string;
+    scenario_id?: string;
+    scenario: any;
     model_api_key: string| undefined;
     name: string;
     type: string;
@@ -29,7 +30,7 @@ export interface RunTestProps {
 export class Okareo {
     api_key: string = '';
     endpoint: string = '';
-    model_request: components["schemas"]["ModelUnderTestSchema"] | undefined;
+    model_config: any; //components["schemas"]["ModelUnderTestSchema"] | undefined;
     model: components["schemas"]["ModelUnderTestResponse"] | undefined;
     //project_id: string | undefined;
 
@@ -159,55 +160,95 @@ export class Okareo {
         }
     }
     
-    async register_model(props: components["schemas"]["ModelUnderTestSchema"]): Promise<components["schemas"]["ModelUnderTestResponse"]> {
+    async register_model(props: any): Promise<components["schemas"]["ModelUnderTestResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const model_config: any = props; // this is used for the non-custom models
+        const { type = "unknown", invoke} = model_config;
+        if (type === "custom") {
+            delete model_config.invoke;
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
-        const { models } = props;
         const { data, error } = await client.POST("/v0/register_model", {
             params: {
                 header: {
                     "api-key": this.api_key
                 },
             },
-            body: props
+            body: model_config
             
         });
         if (error) {
             throw error;
         }
         if (data.id) {
-            this.model_request = props;
+            this.model_config = props; // original registration (for all models)
             this.model = data as components["schemas"]["ModelUnderTestResponse"];
         }
         return data || {};
+        
     }
 
     async run_test(props: RunTestProps): Promise<components["schemas"]["TestRunItem"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         if (!this.model) { throw new Error("A registered model is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
-        const modelKeys = Object.getOwnPropertyNames(this.model_request?.models)
+        const modelKeys = Object.getOwnPropertyNames(this.model_config?.models)
         const mType = modelKeys[0];
-        const mKey = (this.model_request?.models)?this.model_request?.models[mType].api_keys[mType]:"NONE";
-        const body:components["schemas"]["TestRunPayloadV2"] = {
-            ...props,
-            mut_id: this.model.id,
-            api_keys: {
-                [mType]: mKey
+        if (mType === "custom") {
+            if (!props.scenario_id && props.scenario) {
+                props.scenario_id = props.scenario.scenario_id;
             }
-        } as components["schemas"]["TestRunPayloadV2"];
-        const { data, error } = await client.POST("/v0/test_run", {
-            params: {
-                header: {
-                    "api-key": this.api_key
+            let { scenario_id = "NONE" } = props;
+            delete props.scenario;
+            const seed_data = await this.get_scenario_data_points(scenario_id);
+            const results: any = {model_data: {} };
+            for (let i = 0; i < seed_data.length; i++) {
+                const { id, input } = seed_data[i];
+                const customResult = this.model_config?.models?.custom.invoke(input);
+                results.model_data[id] = {
+                    actual: input,
+                    model_response: customResult
+                }
+            }
+            const body:components["schemas"]["TestRunPayloadV2"] = {
+                ...props,
+                mut_id: this.model.id,
+                model_results: results
+            } as components["schemas"]["TestRunPayloadV2"];
+            const { data, error } = await client.POST("/v0/test_run", {
+                params: {
+                    header: {
+                        "api-key": this.api_key
+                    },
                 },
-            },
-            body: body,
-        });
-        if (error) {
-            throw error;
+                body: body,
+            });
+            if (error) {
+                throw error;
+            }
+            return data || {};
+        } else {
+            const mKey = (mType === "openai" && this.model_config?.models)?this.model_config?.models[mType]?.api_keys[mType]:"NONE";
+            const body:components["schemas"]["TestRunPayloadV2"] = {
+                ...props,
+                mut_id: this.model.id,
+                api_keys: {
+                    [mType]: mKey
+                }
+            } as components["schemas"]["TestRunPayloadV2"];
+            const { data, error } = await client.POST("/v0/test_run", {
+                params: {
+                    header: {
+                        "api-key": this.api_key
+                    },
+                },
+                body: body,
+            });
+            if (error) {
+                throw error;
+            }
+            return data || {};
         }
-        return data || {};
     }
 
     async get_test_run(test_run_id: string): Promise<components["schemas"]["TestRunItem"]> {

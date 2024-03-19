@@ -41,6 +41,14 @@ export enum TestRunType {
 
 interface BaseModel  {
     type?: string | undefined;
+    tags?: string[] | undefined;
+}
+export interface TCustomModel extends BaseModel {
+    invoke: Function;
+}
+export interface TCustomModelResponse {
+    actual: any | string;
+    response: any | string;
 }
 export interface TOpenAIModel extends BaseModel {
     api_key?: string;
@@ -87,6 +95,14 @@ export function ModelUnderTest(props: ModelUnderTestProps): components["schemas"
             [type]: model
         }
     } as components["schemas"]["ModelUnderTestSchema"];
+}
+
+export function CustomModel(props: TCustomModel): TCustomModel {
+    const { invoke } = props;
+    return {
+        ...props,
+        type: "custom",
+    } as TCustomModel;
 }
 
 export function OpenAIModel(props: TOpenAIModel): TOpenAIModel {
