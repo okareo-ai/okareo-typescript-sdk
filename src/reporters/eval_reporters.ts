@@ -79,3 +79,224 @@ export const classification_reporter = (props: ClassificationReporterProps): Cla
         fail_metrics: fail_metrics,
     };
 }
+
+
+/*
+// GENERATION
+{
+    ...
+    test_data_point_count: 3,
+    model_metrics: {
+      mean_scores: {
+        coherence: 3.6041134314518946,
+        consistency: 3.6666003818872697,
+        fluency: 2.0248845922814245,
+        relevance: 2.3333201448723386,
+        overall: 2.907229637623232
+      },
+      scores_by_row: [
+        {
+          scenario_index: 1,
+          coherence: 4.999831347314708,
+          consistency: 4.999918368197127,
+          fluency: 0,
+          relevance: 4.998501009778189,
+          overall: 3.749562681322506,
+          test_id: '6b7cbe8d-c653-4dce-8de9-137a61566876'
+        },
+        {
+          scenario_index: 2,
+          coherence: 1,
+          consistency: 1.000000023588648,
+          fluency: 3,
+          relevance: 1.0000000195556844,
+          overall: 1.500000010786083,
+          test_id: 'd3dac533-334a-4c61-8495-08d7c82bcfcf'
+        },
+        {
+          scenario_index: 3,
+          coherence: 4.812508947040976,
+          consistency: 4.999882753876036,
+          fluency: 3.0746537768442743,
+          relevance: 1.001459405283143,
+          overall: 3.472126220761107,
+          test_id: 'bd40e350-5af3-4ccf-861c-d1a1889ed889'
+        }
+    ]
+    },
+    error_matrix: [],
+    ...
+} 
+*/
+
+interface GenerationReporterProps {
+    testRunItem: components["schemas"]["TestRunItem"];
+    metrics_min?: {[key: string]: number};
+}
+interface GenerationReporterResponse {
+    pass: boolean;
+    errors: number;
+    fail_metrics: {
+        [key: string]: {
+            metric: string;
+            value: number;
+            expected: number;
+        }
+    };
+}
+
+export const generation_reporter = (props: GenerationReporterProps): GenerationReporterResponse => {
+    const { testRunItem, metrics_min } = props;
+    const { model_metrics } = testRunItem;
+    if (!(model_metrics)) {
+        throw new Error("Invalid Generation TestRunItem");
+    }
+    const fail_metrics: any = {};
+    let errors: number = 0;
+    let pass = true;
+    if (metrics_min) {
+        for (const key in metrics_min) {
+            if (model_metrics.mean_scores[key] < metrics_min[key]) {
+                errors++;
+                fail_metrics[key] = {
+                    metric: key,
+                    value: model_metrics.mean_scores[key],
+                    expected: metrics_min[key],
+                }
+                pass = false;
+            }
+        }
+    }
+    
+    return {
+        pass: pass,
+        errors: errors,
+        fail_metrics: fail_metrics,
+    };
+}
+
+
+/*
+ model_metrics: {
+      'Accuracy@k': {
+        '1': 0.8,
+        '2': 0.9,
+        '3': 1,
+        '4': 1,
+        '5': 1,
+        '6': 1,
+        '7': 1,
+        '8': 1,
+        '9': 1,
+        '10': 1
+      },
+      'Precision@k': {
+        '1': 0.8,
+        '2': 0.45,
+        '3': 0.33333333333333326,
+        '4': 0.25,
+        '5': 0.20000000000000004,
+        '6': 0.16666666666666663,
+        '7': 0.14285714285714285,
+        '8': 0.125,
+        '9': 0.11111111111111112,
+        '10': 0.10000000000000002
+      },
+      'Recall@k': {
+        '1': 0.8,
+        '2': 0.9,
+        '3': 1,
+        '4': 1,
+        '5': 1,
+        '6': 1,
+        '7': 1,
+        '8': 1,
+        '9': 1,
+        '10': 1
+      },
+      'NDCG@k': {
+        '1': 0.8,
+        '2': 0.8630929753571458,
+        '3': 0.9130929753571457,
+        '4': 0.9130929753571457,
+        '5': 0.9130929753571457,
+        '6': 0.9130929753571457,
+        '7': 0.9130929753571457,
+        '8': 0.9130929753571457,
+        '9': 0.9130929753571457,
+        '10': 0.9130929753571457
+      },
+      'MRR@k': {
+        '1': 0.8,
+        '2': 0.85,
+        '3': 0.8833333333333332,
+        '4': 0.8833333333333332,
+        '5': 0.8833333333333332,
+        '6': 0.8833333333333332,
+        '7': 0.8833333333333332,
+        '8': 0.8833333333333332,
+        '9': 0.8833333333333332,
+        '10': 0.8833333333333332
+      },
+      'MAP@k': {
+        '1': 0.8,
+        '2': 0.85,
+        '3': 0.8833333333333332,
+        '4': 0.8833333333333332,
+        '5': 0.8833333333333332,
+        '6': 0.8833333333333332,
+        '7': 0.8833333333333332,
+        '8': 0.8833333333333332,
+        '9': 0.8833333333333332,
+        '10': 0.8833333333333332
+      }
+      */
+interface RetrievalReporterProps {
+    testRunItem: components["schemas"]["TestRunItem"];
+    metrics_min?: {[key: string]: {
+        value: number;
+        at_k: number;
+    }};
+}
+interface RetrievalReporterResponse {
+    pass: boolean;
+    errors: number;
+    fail_metrics: {
+        [key: string]: {
+            metric: string;
+            value: number;
+            expected: number;
+        }
+    };
+}
+
+export const retrieval_reporter = (props: RetrievalReporterProps): RetrievalReporterResponse => {
+    const { testRunItem, metrics_min } = props;
+    const { model_metrics } = testRunItem;
+    if (!(model_metrics)) {
+        throw new Error("Invalid Generation TestRunItem");
+    }
+    const fail_metrics: any = {};
+    let pass = true;
+    let errors = 0;
+    if (metrics_min) {
+        for (const key in metrics_min) {
+            const min_item:any = metrics_min[key];
+            if (model_metrics[key][min_item.at_k] < min_item.value) {
+                errors++;
+                fail_metrics[key] = {
+                    metric: key,
+                    k: min_item.at_k,
+                    value: model_metrics[key][min_item.at_k],
+                    expected: min_item.value,
+                }
+                pass = false;
+            }
+        }
+    }
+    return {
+        pass: pass,
+        errors: errors,
+        fail_metrics: fail_metrics,
+    };
+}
