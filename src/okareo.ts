@@ -205,10 +205,7 @@ export class Okareo {
             for (let i = 0; i < seed_data.length; i++) {
                 const { id, input } = seed_data[i];
                 const customResult = this.model_config?.models?.custom.invoke(input);
-                results.model_data[id] = {
-                    actual: input,
-                    model_response: customResult
-                }
+                results.model_data[id] = customResult;
             }
             const body:components["schemas"]["TestRunPayloadV2"] = {
                 ...props,

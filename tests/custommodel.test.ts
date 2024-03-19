@@ -52,7 +52,14 @@ describe('Evaluations', () => {
                 project_id: pData[0].id,
                 model: CustomModel({
                     invoke: (input: string) => { 
-                        return "Technical Support";
+                        return {
+                            actual: "Technical Support",
+                            model_response: {
+                                input: input,
+                                method: "hard coded",
+                                context: "TS SDK Test Response",
+                            }
+                        }
                     }
                 }),
             })
