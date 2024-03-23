@@ -204,6 +204,8 @@ describe('Reporters', () => {
         }
         expect(report.pass).toBeTruthy();
     });
+
+
     test('Retrieval Reporter', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         const report = retrieval_reporter(
@@ -237,13 +239,15 @@ describe('Reporters', () => {
                 }
             }
         );
-        /*
+        
         if (!report.pass) {
             console.log(report);
         }
-        */
+        
         expect(report.errors).toBe(2);
     });
+
+
     test('Generation Reporter', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         const report = generation_reporter(
@@ -258,11 +262,11 @@ describe('Reporters', () => {
                 }
             }
         );
-        /*
+        
         if (!report.pass) {
             console.log(report);
         }
-        */
+        
         expect(report.errors).toBe(2);
     });
 

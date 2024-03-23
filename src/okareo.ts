@@ -18,7 +18,7 @@ export interface UploadScenarioSetProps {
 export interface RunTestProps {
     project_id: string;
     scenario_id?: string;
-    scenario: any;
+    scenario?: any;
     model_api_key: string| undefined;
     name: string;
     type: string;

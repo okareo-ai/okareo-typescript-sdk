@@ -264,6 +264,7 @@ interface RetrievalReporterResponse {
     fail_metrics: {
         [key: string]: {
             metric: string;
+            k: number;
             value: number;
             expected: number;
         }
