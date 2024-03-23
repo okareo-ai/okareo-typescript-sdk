@@ -28,7 +28,7 @@ import type { paths, components } from "../api/v1/okareo_endpoints";
     ]
 */
 interface ClassificationReporterProps {
-    testRunItem: components["schemas"]["TestRunItem"];
+    eval_run: components["schemas"]["TestRunItem"];
     error_max?: number;
     metrics_min?: {[key: string]: number};
 }
@@ -44,10 +44,10 @@ interface ClassificationReporterResponse {
     };
 }
 export const classification_reporter = (props: ClassificationReporterProps): ClassificationReporterResponse => {
-    const { testRunItem, metrics_min, error_max = 0 } = props;
-    const { model_metrics, error_matrix } = testRunItem;
+    const { eval_run, metrics_min, error_max = 0 } = props;
+    const { model_metrics, error_matrix } = eval_run;
     if (!model_metrics || !error_matrix) {
-        throw new Error("Invalid Classification TestRunItem");
+        throw new Error("Invalid Classification eval_run");
     }
     const fail_metrics: any = {};
     let pass = true;
@@ -130,7 +130,7 @@ export const classification_reporter = (props: ClassificationReporterProps): Cla
 */
 
 interface GenerationReporterProps {
-    testRunItem: components["schemas"]["TestRunItem"];
+    eval_run: components["schemas"]["TestRunItem"];
     metrics_min?: {[key: string]: number};
 }
 interface GenerationReporterResponse {
@@ -146,8 +146,8 @@ interface GenerationReporterResponse {
 }
 
 export const generation_reporter = (props: GenerationReporterProps): GenerationReporterResponse => {
-    const { testRunItem, metrics_min } = props;
-    const { model_metrics } = testRunItem;
+    const { eval_run, metrics_min } = props;
+    const { model_metrics } = eval_run;
     if (!(model_metrics)) {
         throw new Error("Invalid Generation TestRunItem");
     }
@@ -252,7 +252,7 @@ export const generation_reporter = (props: GenerationReporterProps): GenerationR
       }
       */
 interface RetrievalReporterProps {
-    testRunItem: components["schemas"]["TestRunItem"];
+    eval_run: components["schemas"]["TestRunItem"];
     metrics_min?: {[key: string]: {
         value: number;
         at_k: number;
@@ -271,8 +271,8 @@ interface RetrievalReporterResponse {
 }
 
 export const retrieval_reporter = (props: RetrievalReporterProps): RetrievalReporterResponse => {
-    const { testRunItem, metrics_min } = props;
-    const { model_metrics } = testRunItem;
+    const { eval_run, metrics_min } = props;
+    const { model_metrics } = eval_run;
     if (!(model_metrics)) {
         throw new Error("Invalid Generation TestRunItem");
     }

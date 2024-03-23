@@ -187,10 +187,9 @@ const TEST_RUN_GENERATION: any = {
 describe('Reporters', () => {
     test('Classification Reporter', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
-        //const tData = await okareo.get_test_run(eval_id);
         const report = classification_reporter(
             {
-                testRunItem:TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"], 
+                eval_run:TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"], 
                 error_max: 8, 
                 metrics_min: {
                     precision: 0.7,
@@ -209,7 +208,7 @@ describe('Reporters', () => {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         const report = retrieval_reporter(
             {
-                testRunItem:TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"], 
+                eval_run:TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"], 
                 metrics_min: {
                     'Accuracy@k': {
                         value: 0.99,
@@ -249,7 +248,7 @@ describe('Reporters', () => {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         const report = generation_reporter(
             {
-                testRunItem:TEST_RUN_GENERATION as components["schemas"]["TestRunItem"], 
+                eval_run:TEST_RUN_GENERATION as components["schemas"]["TestRunItem"], 
                 metrics_min: {
                     coherence: 5,
                     consistency: 3,
