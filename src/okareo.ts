@@ -1,6 +1,7 @@
 import createClient from "openapi-fetch";
+import fetch from 'node-fetch';
 import type { paths, components } from "./api/v1/okareo_endpoints";
-
+import FormData from "form-data";
 import * as fs from "fs";
 
 export interface OkareoProps {
@@ -131,12 +132,56 @@ export class Okareo {
         return data || {};
     }
 
+    
+    async upload_scenario_set(props: UploadScenarioSetProps): Promise<components["schemas"]["ScenarioSetResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const api_endpoint = this.endpoint;
+        
+        if (!fs.existsSync(props.file_path))
+            throw new Error("File not found");
+        
+        const file = fs.createReadStream(props.file_path);
+        if (!file)
+            throw new Error("File read error");
+
+        const body: any = {
+            project_id: props.project_id,
+            name: props.scenario_name
+        };
+        const form = new FormData();
+        form.append("name", props.scenario_name);
+        form.append("project_id", props.project_id);
+        form.append(
+            'file', file
+        );
+        const headers = Object.assign({
+            'Content-Type': 'application/json',
+            'accept': 'application/json', // eslint-disable-line quote-props
+            'api-key': `${this.api_key}`,
+        }, form.getHeaders());
+
+        const reqOptions = {
+            method: 'POST',
+            headers: headers,
+            'body':form, // eslint-disable-line quote-props
+        };
+        const response = await fetch(`${api_endpoint}/v0/scenario_sets_upload`, reqOptions);
+        return await response.json() as components["schemas"]["ScenarioSetResponse"];
+
+    }
+    
+
+        /*
     async upload_scenario_set(props: UploadScenarioSetProps): Promise<components["schemas"]["ScenarioSetResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         // shimming difference between REST API and SDK
         try {
-            const file = fs.readFileSync(props.file_path);
+            //const file: string = fs.readFileSync(props.file_path).toString();
+            const file = fs.createReadStream(props.file_path);
+            //const file: string = fs.readFileSync(props.file_path, 'utf8');
+            
+
             console.log(file);
             const { data, error } = await client.POST("/v0/scenario_sets_upload", {
                 params: {
@@ -145,13 +190,25 @@ export class Okareo {
                     },
                 },
                 body: {
-                    name: props.scenario_name,
-                    file: props.file_path,
-                    project_id: props.project_id
-                }
+                    name: props.scenario_name as string,
+                    project_id: props.project_id as string,
+                    file: file
+                },
+                bodySerializer(body) {
+                  const fd = new FormData();
+                  for (const key in body) {
+                    console.log("key", key, body);
+                  }
+                  fd.append("name", props.scenario_name);
+                  fd.append("project_id", props.project_id);
+                  fd.append("file", file);
+                  return fd;
+                },
                 
             });
+            
             if (error) {
+                console.log(error, error.detail[0]);
                 throw error;
             }
             return data || {};
@@ -159,7 +216,9 @@ export class Okareo {
             throw new Error("File not found");
         }
     }
-    
+    */
+
+
     async register_model(props: any): Promise<components["schemas"]["ModelUnderTestResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const model_config: any = props; // this is used for the non-custom models

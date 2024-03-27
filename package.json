@@ -76,6 +76,9 @@
     ]
   },
   "dependencies": {
+    "@types/node-fetch": "^2.6.11",
+    "form-data": "^4.0.0",
+    "node-fetch": "2.6.7",
     "openapi-fetch": "^0.9.3",
     "openapi-typescript": "^6.7.5"
   }
