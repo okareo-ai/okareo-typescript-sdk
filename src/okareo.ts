@@ -135,11 +135,15 @@ export class Okareo {
     
     async upload_scenario_set(props: UploadScenarioSetProps): Promise<components["schemas"]["ScenarioSetResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
-        const api_endpoint = this.endpoint;
+        const eLength = this.endpoint.length;
+        const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/scenario_sets_upload";
         
         if (!fs.existsSync(props.file_path))
             throw new Error("File not found");
-        
+        const altFile = fs.readFileSync(props.file_path);
+
+        console.log("Found File: "+altFile.toString().substring(0, 50)+"...");
+
         const file = fs.createReadStream(props.file_path);
         if (!file)
             throw new Error("File read error");
@@ -155,8 +159,6 @@ export class Okareo {
             'file', file
         );
         const headers = Object.assign({
-            'Content-Type': 'application/json',
-            'accept': 'application/json', // eslint-disable-line quote-props
             'api-key': `${this.api_key}`,
         }, form.getHeaders());
 
@@ -165,58 +167,17 @@ export class Okareo {
             headers: headers,
             'body':form, // eslint-disable-line quote-props
         };
-        const response = await fetch(`${api_endpoint}/v0/scenario_sets_upload`, reqOptions);
-        return await response.json() as components["schemas"]["ScenarioSetResponse"];
-
-    }
-    
-
-        /*
-    async upload_scenario_set(props: UploadScenarioSetProps): Promise<components["schemas"]["ScenarioSetResponse"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
-        const client = createClient<paths>({ baseUrl: this.endpoint });
-        // shimming difference between REST API and SDK
-        try {
-            //const file: string = fs.readFileSync(props.file_path).toString();
-            const file = fs.createReadStream(props.file_path);
-            //const file: string = fs.readFileSync(props.file_path, 'utf8');
-            
-
-            console.log(file);
-            const { data, error } = await client.POST("/v0/scenario_sets_upload", {
-                params: {
-                    header: {
-                        "api-key": this.api_key
-                    },
-                },
-                body: {
-                    name: props.scenario_name as string,
-                    project_id: props.project_id as string,
-                    file: file
-                },
-                bodySerializer(body) {
-                  const fd = new FormData();
-                  for (const key in body) {
-                    console.log("key", key, body);
-                  }
-                  fd.append("name", props.scenario_name);
-                  fd.append("project_id", props.project_id);
-                  fd.append("file", file);
-                  return fd;
-                },
-                
-            });
-            
-            if (error) {
-                console.log(error, error.detail[0]);
+        
+        return fetch(`${api_endpoint}`, reqOptions)
+            .then(response => response.json())
+            .then((data: any) => {
+                return data;
+            })
+            .catch((error) => {
+                console.error(error);
                 throw error;
-            }
-            return data || {};
-        } catch (e) {
-            throw new Error("File not found");
-        }
+            });
     }
-    */
 
 
     async register_model(props: any): Promise<components["schemas"]["ModelUnderTestResponse"]> {

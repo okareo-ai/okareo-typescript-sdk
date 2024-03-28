@@ -1,3 +1,10 @@
+### okareo ###
+.okareo/node_modules
+.okareo/dist
+.okareo/package*
+.okareo/tsconfig.json
+
+
 ### macOS ###
 # General
 .DS_Store

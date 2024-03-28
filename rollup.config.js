@@ -12,6 +12,7 @@ const del = require('rollup-plugin-delete');
 
 module.exports = {
   input: `src/index.ts`,
+  inlineDynamicImports: true,
   output: [
     {
       file: pkg.main,

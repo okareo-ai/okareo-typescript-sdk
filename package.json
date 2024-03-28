@@ -23,7 +23,7 @@
     "build": "rm -rf dist && rollup -c rollup.config.js && yarn make:docs",
     "release": "yarn build && yarn publish",
     "make:docs": "typedoc",
-    "test": "jest --coverage",
+    "test": "jest",
     "test:ci": "cross-env CI=1 jest",
     "test:ts": "tsc --noEmit"
   },
@@ -76,9 +76,8 @@
     ]
   },
   "dependencies": {
-    "@types/node-fetch": "^2.6.11",
     "form-data": "^4.0.0",
-    "node-fetch": "2.6.7",
+    "node-fetch": "^3.3.2",
     "openapi-fetch": "^0.9.3",
     "openapi-typescript": "^6.7.5"
   }
