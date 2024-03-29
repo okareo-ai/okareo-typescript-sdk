@@ -1,4 +1,4 @@
-import { Okareo, components, classification_reporter, generation_reporter, retrieval_reporter } from '../src';
+import { Okareo, components, classification_reporter, generation_reporter, retrieval_reporter } from '../dist';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";

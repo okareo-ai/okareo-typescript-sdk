@@ -1,6 +1,6 @@
-import { Okareo } from '../src';
-import { RunTestProps } from '../src';
-import { DatapointSearch, ModelUnderTest, OpenAIModel } from "../src";
+import { Okareo } from '../dist';
+import { RunTestProps } from '../dist';
+import { DatapointSearch, ModelUnderTest, OpenAIModel } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
@@ -32,11 +32,12 @@ describe('Model Interactions', () => {
     test('Register Model', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         const pData: any[] = await okareo.getProjects();
+        const project_id = pData.find(p => p.name === "Global")?.id;
         const data: any = await okareo.register_model(
         ModelUnderTest({
             name: "TS-SDK Testing Model",
             tags: ["TS-SDK", "Testing"],
-            project_id: pData[0].id,
+            project_id: project_id,
             model: OpenAIModel({
             api_key: OPENAI_API_KEY,
             model_id:"gpt-3.5-turbo",
@@ -53,9 +54,10 @@ describe('Model Interactions', () => {
     test('Find Datapoints', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         const pData: any[] = await okareo.getProjects();
+        const project_id = pData.find(p => p.name === "Global")?.id;
         const data: any = await okareo.find_datapoints(
         DatapointSearch({ 
-            project_id: pData[0].id,
+            project_id: project_id,
             mut_id: "1822ce2c-b663-4911-8bf1-8af592e63b62",
         })
         );

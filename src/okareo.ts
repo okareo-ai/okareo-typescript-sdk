@@ -16,6 +16,18 @@ export interface UploadScenarioSetProps {
     file_path: string;
 }
 
+
+export interface UploadEvaluatorProps {
+    project_id: string;
+    name: string;
+    description: string;
+    file_path?: string;
+    evaluator_code?: string;
+    requires_scenario_input?: boolean;
+    requires_scenario_result?: boolean;
+    output_data_type: "boolean" | "integer" | "float";
+}
+
 export interface RunTestProps {
     project_id: string;
     scenario_id?: string;
@@ -284,5 +296,91 @@ export class Okareo {
         }
         return data || {};
     }
+
+    
+    async generate_evaluator(props: components["schemas"]["EvaluatorSpecRequest"]): Promise<components["schemas"]["EvaluatorGenerateResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { data, error } = await client.POST("/v0/evaluator_generate", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+            },
+            body: props
+            
+        });
+        if (error) {
+            throw error;
+        }
+        return data as components["schemas"]["EvaluatorGenerateResponse"] || {};
+    }
+
+
+    async upload_evaluator(props: UploadEvaluatorProps): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const eLength = this.endpoint.length;
+        const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/evaluator_upload";
+        
+        const tmpFileName = "temp_evaluator_code.txt";
+        const { evaluator_code = "" } = props; // file_path is rewritten as needed
+        if (props.file_path && evaluator_code.length > 0) {
+            throw new Error("Only one of file_path or evaluator_code is allowed");
+        }
+        const isGeneratedEval: boolean = (evaluator_code && evaluator_code.length > 0)?true:false;
+        if (isGeneratedEval) {
+            fs.writeFileSync(tmpFileName, evaluator_code);
+            props.file_path = tmpFileName;
+        }
+
+        const file_path: string = props.file_path as string; // file_path is rewritten as needed
+        if (!fs.existsSync(file_path))
+            throw new Error("File not found");
+        const altFile = fs.readFileSync(file_path);
+
+        console.log("Uploading Eval: "+altFile.toString().substring(0, 50)+"...");
+
+        const file = fs.createReadStream(file_path);
+        if (!file)
+            throw new Error("File read error");
+
+        const requires_scenario_input: string = (props.requires_scenario_input && props.requires_scenario_input.toString() === "true")?"true":"false";
+        const requires_scenario_result: string = (props.requires_scenario_result && props.requires_scenario_result.toString() === "true")?"true":"false";
+        const form = new FormData();
+        form.append("name", props.name);
+        form.append("project_id", props.project_id); 
+        form.append("description", props.description); 
+        form.append("requires_scenario_input", requires_scenario_input); 
+        form.append("requires_scenario_result", requires_scenario_result); 
+        form.append("output_data_type", props.output_data_type); 
+        form.append(
+            'file', file
+        );
+        const headers = Object.assign({
+            'api-key': `${this.api_key}`,
+        }, form.getHeaders());
+        
+        const reqOptions = {
+            method: 'POST',
+            headers: headers,
+            'body':form, // eslint-disable-line quote-props
+        };
+        
+        return fetch(`${api_endpoint}`, reqOptions)
+            .then(response => response.json())
+            .then((data: any) => {
+                return data as components["schemas"]["EvaluatorGenerateResponse"];
+            })
+            .finally(() => {
+                if (isGeneratedEval && fs.existsSync(tmpFileName)) {
+                    fs.unlinkSync(tmpFileName);
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                throw error;
+            });
+    }
+
 
 }

@@ -1,6 +1,6 @@
-import { Okareo } from '../src';
-import { RunTestProps } from '../src';
-import { DatapointSearch, ModelUnderTest, OpenAIModel } from "../src";
+import { Okareo } from '../dist';
+import { RunTestProps } from '../dist';
+import { DatapointSearch, ModelUnderTest, OpenAIModel } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
@@ -32,10 +32,11 @@ describe('Evaluations', () => {
     test('E2E Generation Evaluation', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         const pData: any[] = await okareo.getProjects();
+        const project_id = pData.find(p => p.name === "Global")?.id;
         const sData: any = await okareo.create_scenario_set(
         {
             name: "TS-SDK SEED Data",
-            project_id: pData[0].id,
+            project_id: project_id,
             number_examples: 2,
             generation_type: "REPHRASE_INVARIANT",
             seed_data: TEST_SEED_DATA
@@ -45,7 +46,7 @@ describe('Evaluations', () => {
           ModelUnderTest({
               name: "TS-SDK Eval Model v2",
               tags: ["TS-SDK", "Testing"],
-              project_id: pData[0].id,
+              project_id: project_id,
               model: OpenAIModel({
               api_key: OPENAI_API_KEY,
               model_id:"gpt-3.5-turbo",
@@ -56,7 +57,7 @@ describe('Evaluations', () => {
           })
         );
         const data: any = await okareo.run_test({
-              project_id: pData[0].id,
+              project_id: project_id,
               scenario_id: sData.scenario_id,
               name: "TS-SDK Evaluation",
               calculate_metrics: true,

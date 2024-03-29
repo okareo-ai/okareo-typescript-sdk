@@ -127,12 +127,22 @@ export interface paths {
   "/v0/find_datapoints": {
     /**
      * Get Datapoints
-     * @description gets all the datapoints created by a given token.
+     * @description Gets all the datapoints for given search criteria.
      *
      * Returns:
      *     list: An array of datapoint objects.
      */
     post: operations["get_datapoints_v0_find_datapoints_post"];
+  };
+  "/v0/summary_datapoints": {
+    /**
+     * Get Datapoints Summary
+     * @description Expects a date range and returns a summary of datapoint counts by day and feedback range.
+     *
+     * Returns:
+     *     list: An array of datapoint objects.
+     */
+    post: operations["get_datapoints_summary_v0_summary_datapoints_post"];
   };
   "/v0/datapoints": {
     /**
@@ -255,12 +265,111 @@ export interface paths {
      */
     post: operations["find_test_data_points_v0_find_test_data_points_post"];
   };
+  "/v0/evaluator_generate": {
+    /**
+     * Evaluator Generate
+     * @description Generate code for an evaluator for testing.
+     * Returns:
+     *     the evaluator object with the generated code
+     */
+    post: operations["evaluator_generate_v0_evaluator_generate_post"];
+  };
+  "/v0/evaluator_upload": {
+    /**
+     * Evaluator Upload
+     * @description Upload a new evaluator
+     *
+     * Returns:
+     *     the evaluator object with its ID
+     */
+    post: operations["evaluator_upload_v0_evaluator_upload_post"];
+  };
+  "/v0/evaluator/{evaluator_id}": {
+    /**
+     * Get Evaluator
+     * @description Get an evaluator
+     *
+     * Raises:
+     *     HTTPException: 404 if evaluator_id is not found
+     *
+     * Returns: the evaluator
+     */
+    get: operations["get_evaluator_v0_evaluator__evaluator_id__get"];
+    /**
+     * Evaluator Delete
+     * @description Deletes an evaluator
+     *
+     * Raises:
+     *     HTTPException: 404 if evaluator_id is not found
+     *
+     * Returns: 204 status code on successful deletion
+     */
+    delete: operations["evaluator_delete_v0_evaluator__evaluator_id__delete"];
+  };
+  "/v0/evaluators": {
+    /**
+     * Get All Evaluators
+     * @description Get a list of evaluators for this organization
+     *
+     * Returns:
+     *     a list of requested evaluators
+     */
+    get: operations["get_all_evaluators_v0_evaluators_get"];
+  };
 }
 
 export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
+    /** Body_evaluator_delete_v0_evaluator__evaluator_id__delete */
+    Body_evaluator_delete_v0_evaluator__evaluator_id__delete: {
+      /**
+       * Name
+       * @description Name of the Evaluator to delete
+       */
+      name: string;
+    };
+    /** Body_evaluator_upload_v0_evaluator_upload_post */
+    Body_evaluator_upload_v0_evaluator_upload_post: {
+      /**
+       * Name
+       * @description Name of the Evaluator
+       */
+      name: string;
+      /**
+       * Description
+       * @description Description of the Evaluator
+       * @default
+       */
+      description?: string;
+      /**
+       * Requires Scenario Input
+       * @description Whether the evaluator requires scenario input
+       */
+      requires_scenario_input: boolean;
+      /**
+       * Requires Scenario Result
+       * @description Whether the evaluator requires scenario expected result
+       */
+      requires_scenario_result: boolean;
+      /**
+       * Output Data Type
+       * @description Evaluator output data type (i.e., bool, int, float)
+       */
+      output_data_type?: string;
+      /**
+       * Project Id
+       * Format: uuid
+       * @description ID for the project
+       */
+      project_id?: string;
+      /**
+       * File
+       * Format: binary
+       */
+      file?: string;
+    };
     /** Body_scenario_sets_upload_v0_scenario_sets_upload_post */
     Body_scenario_sets_upload_v0_scenario_sets_upload_post: {
       /**
@@ -334,6 +443,8 @@ export interface components {
        * Format: uuid
        */
       test_run_id?: string;
+      /** Total Search Count */
+      total_search_count?: number;
     };
     /** DatapointResponse */
     DatapointResponse: {
@@ -462,11 +573,153 @@ export interface components {
        * @description Test run ID
        */
       test_run_id?: string;
+      /**
+       * Search Value
+       * @description Search substring that is matched against input, result, context_token, tags, or time_created fields
+       */
+      search_value?: string;
+      /**
+       * Offset
+       * @description Offset for pagination
+       */
+      offset?: number;
+      /**
+       * Limit
+       * @description Limit for pagination
+       */
+      limit?: number;
+    };
+    /** DatapointSummaryItem */
+    DatapointSummaryItem: {
+      /**
+       * Date
+       * Format: date-time
+       * @description The date for the data summary.
+       */
+      date: string;
+      /**
+       * Feedback Ranges
+       * @description List of feedback range summaries for the date.
+       * @default []
+       */
+      feedback_ranges?: components["schemas"]["FeedbackRangeSummary"][];
     };
     /** ErrorResponse */
     ErrorResponse: {
       /** Detail */
       detail: string;
+    };
+    /** EvaluatorBriefResponse */
+    EvaluatorBriefResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id?: string;
+      /** Name */
+      name?: string;
+      /** Description */
+      description?: string;
+      /**
+       * Time Created
+       * Format: date-time
+       */
+      time_created?: string;
+    };
+    /** EvaluatorDetailedResponse */
+    EvaluatorDetailedResponse: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id?: string;
+      /**
+       * Project Id
+       * Format: uuid
+       */
+      project_id?: string;
+      /** Name */
+      name?: string;
+      /** Description */
+      description?: string;
+      /** Requires Scenario Input */
+      requires_scenario_input?: boolean;
+      /** Requires Scenario Result */
+      requires_scenario_result?: boolean;
+      /** Output Data Type */
+      output_data_type?: string;
+      /** Code Contents */
+      code_contents?: string;
+      /**
+       * Time Created
+       * Format: date-time
+       */
+      time_created?: string;
+    };
+    /** EvaluatorGenerateResponse */
+    EvaluatorGenerateResponse: {
+      /** Name */
+      name?: string;
+      /** Description */
+      description?: string;
+      /** Requires Scenario Input */
+      requires_scenario_input?: boolean;
+      /** Requires Scenario Result */
+      requires_scenario_result?: boolean;
+      /** Output Data Type */
+      output_data_type?: string;
+      /** Generated Code */
+      generated_code?: string;
+    };
+    /** EvaluatorSpecRequest */
+    EvaluatorSpecRequest: {
+      /**
+       * Name
+       * @description Name of the evaluator
+       */
+      name?: string;
+      /**
+       * Description
+       * @description Description for the evaluator.
+       *             When this request is sent to generate an evaluator, this field will be used to generate it.
+       */
+      description?: string;
+      /**
+       * Requires Scenario Input
+       * @description Whether the evaluator requires scenario input
+       * @default false
+       */
+      requires_scenario_input?: boolean;
+      /**
+       * Requires Scenario Result
+       * @description Whether the evaluator requires scenario expected result
+       * @default false
+       */
+      requires_scenario_result?: boolean;
+      /**
+       * Output Data Type
+       * @description Evaluator output data type (i.e., bool, int, float)
+       */
+      output_data_type?: string;
+      /**
+       * Project Id
+       * Format: uuid
+       * @description ID for the project
+       */
+      project_id?: string;
+    };
+    /** FeedbackRangeSummary */
+    FeedbackRangeSummary: {
+      /**
+       * Feedback Range Start
+       * @description The start of the feedback range.
+       */
+      feedback_range_start?: number;
+      /**
+       * Count
+       * @description The total count of feedbacks in the specified range for the given date.
+       */
+      count: number;
     };
     /** FindTestDataPointPayload */
     FindTestDataPointPayload: {
@@ -826,6 +1079,34 @@ export interface components {
       summary_sentences: string[];
       /** Scores */
       scores: string[][];
+    };
+    /** SummaryDatapointSearch */
+    SummaryDatapointSearch: {
+      /**
+       * Project Id
+       * Format: uuid
+       * @description Project ID
+       */
+      project_id?: string;
+      /**
+       * Mut Id
+       * Format: uuid
+       * @description Model ID
+       */
+      mut_id?: string;
+      /**
+       * From Date
+       * Format: date-time
+       * @description Earliest date
+       * @default 2022-12-31T23:59:59.999999
+       */
+      from_date?: string;
+      /**
+       * To Date
+       * Format: date-time
+       * @description Latest date
+       */
+      to_date?: string;
     };
     /** TestDataPointItem */
     TestDataPointItem: {
@@ -1608,7 +1889,7 @@ export interface operations {
   };
   /**
    * Get Datapoints
-   * @description gets all the datapoints created by a given token.
+   * @description Gets all the datapoints for given search criteria.
    *
    * Returns:
    *     list: An array of datapoint objects.
@@ -1629,6 +1910,51 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["DatapointListItem"][];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Datapoints Summary
+   * @description Expects a date range and returns a summary of datapoint counts by day and feedback range.
+   *
+   * Returns:
+   *     list: An array of datapoint objects.
+   */
+  get_datapoints_summary_v0_summary_datapoints_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SummaryDatapointSearch"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["DatapointSummaryItem"][];
         };
       };
       /** @description Input data is incorrect */
@@ -2213,6 +2539,228 @@ export interface operations {
       201: {
         content: {
           "application/json": components["schemas"]["TestDataPointItem"][];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Evaluator Generate
+   * @description Generate code for an evaluator for testing.
+   * Returns:
+   *     the evaluator object with the generated code
+   */
+  evaluator_generate_v0_evaluator_generate_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["EvaluatorSpecRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["EvaluatorGenerateResponse"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Evaluator Upload
+   * @description Upload a new evaluator
+   *
+   * Returns:
+   *     the evaluator object with its ID
+   */
+  evaluator_upload_v0_evaluator_upload_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["Body_evaluator_upload_v0_evaluator_upload_post"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["EvaluatorDetailedResponse"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Evaluator
+   * @description Get an evaluator
+   *
+   * Raises:
+   *     HTTPException: 404 if evaluator_id is not found
+   *
+   * Returns: the evaluator
+   */
+  get_evaluator_v0_evaluator__evaluator_id__get: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        evaluator_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["EvaluatorDetailedResponse"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Evaluator Delete
+   * @description Deletes an evaluator
+   *
+   * Raises:
+   *     HTTPException: 404 if evaluator_id is not found
+   *
+   * Returns: 204 status code on successful deletion
+   */
+  evaluator_delete_v0_evaluator__evaluator_id__delete: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        evaluator_id: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/x-www-form-urlencoded": components["schemas"]["Body_evaluator_delete_v0_evaluator__evaluator_id__delete"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      204: {
+        content: never;
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get All Evaluators
+   * @description Get a list of evaluators for this organization
+   *
+   * Returns:
+   *     a list of requested evaluators
+   */
+  get_all_evaluators_v0_evaluators_get: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["EvaluatorBriefResponse"][];
         };
       };
       /** @description Input data is incorrect */

@@ -20,10 +20,10 @@
   "scripts": {
     "start": "rollup -c rollup.config.js -w",
     "gen-api": "npx openapi-typescript https://api.okareo.com/openapi.json -o ./src/api/v1/okareo_endpoints.ts",
-    "build": "rm -rf dist && rollup -c rollup.config.js && yarn make:docs",
+    "build": "rm -rf dist && rollup -c rollup.config.js",
     "release": "yarn build && yarn publish",
     "make:docs": "typedoc",
-    "test": "jest",
+    "test": "yarn build && jest",
     "test:ci": "cross-env CI=1 jest",
     "test:ts": "tsc --noEmit"
   },

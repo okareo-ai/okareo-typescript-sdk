@@ -1,6 +1,6 @@
-import { Okareo } from '../src';
-import { RunTestProps } from '../src';
-import { ModelUnderTest, OpenAIModel, SeedData, ScenarioType, TestRunType } from "../src";
+import { Okareo } from '../dist';
+import { RunTestProps } from '../dist';
+import { ModelUnderTest, OpenAIModel, SeedData, ScenarioType, TestRunType } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
@@ -74,10 +74,11 @@ describe('Evaluations', () => {
     test('E2E Classification Evaluation', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         const pData: any[] = await okareo.getProjects();
+        const project_id = pData.find(p => p.name === "Global")?.id;
         const sData: any = await okareo.create_scenario_set(
             {
                 name: "TS-SDK SEED Classification Data",
-                project_id: pData[0].id,
+                project_id: project_id,
                 number_examples: 1,
                 generation_type: ScenarioType.SEED,
                 seed_data: TEST_SEED_DATA
@@ -88,7 +89,7 @@ describe('Evaluations', () => {
             ModelUnderTest({
                 name: "TS-SDK Classification Model",
                 tags: ["TS-SDK", "Testing"],
-                project_id: pData[0].id,
+                project_id: project_id,
                 model: OpenAIModel({
                     model_id:"gpt-3.5-turbo",
                     temperature:0.5,
@@ -99,7 +100,7 @@ describe('Evaluations', () => {
         );
         
         const data: any = await okareo.run_test({
-            project_id: pData[0].id,
+            project_id: project_id,
             scenario_id: sData.scenario_id,
             name: "TS-SDK Classification",
             calculate_metrics: true,

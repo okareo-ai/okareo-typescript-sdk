@@ -27,12 +27,18 @@ import type { paths, components } from "../api/v1/okareo_endpoints";
       { 'Technical Support': [ 0, 0, 0, 3 ] }
     ]
 */
-interface ClassificationReporterProps {
+/**
+ * Properties to call the classification_reporter function
+ */
+export interface ClassificationReporterProps {
     eval_run: components["schemas"]["TestRunItem"];
     error_max?: number;
     metrics_min?: {[key: string]: number};
 }
-interface ClassificationReporterResponse {
+/**
+ * Standard response form the classification reporter 
+ */
+export interface ClassificationReporterResponse {
     pass: boolean;
     errors: number;
     fail_metrics: {
@@ -43,6 +49,11 @@ interface ClassificationReporterResponse {
         }
     };
 }
+/**
+ * Convenience function to evaluate a classification test run
+ * @param props ClassificationReporterProps
+ * @returns 
+ */
 export const classification_reporter = (props: ClassificationReporterProps): ClassificationReporterResponse => {
     const { eval_run, metrics_min, error_max = 0 } = props;
     const { model_metrics, error_matrix } = eval_run;
@@ -129,11 +140,11 @@ export const classification_reporter = (props: ClassificationReporterProps): Cla
 } 
 */
 
-interface GenerationReporterProps {
+export interface GenerationReporterProps {
     eval_run: components["schemas"]["TestRunItem"];
     metrics_min?: {[key: string]: number};
 }
-interface GenerationReporterResponse {
+export interface GenerationReporterResponse {
     pass: boolean;
     errors: number;
     fail_metrics: {
@@ -251,14 +262,14 @@ export const generation_reporter = (props: GenerationReporterProps): GenerationR
         '10': 0.8833333333333332
       }
       */
-interface RetrievalReporterProps {
+export interface RetrievalReporterProps {
     eval_run: components["schemas"]["TestRunItem"];
     metrics_min?: {[key: string]: {
         value: number;
         at_k: number;
     }};
 }
-interface RetrievalReporterResponse {
+export interface RetrievalReporterResponse {
     pass: boolean;
     errors: number;
     fail_metrics: {

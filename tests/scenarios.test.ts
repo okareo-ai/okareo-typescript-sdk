@@ -1,6 +1,4 @@
-import { Okareo } from '../src';
-import { RunTestProps } from '../src';
-import { DatapointSearch, ModelUnderTest, OpenAIModel } from "../src/okareo_api_client/models";
+import { Okareo } from '../dist';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
@@ -32,10 +30,11 @@ describe(' Working with Scenarios', () => {
     test('Create New Scenario Seed', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         const pData: any[] = await okareo.getProjects();
+        const project_id = pData.find(p => p.name === "Global")?.id;
         const data: any = await okareo.create_scenario_set(
             {
             name: "TS-SDK Testing Scenario Set",
-            project_id: pData[0].id,
+            project_id: project_id,
             number_examples: 1,
             generation_type: "SEED",
             seed_data: TEST_SEED_DATA
@@ -47,10 +46,11 @@ describe(' Working with Scenarios', () => {
     test('Generate Scenario Set From Existing Scenario', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         const pData: any[] = await okareo.getProjects();
+        const project_id = pData.find(p => p.name === "Global")?.id;
         const sData: any = await okareo.create_scenario_set(
           {
             name: "TS-SDK SEED Data",
-            project_id: pData[0].id,
+            project_id: project_id,
             number_examples: 1,
             generation_type: "SEED",
             seed_data: TEST_SEED_DATA
@@ -58,7 +58,7 @@ describe(' Working with Scenarios', () => {
         );
         const data: any = await okareo.generate_scenario_set(
           {
-            project_id: pData[0].id,
+            project_id: project_id,
             name: "TS-SDK Testing Generated Scenario",
             source_scenario_id: sData.scenario_id,
             number_examples: 2,
@@ -71,10 +71,11 @@ describe(' Working with Scenarios', () => {
       test('Get Scenario Datapoints', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
         const pData: any[] = await okareo.getProjects();
+        const project_id = pData.find(p => p.name === "Global")?.id;
         const sData: any = await okareo.create_scenario_set(
           {
             name: "TS-SDK SEED Data",
-            project_id: pData[0].id,
+            project_id: project_id,
             number_examples: 1,
             generation_type: "SEED",
             seed_data: TEST_SEED_DATA
@@ -96,7 +97,7 @@ it('Upload Scenario Set', async () =>  {
     {
       file_path: "test_data/seed_data.jsonl",
       scenario_name: "TS-SDK Testing Scenario Set",
-      project_id: pData[0].id
+      project_id: project_id
     }
   );
   expect(data).toBeDefined();

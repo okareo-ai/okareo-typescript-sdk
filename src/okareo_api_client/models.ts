@@ -38,8 +38,11 @@ export enum TestRunType {
     MULTI_CLASS_CLASSIFICATION = "MULTI_CLASS_CLASSIFICATION",
     NL_GENERATION = "NL_GENERATION",
 }
-
-interface BaseModel  {
+/**
+ * Base Model class for all models
+ * 
+ */
+export interface BaseModel  {
     type?: string | undefined;
     tags?: string[] | undefined;
 }
