@@ -322,7 +322,7 @@ export class Okareo {
         const eLength = this.endpoint.length;
         const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/evaluator_upload";
         
-        const tmpFileName = "temp_evaluator_code.txt";
+        const tmpFileName = "temp_evaluator_code.py";
         const { evaluator_code = "" } = props; // file_path is rewritten as needed
         if (props.file_path && evaluator_code.length > 0) {
             throw new Error("Only one of file_path or evaluator_code is allowed");
@@ -336,9 +336,8 @@ export class Okareo {
         const file_path: string = props.file_path as string; // file_path is rewritten as needed
         if (!fs.existsSync(file_path))
             throw new Error("File not found");
-        const altFile = fs.readFileSync(file_path);
-
-        console.log("Uploading Eval: "+altFile.toString().substring(0, 50)+"...");
+        //const altFile = fs.readFileSync(file_path);
+        //console.log("Uploading Eval: "+altFile.toString().substring(0, 75)+"...");
 
         const file = fs.createReadStream(file_path);
         if (!file)
@@ -369,7 +368,11 @@ export class Okareo {
         return fetch(`${api_endpoint}`, reqOptions)
             .then(response => response.json())
             .then((data: any) => {
-                return data as components["schemas"]["EvaluatorGenerateResponse"];
+                if (data.detail) {
+                    throw new Error(data.detail);
+                } else {
+                    return data as components["schemas"]["EvaluatorGenerateResponse"];
+                }
             })
             .finally(() => {
                 if (isGeneratedEval && fs.existsSync(tmpFileName)) {
@@ -380,6 +383,39 @@ export class Okareo {
                 console.error(error);
                 throw error;
             });
+    }
+
+    async get_all_evaluators(): Promise<components["schemas"]["EvaluatorBriefResponse"][]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { data, error } = await client.GET("/v0/evaluators", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+            }
+        });
+        if (error) {
+            throw error;
+        }
+        return data || {};
+    }
+
+    async get_evaluator(evaluator_id: string): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { data, error } = await client.GET("/v0/evaluator/{evaluator_id}", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+                path: { evaluator_id: evaluator_id }
+            }
+        });
+        if (error) {
+            throw error;
+        }
+        return data || {};
     }
 
 

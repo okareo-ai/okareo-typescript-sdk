@@ -12,7 +12,6 @@ const del = require('rollup-plugin-delete');
 
 module.exports = {
   input: `src/index.ts`,
-  inlineDynamicImports: true,
   output: [
     {
       file: pkg.main,
@@ -20,6 +19,7 @@ module.exports = {
       sourcemap: 'inline',
       plugins: [terser()],
       exports: 'auto',
+      inlineDynamicImports: true,
     },
     {
       file: pkg.module,
@@ -27,12 +27,14 @@ module.exports = {
       sourcemap: 'inline',
       plugins: [terser()],
       exports: 'auto',
+      inlineDynamicImports: true,
     },
     {
       file: 'dist/index.js',
       format: 'cjs',
       sourcemap: 'inline',
       exports: 'auto',
+      inlineDynamicImports: true,
     },
   ],
   watch: {
