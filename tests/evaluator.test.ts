@@ -6,7 +6,7 @@ const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/"
 describe('Evaluators', () => {
     
     it('Generate Evaluator', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY });
+        const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL });
         const pData: any[] = await okareo.getProjects();
         const project_id = pData.find(p => p.name === "Global")?.id;
         const genConfig = {
@@ -23,7 +23,7 @@ describe('Evaluators', () => {
         const data: any = await okareo.upload_evaluator(
           {
             project_id: genConfig.project_id,
-            name: "Question Detector Test",
+            name: "Question Detector NEW",
             description: genConfig.description,
             evaluator_code: generated_code,
             requires_scenario_input: genConfig.requires_scenario_input,
@@ -38,7 +38,7 @@ describe('Evaluators', () => {
 
 
     it('Upload Evaluator', async () =>  {
-      const okareo = new Okareo({api_key:OKAREO_API_KEY });
+      const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL });
       const pData: any[] = await okareo.getProjects();
       const project_id = pData.find(p => p.name === "Global")?.id;
 
@@ -53,7 +53,7 @@ describe('Evaluators', () => {
       const data: any = await okareo.upload_evaluator(
         {
           project_id: genConfig.project_id,
-          name: "Question Detector Test",
+          name: "Question Detector ALT",
           description: genConfig.description,
           file_path: "./tests/example_eval.py",
           requires_scenario_input: genConfig.requires_scenario_input,
