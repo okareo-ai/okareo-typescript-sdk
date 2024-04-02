@@ -32,7 +32,7 @@ export interface RunTestProps {
     project_id: string;
     scenario_id?: string;
     scenario?: any;
-    model_api_key: string| undefined;
+    model_api_key?: string| undefined;
     name: string;
     type: string;
     calculate_metrics: boolean;
