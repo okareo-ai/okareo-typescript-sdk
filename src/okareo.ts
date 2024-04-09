@@ -25,7 +25,7 @@ export interface UploadEvaluatorProps {
     evaluator_code?: string;
     requires_scenario_input?: boolean;
     requires_scenario_result?: boolean;
-    output_data_type: "boolean" | "integer" | "float";
+    output_data_type: string; // "boolean" | "integer" | "float";
 }
 
 export interface RunTestProps {
