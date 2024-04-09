@@ -51,7 +51,7 @@ describe('Evaluations', () => {
         );
         await okareo.register_model(
           ModelUnderTest({
-              name: "TS-SDK Eval Model v2",
+              name: `TS-SDK Eval Model v2 ${random_string}`,
               tags: ["TS-SDK", "Testing"],
               project_id: project_id,
               model: OpenAIModel({
@@ -69,6 +69,7 @@ describe('Evaluations', () => {
               name: "TS-SDK Evaluation",
               calculate_metrics: true,
               type: "NL_GENERATION",
+              checks: ["866c14bc-5201-4440-9444-456168de63bb"],
           } as RunTestProps
         );
         expect(data).toBeDefined();
