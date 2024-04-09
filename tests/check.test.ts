@@ -1,7 +1,7 @@
 import { Okareo, RunTestProps, OpenAIModel, SeedData, ModelUnderTest } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
-const OPENAI_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OPENAI_KEY>";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
 const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
 const TEST_SEED_DATA = [
     SeedData({
