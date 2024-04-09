@@ -22,7 +22,7 @@ export interface UploadEvaluatorProps {
     name: string;
     description: string;
     file_path?: string;
-    evaluator_code?: string;
+    generated_code?: string;
     requires_scenario_input?: boolean;
     requires_scenario_result?: boolean;
     output_data_type: string; // "boolean" | "integer" | "float";
@@ -335,16 +335,17 @@ export class Okareo {
         const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/evaluator_upload";
         
         const tmpFileName = "temp_evaluator_code.py";
-        const { evaluator_code = "" } = props; // file_path is rewritten as needed
-        if (props.file_path && evaluator_code.length > 0) {
+        const { generated_code = "" } = props; // file_path is rewritten as needed
+        if (props.file_path && generated_code.length > 0) {
             throw new Error("Only one of file_path or evaluator_code is allowed");
         }
-        const isGeneratedEval: boolean = (evaluator_code && evaluator_code.length > 0)?true:false;
+        const isGeneratedEval: boolean = (generated_code && generated_code.length > 0)?true:false;
         if (isGeneratedEval) {
-            fs.writeFileSync(tmpFileName, evaluator_code);
+            fs.writeFileSync(tmpFileName, generated_code);
             props.file_path = tmpFileName;
         }
 
+        console.log(props);
         const file_path: string = props.file_path as string; // file_path is rewritten as needed
         if (!fs.existsSync(file_path))
             throw new Error("File not found");

@@ -48,18 +48,15 @@ describe('Checks', () => {
         }
 
         const check: any = await okareo.generate_evaluator(check_info);
-        console.log(check);
         const upload_check = await okareo.upload_evaluator({
             ...check_info,
-            evaluator_code: check.generated_code,
+            generated_code: check.generated_code,
         });
-        console.log(upload_check);
         let sData: any = await okareo.create_scenario_set({
             name: `test.check_scenario.${random_string}`,
             project_id: project_id,
             seed_data: TEST_SEED_DATA
         });
-        console.log(sData);
 
         await okareo.register_model(
             ModelUnderTest({
@@ -89,7 +86,7 @@ describe('Checks', () => {
             type: "NL_GENERATION",
             checks: [upload_check.id],
         } as RunTestProps);
-        console.log(run_result);
+        
         expect(run_result).toBeDefined();
     });
 
