@@ -38,8 +38,6 @@ describe('Evaluations', () => {
             {
             name: "TS-SDK Testing Scenario Set",
             project_id: project_id,
-            number_examples: 1,
-            generation_type: "SEED",
             seed_data: TEST_SEED_DATA
             }
         );

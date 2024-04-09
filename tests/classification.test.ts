@@ -79,8 +79,6 @@ describe('Evaluations', () => {
             {
                 name: "TS-SDK SEED Classification Data",
                 project_id: project_id,
-                number_examples: 1,
-                generation_type: ScenarioType.SEED,
                 seed_data: TEST_SEED_DATA
             }
         );
