@@ -34,21 +34,18 @@ describe('Evaluations', () => {
         const random_string = (Math.random() + 1).toString(36).substring(7);
         const pData: any[] = await okareo.getProjects();
         const project_id = pData.find(p => p.name === "Global")?.id;
-        let sData: any = await okareo.create_scenario_set(
-        {
-            name: `TS-SDK SEED Data ${random_string}`,
-            project_id: project_id,
-            seed_data: TEST_SEED_DATA
+        const sData: any = await okareo.create_scenario_set({
+          name: `TS-SDK SEED Data ${random_string}`,
+          project_id: project_id,
+          seed_data: TEST_SEED_DATA
         });
-        sData = await okareo.generate_scenario_set(
-        {
-            name: `TS-SDK generated Data ${random_string}`,
-            source_scenario_id: sData.scenario_id,
-            generation_type: "REPHRASE_INVARIANT",
-            number_examples: 2,
-            project_id: project_id,
-        }
-        );
+        const rephraseData = await okareo.generate_scenario_set({
+          name: `TS-SDK generated Data ${random_string}`,
+          source_scenario_id: sData.scenario_id,
+          generation_type: "REPHRASE_INVARIANT",
+          number_examples: 2,
+          project_id: project_id,
+        });
         await okareo.register_model(
           ModelUnderTest({
               name: `TS-SDK Eval Model v2 ${random_string}`,
@@ -65,7 +62,7 @@ describe('Evaluations', () => {
         );
         const data: any = await okareo.run_test({
               project_id: project_id,
-              scenario_id: sData.scenario_id,
+              scenario_id: rephraseData.scenario_id,
               name: "TS-SDK Evaluation",
               calculate_metrics: true,
               type: "NL_GENERATION",
