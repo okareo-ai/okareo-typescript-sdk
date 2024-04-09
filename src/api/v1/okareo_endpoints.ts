@@ -369,6 +369,12 @@ export interface components {
        * Format: binary
        */
       file?: string;
+      /**
+       * Update
+       * @description Update the evaluator
+       * @default false
+       */
+      update?: boolean;
     };
     /** Body_scenario_sets_upload_v0_scenario_sets_upload_post */
     Body_scenario_sets_upload_v0_scenario_sets_upload_post: {
@@ -655,6 +661,8 @@ export interface components {
        * Format: date-time
        */
       time_created?: string;
+      /** Warning */
+      warning?: string;
     };
     /** EvaluatorGenerateResponse */
     EvaluatorGenerateResponse: {
@@ -809,6 +817,8 @@ export interface components {
        * @default
        */
       app_link?: string;
+      /** Warning */
+      warning?: string;
     };
     /** ModelUnderTestSchema */
     ModelUnderTestSchema: {
@@ -836,6 +846,12 @@ export interface components {
        * @description ID of the project
        */
       project_id?: string;
+      /**
+       * Update
+       * @description If set to true, the model will be updated instead of returning the existing model
+       * @default false
+       */
+      update?: boolean;
     };
     /** ProjectResponse */
     ProjectResponse: {
@@ -901,26 +917,6 @@ export interface components {
        * @description Seed data is a list of dictionaries, each with an input and result
        */
       seed_data: components["schemas"]["SeedData"][];
-      /**
-       * Number Examples
-       * @description Number of examples
-       */
-      number_examples: number;
-      /**
-       * @description Type of generation. Current supported scenario types are:<br />
-       *         Seed: Seed data for a scenario set<br />
-       *         Rephrase invariant: Results will be rephrased versions of inputs<br />
-       *         Conditional: Results will be rephrased inputs represented in a conditional format<br />
-       *         Text reverse question: The result will be the target question for the input<br />
-       *         Text reverse label: The result will be the intent of the target question for the input
-       * @default SEED
-       */
-      generation_type?: components["schemas"]["ScenarioType"];
-      /**
-       * @description Tone to use for scenario generation.
-       * @default Neutral
-       */
-      generation_tone?: components["schemas"]["GenerationTone"];
     };
     /** ScenarioSetGenerate */
     ScenarioSetGenerate: {
@@ -1009,6 +1005,8 @@ export interface components {
        * @default
        */
       app_link?: string;
+      /** Warning */
+      warning?: string;
     };
     /** ScenarioSetUpdate */
     ScenarioSetUpdate: {
@@ -1317,6 +1315,11 @@ export interface components {
       project_id?: string;
       /** Model Results */
       model_results?: Record<string, never>;
+      /**
+       * Checks
+       * @description List of checks to include in the test run.
+       */
+      checks?: string[];
     };
     /**
      * TestRunType

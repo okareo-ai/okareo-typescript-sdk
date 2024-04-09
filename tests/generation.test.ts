@@ -31,15 +31,22 @@ const TEST_SEED_DATA = [
 describe('Evaluations', () => {
     test('E2E Generation Evaluation', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+        const random_string = (Math.random() + 1).toString(36).substring(7);
         const pData: any[] = await okareo.getProjects();
         const project_id = pData.find(p => p.name === "Global")?.id;
-        const sData: any = await okareo.create_scenario_set(
+        let sData: any = await okareo.create_scenario_set(
         {
-            name: "TS-SDK SEED Data",
+            name: `TS-SDK SEED Data ${random_string}`,
             project_id: project_id,
-            number_examples: 2,
-            generation_type: "REPHRASE_INVARIANT",
             seed_data: TEST_SEED_DATA
+        });
+        sData = await okareo.generate_scenario_set(
+        {
+            name: `TS-SDK generated Data ${random_string}`,
+            source_scenario_id: sData.scenario_id,
+            generation_type: "REPHRASE_INVARIANT",
+            number_examples: 2,
+            project_id: project_id,
         }
         );
         await okareo.register_model(
