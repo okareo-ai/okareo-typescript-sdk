@@ -35,8 +35,6 @@ describe(' Working with Scenarios', () => {
             {
             name: "TS-SDK Testing Scenario Set",
             project_id: project_id,
-            number_examples: 1,
-            generation_type: "SEED",
             seed_data: TEST_SEED_DATA
             }
         );
@@ -51,15 +49,14 @@ describe(' Working with Scenarios', () => {
           {
             name: "TS-SDK SEED Data",
             project_id: project_id,
-            number_examples: 1,
-            generation_type: "SEED",
             seed_data: TEST_SEED_DATA
           }
         );
+        const random_string = (Math.random() + 1).toString(36).substring(7);
         const data: any = await okareo.generate_scenario_set(
           {
             project_id: project_id,
-            name: "TS-SDK Testing Generated Scenario",
+            name: `TS-SDK Testing Generated Scenario ${random_string}`,
             source_scenario_id: sData.scenario_id,
             number_examples: 2,
           }
@@ -76,8 +73,6 @@ describe(' Working with Scenarios', () => {
           {
             name: "TS-SDK SEED Data",
             project_id: project_id,
-            number_examples: 1,
-            generation_type: "SEED",
             seed_data: TEST_SEED_DATA
           }
         );

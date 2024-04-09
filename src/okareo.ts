@@ -38,6 +38,7 @@ export interface RunTestProps {
     calculate_metrics: boolean;
     metrics_kwargs?: any;
     tags?: string[];
+    checks?: string[];
 }
 
 export class Okareo {
@@ -85,6 +86,9 @@ export class Okareo {
         });
         if (error) {
             throw error;
+        }
+        if (data && data.warning) {
+            console.log(data.warning);
         }
         return data || {};
     }
@@ -183,6 +187,9 @@ export class Okareo {
         return fetch(`${api_endpoint}`, reqOptions)
             .then(response => response.json())
             .then((data: any) => {
+                if (data && data.warning) {
+                    console.log(data.warning);
+                }
                 return data;
             })
             .catch((error) => {
@@ -216,6 +223,9 @@ export class Okareo {
             this.model_config = props; // original registration (for all models)
             this.model = data as components["schemas"]["ModelUnderTestResponse"];
         }
+        if (data && data.warning) {
+            console.log(data.warning);
+        }
         return data || {};
         
     }
@@ -242,7 +252,8 @@ export class Okareo {
             const body:components["schemas"]["TestRunPayloadV2"] = {
                 ...props,
                 mut_id: this.model.id,
-                model_results: results
+                model_results: results,
+                checks: props.checks,
             } as components["schemas"]["TestRunPayloadV2"];
             const { data, error } = await client.POST("/v0/test_run", {
                 params: {
@@ -263,7 +274,8 @@ export class Okareo {
                 mut_id: this.model.id,
                 api_keys: {
                     [mType]: mKey
-                }
+                },
+                checks: props.checks,
             } as components["schemas"]["TestRunPayloadV2"];
             const { data, error } = await client.POST("/v0/test_run", {
                 params: {
@@ -371,6 +383,9 @@ export class Okareo {
                 if (data.detail) {
                     throw new Error(data.detail);
                 } else {
+                    if (data && data.warning) {
+                        console.log(data.warning);
+                    }
                     return data as components["schemas"]["EvaluatorGenerateResponse"];
                 }
             })
