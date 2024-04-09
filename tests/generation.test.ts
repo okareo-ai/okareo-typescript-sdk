@@ -69,7 +69,7 @@ describe('Evaluations', () => {
               name: "TS-SDK Evaluation",
               calculate_metrics: true,
               type: "NL_GENERATION",
-              checks: ["0129c628-3473-4090-a1dd-19ad73972b6a"],
+              checks: ["866c14bc-5201-4440-9444-456168de63bb"],
           } as RunTestProps
         );
         expect(data).toBeDefined();
