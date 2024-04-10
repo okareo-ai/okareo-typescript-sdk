@@ -84,6 +84,7 @@ export interface ModelUnderTestProps {
     project_id: string;
     tags: string[];
     model: BaseModel;
+    update?: boolean;
 }
 // This is a shim due to the fact that the REST API and SDK are not in sync
 // the 
@@ -96,7 +97,8 @@ export function ModelUnderTest(props: ModelUnderTestProps): components["schemas"
         tags: props.tags,
         models: {
             [type]: model
-        }
+        },
+        update: props.update,
     } as components["schemas"]["ModelUnderTestSchema"];
 }
 

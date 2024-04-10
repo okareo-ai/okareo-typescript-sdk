@@ -48,9 +48,14 @@ describe('Checks', () => {
         }
 
         const check: any = await okareo.generate_evaluator(check_info);
-        const upload_check = await okareo.upload_evaluator({
+        let upload_check = await okareo.upload_evaluator({
             ...check_info,
             generated_code: check.generated_code,
+        });
+        upload_check = await okareo.upload_evaluator({
+            ...check_info,
+            generated_code: check.generated_code,
+            update: true,
         });
         let sData: any = await okareo.create_scenario_set({
             name: `test.check_scenario.${random_string}`,

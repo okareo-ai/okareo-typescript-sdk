@@ -26,6 +26,7 @@ export interface UploadEvaluatorProps {
     requires_scenario_input?: boolean;
     requires_scenario_result?: boolean;
     output_data_type: string; // "boolean" | "integer" | "float";
+    update?: boolean;
 }
 
 export interface RunTestProps {
@@ -358,6 +359,7 @@ export class Okareo {
 
         const requires_scenario_input: string = (props.requires_scenario_input && props.requires_scenario_input.toString() === "true")?"true":"false";
         const requires_scenario_result: string = (props.requires_scenario_result && props.requires_scenario_result.toString() === "true")?"true":"false";
+        const update: string = (props.update && props.update.toString() === "true")?"true":"false";
         const form = new FormData();
         form.append("name", props.name);
         form.append("project_id", props.project_id); 
@@ -365,6 +367,7 @@ export class Okareo {
         form.append("requires_scenario_input", requires_scenario_input); 
         form.append("requires_scenario_result", requires_scenario_result); 
         form.append("output_data_type", props.output_data_type); 
+        form.append("update", update);
         form.append(
             'file', file
         );
