@@ -47,12 +47,12 @@ describe('Checks', () => {
             output_data_type: "boolean",
         }
 
-        const check: any = await okareo.generate_evaluator(check_info);
-        let upload_check = await okareo.upload_evaluator({
+        const check: any = await okareo.generate_check(check_info);
+        let upload_check = await okareo.upload_check({
             ...check_info,
             generated_code: check.generated_code,
         });
-        upload_check = await okareo.upload_evaluator({
+        upload_check = await okareo.upload_check({
             ...check_info,
             generated_code: check.generated_code,
             update: true,

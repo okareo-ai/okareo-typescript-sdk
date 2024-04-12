@@ -16,15 +16,15 @@ describe('Evaluators', () => {
       requires_scenario_result: false,
       output_data_type: "boolean",
     }
-    const genData: any = await okareo.generate_evaluator(genConfig);
+    const genData: any = await okareo.generate_check(genConfig);
     const { generated_code } = genData;
     
-    const data: any = await okareo.upload_evaluator(
+    const data: any = await okareo.upload_check(
       {
         project_id: genConfig.project_id,
         name: "Question Detector NEW",
         description: genConfig.description,
-        evaluator_code: generated_code,
+        generated_code: generated_code,
         requires_scenario_input: genConfig.requires_scenario_input,
         requires_scenario_result: genConfig.requires_scenario_result,
         output_data_type: "boolean"
@@ -33,6 +33,8 @@ describe('Evaluators', () => {
     console.log("data",JSON.stringify(data));
     expect(data).toBeDefined();
 
+    const delData = await okareo.delete_check(data.id, data.name);
+    expect(delData).toEqual("Check deletion was successful");
   });
 
   it('Upload Evaluator', async () =>  {
@@ -48,7 +50,7 @@ describe('Evaluators', () => {
       requires_scenario_result: false,
       output_data_type: "boolean",
     }
-    const data: any = await okareo.upload_evaluator(
+    const data: any = await okareo.upload_check(
       {
         project_id: genConfig.project_id,
         name: "Question Detector ALT",
@@ -60,13 +62,16 @@ describe('Evaluators', () => {
       }
     );
     expect(data).toBeDefined();
+
+    const delData = await okareo.delete_check(data.id, data.name);
+    expect(delData).toEqual("Check deletion was successful");
   });
 
   it('Get All Evaluators', async () =>  {
     const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL });
     const pData: any[] = await okareo.getProjects();
     const project_id = pData.find(p => p.name === "Global")?.id;
-    const allEvals = await okareo.get_all_evaluators();
+    const allEvals = await okareo.get_all_checks();
     expect(allEvals).toBeDefined();
   });
 
@@ -74,11 +79,11 @@ describe('Evaluators', () => {
     const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL });
     const pData: any[] = await okareo.getProjects();
     const project_id = pData.find(p => p.name === "Global")?.id;
-    const allEvals = await okareo.get_all_evaluators();
+    const allEvals = await okareo.get_all_checks();
     let evalObj;
     if (allEvals.length > 0) {
       const eval_id = allEvals[0].id;
-      evalObj = (eval_id)?await okareo.get_evaluator(eval_id):null;
+      evalObj = (eval_id)?await okareo.get_check(eval_id):null;
     }
     expect(evalObj).toBeDefined();
   });
