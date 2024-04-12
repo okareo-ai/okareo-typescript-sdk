@@ -466,5 +466,28 @@ export class Okareo {
         return this.get_check(evaluator_id);
     }
 
+    async delete_check(evaluator_id: string, evaluator_name: string): Promise<string> {
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { error } = await client.DELETE(`/v0/evaluator/{evaluator_id}`, {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+                path: { evaluator_id: evaluator_id }
+            },
+            body: { name: evaluator_name }
+        });
+        if (error) {
+            throw error;
+        }
+        return "Check deletion was successful";
+    }
+
+
+    async delete_evaluator(evaluator_id: string, evaluator_name: string): Promise<string> {
+        console.warn(CHECK_DEPRECATION_WARNING);
+        return this.delete_check(evaluator_id, evaluator_name);
+    }
+
 
 }
