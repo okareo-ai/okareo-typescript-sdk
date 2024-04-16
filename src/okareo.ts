@@ -4,6 +4,9 @@ import type { paths, components } from "./api/v1/okareo_endpoints";
 import FormData from "form-data";
 import * as fs from "fs";
 
+const CHECK_DEPRECATION_WARNING = "The `evaluator` naming convention is deprecated and will not be supported in a future release. " +
+"Please use `check` in place of `evaluator` when invoking this method.";
+
 export interface OkareoProps {
     api_key: string;
     endpoint?: string;
@@ -311,7 +314,7 @@ export class Okareo {
     }
 
     
-    async generate_evaluator(props: components["schemas"]["EvaluatorSpecRequest"]): Promise<components["schemas"]["EvaluatorGenerateResponse"]> {
+    async generate_check(props: components["schemas"]["EvaluatorSpecRequest"]): Promise<components["schemas"]["EvaluatorGenerateResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.POST("/v0/evaluator_generate", {
@@ -330,7 +333,13 @@ export class Okareo {
     }
 
 
-    async upload_evaluator(props: UploadEvaluatorProps): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
+    async generate_evaluator(props: components["schemas"]["EvaluatorSpecRequest"]): Promise<components["schemas"]["EvaluatorGenerateResponse"]> {
+        console.warn(CHECK_DEPRECATION_WARNING);
+        return this.generate_check(props);
+    }
+
+
+    async upload_check(props: UploadEvaluatorProps): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const eLength = this.endpoint.length;
         const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/evaluator_upload";
@@ -404,7 +413,14 @@ export class Okareo {
             });
     }
 
-    async get_all_evaluators(): Promise<components["schemas"]["EvaluatorBriefResponse"][]> {
+
+    async upload_evaluator(props: UploadEvaluatorProps): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
+        console.warn(CHECK_DEPRECATION_WARNING);
+        return this.upload_check(props);
+    }
+
+
+    async get_all_checks(): Promise<components["schemas"]["EvaluatorBriefResponse"][]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.GET("/v0/evaluators", {
@@ -420,7 +436,14 @@ export class Okareo {
         return data || {};
     }
 
-    async get_evaluator(evaluator_id: string): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
+
+    async get_all_evaluators(): Promise<components["schemas"]["EvaluatorBriefResponse"][]> {
+        console.warn(CHECK_DEPRECATION_WARNING);
+        return this.get_all_checks();
+    }
+
+
+    async get_check(evaluator_id: string): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.GET("/v0/evaluator/{evaluator_id}", {
@@ -435,6 +458,35 @@ export class Okareo {
             throw error;
         }
         return data || {};
+    }
+
+
+    async get_evaluator(evaluator_id: string): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
+        console.warn(CHECK_DEPRECATION_WARNING);
+        return this.get_check(evaluator_id);
+    }
+
+    async delete_check(evaluator_id: string, evaluator_name: string): Promise<string> {
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { error } = await client.DELETE(`/v0/evaluator/{evaluator_id}`, {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+                path: { evaluator_id: evaluator_id }
+            },
+            body: { name: evaluator_name }
+        });
+        if (error) {
+            throw error;
+        }
+        return "Check deletion was successful";
+    }
+
+
+    async delete_evaluator(evaluator_id: string, evaluator_name: string): Promise<string> {
+        console.warn(CHECK_DEPRECATION_WARNING);
+        return this.delete_check(evaluator_id, evaluator_name);
     }
 
 
