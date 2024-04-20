@@ -95,6 +95,7 @@ export function ModelUnderTest(props: ModelUnderTestProps): components["schemas"
     return {
         name: props.name,
         tags: props.tags,
+        project_id: props.project_id,
         models: {
             [type]: model
         },
