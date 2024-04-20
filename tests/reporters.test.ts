@@ -1,7 +1,6 @@
 import { Okareo, components, classification_reporter, generation_reporter, retrieval_reporter } from '../dist';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
-const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
 
 const RETRIEVAL_ID = "d883dd1f-5119-4b86-8b85-b038c6cdb9e0";
 const GENERATION_ID = "af197dd9-8d93-4ae3-9407-d0e19050bd44";
@@ -186,7 +185,7 @@ const TEST_RUN_GENERATION: any = {
 
 describe('Reporters', () => {
     test('Classification Reporter', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+        const okareo = new Okareo({api_key:OKAREO_API_KEY});
         const report = classification_reporter(
             {
                 eval_run:TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"], 
@@ -207,7 +206,7 @@ describe('Reporters', () => {
 
 
     test('Retrieval Reporter', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+        const okareo = new Okareo({api_key:OKAREO_API_KEY});
         const report = retrieval_reporter(
             {
                 eval_run:TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"], 
@@ -249,7 +248,7 @@ describe('Reporters', () => {
 
 
     test('Generation Reporter', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+        const okareo = new Okareo({api_key:OKAREO_API_KEY});
         const report = generation_reporter(
             {
                 eval_run:TEST_RUN_GENERATION as components["schemas"]["TestRunItem"], 

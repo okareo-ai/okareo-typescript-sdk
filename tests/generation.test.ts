@@ -3,7 +3,6 @@ import { RunTestProps } from '../dist';
 import { DatapointSearch, ModelUnderTest, OpenAIModel } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
-const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
 const TEST_SEED_DATA = [
   {
@@ -30,7 +29,7 @@ const TEST_SEED_DATA = [
 
 describe('Evaluations', () => {
     test('E2E Generation Evaluation', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+        const okareo = new Okareo({api_key:OKAREO_API_KEY});
         const random_string = (Math.random() + 1).toString(36).substring(7);
         const pData: any[] = await okareo.getProjects();
         const project_id = pData.find(p => p.name === "Global")?.id;

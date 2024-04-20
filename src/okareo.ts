@@ -45,6 +45,15 @@ export interface RunTestProps {
     checks?: string[];
 }
 
+export interface CreateProjectProps {
+    name: string;
+    tags?: string[];
+}
+
+export interface UpdateProjectProps extends CreateProjectProps {
+    project_id: string;
+}
+
 export class Okareo {
     api_key: string = '';
     endpoint: string = '';
@@ -54,7 +63,8 @@ export class Okareo {
 
     constructor(props: OkareoProps) {
         if (!props.api_key || props.api_key.length === 0) { throw new Error("API Key is required"); }
-        const { api_key, endpoint = "https://api.okareo.com/" /*, project_id */ } = props;
+        const base_endpoint = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
+        const { api_key, endpoint = base_endpoint /*, project_id */ } = props;
         this.api_key = api_key;
         this.endpoint = endpoint;
         //this.project_id = project_id;
@@ -69,6 +79,50 @@ export class Okareo {
                     "api-key": this.api_key
                 }
             }
+        });
+        if (error) {
+            throw error;
+        }
+        return data || [];
+    }
+
+    async updateProject(props: UpdateProjectProps): Promise<components["schemas"]["ProjectResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { project_id, name, tags = [] } = props
+        const body: any = {
+            name: name,
+            tags: tags
+        };
+        const { data, error } = await client.PUT("/v0/projects/{project_id}", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+                path: { project_id: project_id }
+            },
+            body: body
+        });
+        if (error) {
+            throw error;
+        }
+        return data || [];
+    }
+
+    async createProject(props: CreateProjectProps): Promise<components["schemas"]["ProjectResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { name, tags = [] } = props
+        const body: any = {
+            name, tags
+        }
+        const { data, error } = await client.POST("/v0/projects", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                }
+            },
+            body: body
         });
         if (error) {
             throw error;

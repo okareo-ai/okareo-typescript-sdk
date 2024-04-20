@@ -1,11 +1,10 @@
 import { Okareo } from '../dist';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
-const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
 
 describe('Upload Scenarios', () => {
     it('Upload Scenario Set', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+        const okareo = new Okareo({api_key:OKAREO_API_KEY});
         const pData: any[] = await okareo.getProjects();
         const project_id = pData.find(p => p.name === "Global")?.id;
         const data: any = await okareo.upload_scenario_set(

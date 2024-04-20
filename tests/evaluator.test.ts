@@ -1,12 +1,11 @@
 import { Okareo } from '../dist';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
-const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
 
 describe('Evaluators', () => {
 
   it('Generate Evaluator', async () =>  {
-    const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL });
+    const okareo = new Okareo({api_key:OKAREO_API_KEY });
     const pData: any[] = await okareo.getProjects();
     const project_id = pData.find(p => p.name === "Global")?.id;
     const genConfig = {
@@ -38,7 +37,7 @@ describe('Evaluators', () => {
   });
 
   it('Upload Evaluator', async () =>  {
-    const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL });
+    const okareo = new Okareo({api_key:OKAREO_API_KEY });
     const pData: any[] = await okareo.getProjects();
     const project_id = pData.find(p => p.name === "Global")?.id;
 
@@ -68,7 +67,7 @@ describe('Evaluators', () => {
   });
 
   it('Get All Evaluators', async () =>  {
-    const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL });
+    const okareo = new Okareo({api_key:OKAREO_API_KEY });
     const pData: any[] = await okareo.getProjects();
     const project_id = pData.find(p => p.name === "Global")?.id;
     const allEvals = await okareo.get_all_checks();
@@ -76,7 +75,7 @@ describe('Evaluators', () => {
   });
 
   it('Get Individual Evaluator', async () =>  {
-    const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL });
+    const okareo = new Okareo({api_key:OKAREO_API_KEY });
     const pData: any[] = await okareo.getProjects();
     const project_id = pData.find(p => p.name === "Global")?.id;
     const allEvals = await okareo.get_all_checks();

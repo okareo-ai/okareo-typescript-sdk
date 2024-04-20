@@ -1,7 +1,7 @@
 import { Okareo, RunTestProps, components, SeedData, TestRunType, ModelUnderTest, CustomModel, TCustomModelResponse } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
-const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
+
 const TEST_SEED_DATA = [
     SeedData({
         input:"Can I connect to my SalesForce?",  
@@ -31,7 +31,7 @@ const TEST_SEED_DATA = [
 
 describe('Evaluations', () => {
     test('Custom Endpoint Evaluation', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+        const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const pData: any[] = await okareo.getProjects();
         const project_id = pData.find(p => p.name === "Global")?.id;
         const sData: any = await okareo.create_scenario_set(

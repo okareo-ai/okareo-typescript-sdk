@@ -2,7 +2,6 @@ import { Okareo, RunTestProps, OpenAIModel, SeedData, ModelUnderTest } from "../
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
-const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
 const TEST_SEED_DATA = [
     SeedData({
         input:"Can I connect to my SalesForce?",  
@@ -33,7 +32,7 @@ const TEST_SEED_DATA = [
 describe('Checks', () => {
 
     test('Create a Check', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+        const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const pData: any[] = await okareo.getProjects();
         const project_id = pData.find(p => p.name === "Global")?.id;
         const random_string = (Math.random() + 1).toString(36).substring(7);

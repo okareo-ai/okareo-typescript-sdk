@@ -1,7 +1,6 @@
 import { Okareo } from '../dist';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
-const OKAREO_BASE_URL = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
 const TEST_SEED_DATA = [
   {
@@ -28,7 +27,7 @@ const TEST_SEED_DATA = [
 
 describe(' Working with Scenarios', () => {
     test('Create New Scenario Seed', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+        const okareo = new Okareo({api_key:OKAREO_API_KEY});
         const pData: any[] = await okareo.getProjects();
         const project_id = pData.find(p => p.name === "Global")?.id;
         const data: any = await okareo.create_scenario_set(
@@ -42,7 +41,7 @@ describe(' Working with Scenarios', () => {
     });
 
     test('Generate Scenario Set From Existing Scenario', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+        const okareo = new Okareo({api_key:OKAREO_API_KEY});
         const pData: any[] = await okareo.getProjects();
         const project_id = pData.find(p => p.name === "Global")?.id;
         const sData: any = await okareo.create_scenario_set(
@@ -66,7 +65,7 @@ describe(' Working with Scenarios', () => {
 
 
       test('Get Scenario Datapoints', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+        const okareo = new Okareo({api_key:OKAREO_API_KEY});
         const pData: any[] = await okareo.getProjects();
         const project_id = pData.find(p => p.name === "Global")?.id;
         const sData: any = await okareo.create_scenario_set(
@@ -86,7 +85,7 @@ describe(' Working with Scenarios', () => {
 
 /*
 it('Upload Scenario Set', async () =>  {
-  const okareo = new Okareo({api_key:OKAREO_API_KEY, endpoint: OKAREO_BASE_URL});
+  const okareo = new Okareo({api_key:OKAREO_API_KEY});
   const pData: any[] = await okareo.getProjects();
   const data: any = await okareo.upload_scenario_set(
     {
