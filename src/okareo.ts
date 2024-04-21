@@ -303,8 +303,8 @@ export class Okareo {
             const seed_data = await this.get_scenario_data_points(scenario_id);
             const results: any = {model_data: {} };
             for (let i = 0; i < seed_data.length; i++) {
-                const { id, input } = seed_data[i];
-                const customResult = this.model_config?.models?.custom.invoke(input);
+                const { id, input, result } = seed_data[i];
+                const customResult = await this.model_config?.models?.custom.invoke(input, result);
                 results.model_data[id] = customResult;
             }
             const body:components["schemas"]["TestRunPayloadV2"] = {

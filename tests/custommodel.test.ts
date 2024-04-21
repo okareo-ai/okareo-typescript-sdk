@@ -48,13 +48,16 @@ describe('Evaluations', () => {
                 tags: ["TS-SDK", "Custom", "Testing"],
                 project_id: project_id,
                 model: CustomModel({
-                    invoke: (input: string) => { 
+                    invoke: async (input: string, result: string) => { 
                         return {
                             actual: "Technical Support",
                             model_response: {
                                 input: input,
                                 method: "hard coded",
-                                context: "TS SDK Test Response",
+                                context: {
+                                    input: input,
+                                    result: result,
+                                },
                             }
                         }
                     }
