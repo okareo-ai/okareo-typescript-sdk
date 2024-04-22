@@ -75,11 +75,20 @@ export const classification_reporter = (props: ClassificationReporterProps): Cla
         }
     }
     let error_count: number = 0;
+    let error_index: number = 0;
     error_matrix.map((row: any) => {
+        let row_index = 0;
         for (const key in row) {
-            const row_errors: number = row[key].reduce((a: number, b: number) => a + b, 0);
+            const row_errors: number = row[key].reduce((a: number, b: number) => {
+                let result: number = a;
+                if (row_index !== error_index) 
+                    result = a + b;
+                row_index++;
+                return result;
+            }, 0);
             error_count += row_errors;
         }
+        error_index++;
     });
     if (error_count > error_max) {
         pass = false;
