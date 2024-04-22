@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 import type { paths, components } from "./api/v1/okareo_endpoints";
 import FormData from "form-data";
 import * as fs from "fs";
+import { TestRunType } from "./okareo_api_client/models";
 
 const CHECK_DEPRECATION_WARNING = "The `evaluator` naming convention is deprecated and will not be supported in a future release. " +
 "Please use `check` in place of `evaluator` when invoking this method.";
@@ -44,6 +45,16 @@ export interface RunTestProps {
     tags?: string[];
     checks?: string[];
 }
+
+interface RunConfigTestProps {
+    project_id: string;
+    model_id: string;
+    scenario_id: string;
+    type: string;
+    tags?: string[];
+    checks?: string[];
+}
+
 
 export interface CreateProjectProps {
     name: string;
@@ -285,7 +296,24 @@ export class Okareo {
             console.log(data.warning);
         }
         return data || {};
-        
+    }
+
+
+    async get_model(mut_id: string ): Promise<components["schemas"]["ModelUnderTestResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { data, error } = await client.GET("/v0/models_under_test/{mut_id}", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+                path: { mut_id: mut_id }
+            }
+        });
+        if (error) {
+            throw error;
+        }
+        return data || {};
     }
 
     async run_test(props: RunTestProps): Promise<components["schemas"]["TestRunItem"]> {
@@ -348,6 +376,44 @@ export class Okareo {
             }
             return data || {};
         }
+    }
+    async run_config_test(props: RunConfigTestProps): Promise<components["schemas"]["TestRunItem"]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const { project_id, model_id, scenario_id, type, tags = [], checks = [] } = props;
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const model: any = await this.get_model(model_id);
+        const modelKeys = Object.getOwnPropertyNames(model?.models);
+        const mType = modelKeys[0];
+        if (mType === "custom") { 
+            throw new Error("Custom Models can't be run from yaml config"); 
+        }
+        
+        const mKey = (mType === "openai" && model?.models)?model?.models[mType]?.api_keys[mType]:"NONE";
+        const body:components["schemas"]["TestRunPayloadV2"] = {
+            project_id,
+            mut_id: model_id,
+            scenario_id: scenario_id,
+            api_keys: {
+                [mType]: mKey
+            },
+            name: "Config Test",
+            type: type,
+            calculate_metrics: true,
+            tags: tags,
+            checks: checks,
+        } as components["schemas"]["TestRunPayloadV2"];
+        const { data, error } = await client.POST("/v0/test_run", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+            },
+            body: body,
+        });
+        if (error) {
+            throw error;
+        }
+        return data || {};
     }
 
     async get_test_run(test_run_id: string): Promise<components["schemas"]["TestRunItem"]> {

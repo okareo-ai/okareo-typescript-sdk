@@ -3,6 +3,7 @@ import { RunTestProps } from '../dist';
 import { ModelUnderTest, OpenAIModel, SeedData, ScenarioType, TestRunType } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const TEST_SEED_DATA = [
     SeedData({
@@ -74,18 +75,21 @@ describe('Evaluations', () => {
     test('E2E Classification Evaluation', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const pData: any[] = await okareo.getProjects();
-        const project_id = pData.find(p => p.name === "Global")?.id;
+        const project_id = pData.find(p => p.name === "Demo")?.id;
+        console.log("OPENAI_API_KEY", OPENAI_API_KEY);
+        console.log("project_id", project_id);
+        
         const sData: any = await okareo.create_scenario_set(
             {
-                name: "TS-SDK SEED Classification Data",
+                name: "Test SEED Small",
                 project_id: project_id,
-                seed_data: TEST_SEED_DATA
+                seed_data: TEST_SEED_DATA,
             }
         );
         
         await okareo.register_model(
             ModelUnderTest({
-                name: "TS-SDK Classification Model",
+                name: "Test Class Model",
                 tags: ["TS-SDK", "Testing"],
                 project_id: project_id,
                 model: OpenAIModel({
@@ -94,18 +98,19 @@ describe('Evaluations', () => {
                     system_prompt_template:CLASSIFICATION_CONTEXT_TEMPLATE,
                     user_prompt_template:USER_PROMPT_TEMPLATE
                 }),
+                update: true
             })
         );
         
         const data: any = await okareo.run_test({
             project_id: project_id,
             scenario_id: sData.scenario_id,
-            name: "TS-SDK Classification",
+            name: "Test Class Eval "+Date.now(),
             calculate_metrics: true,
             type: TestRunType.MULTI_CLASS_CLASSIFICATION,
-        } as RunTestProps
-        );
+        } as RunTestProps);
         
+       
         expect(data).toBeDefined();
     });
 
