@@ -36,6 +36,10 @@ jobs:
           corepack prepare yarn@4.0.1 --activate
           yarn set version 4.0.1
         
+      - name: Install Dependencies
+        run: yarn install
+        
       - name: Run Tests
         run: yarn run test
+
 
