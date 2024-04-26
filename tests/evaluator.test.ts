@@ -17,7 +17,7 @@ describe('Evaluators', () => {
       description: "In Python, write a script that returns True if the input is a question and False otherwise.",
       requires_scenario_input: true,
       requires_scenario_result: false,
-      output_data_type: "boolean",
+      output_data_type: "bool",
     }
     const genData: any = await okareo.generate_check(genConfig);
     const { generated_code } = genData;
@@ -30,7 +30,7 @@ describe('Evaluators', () => {
         generated_code: generated_code,
         requires_scenario_input: genConfig.requires_scenario_input,
         requires_scenario_result: genConfig.requires_scenario_result,
-        output_data_type: "boolean"
+        output_data_type: "bool"
       }
     );
     expect(data).toBeDefined();
@@ -47,7 +47,7 @@ describe('Evaluators', () => {
       description: "The output should be a float which represents the non-whitespace characters in the model output divided by the non-whitespace characters of the scenario input",
       requires_scenario_input: true,
       requires_scenario_result: false,
-      output_data_type: "boolean",
+      output_data_type: "bool",
     }
     const data: any = await okareo.upload_check(
       {
@@ -57,7 +57,7 @@ describe('Evaluators', () => {
         file_path: "./tests/example_eval.py",
         requires_scenario_input: genConfig.requires_scenario_input,
         requires_scenario_result: genConfig.requires_scenario_result,
-        output_data_type: "boolean"
+        output_data_type: "bool"
       }
     );
     expect(data).toBeDefined();
