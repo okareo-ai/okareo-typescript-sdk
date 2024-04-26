@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { Okareo } from '../dist';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";

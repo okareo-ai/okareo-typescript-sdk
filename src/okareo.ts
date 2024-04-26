@@ -1,4 +1,3 @@
-/* eslint-disable */
 import createClient from "openapi-fetch";
 import fetch from 'node-fetch';
 import type { paths, components } from "./api/v1/okareo_endpoints";
