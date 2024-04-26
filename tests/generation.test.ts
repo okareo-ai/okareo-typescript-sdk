@@ -1,6 +1,7 @@
 import { Okareo, TestRunType } from '../dist';
 import { RunTestProps } from '../dist';
 import { ModelUnderTest, OpenAIModel } from "../dist";
+import { getProjectId } from './setup-env';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
@@ -12,9 +13,7 @@ const USER_PROMPT: string = `{input}`;
 
 describe('Evaluations', () => {
   beforeAll(async () => {
-      const okareo = new Okareo({api_key:OKAREO_API_KEY });
-      const pData: any[] = await okareo.getProjects();
-      project_id = pData.find(p => p.name === "Global")?.id;
+    project_id = await getProjectId();
   });
   test('Generation', async () =>  {
       const okareo = new Okareo({api_key:OKAREO_API_KEY});

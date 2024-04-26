@@ -1,4 +1,5 @@
 import { Okareo } from '../dist';
+import { getProjectId } from './setup-env';
 import { RunTestProps } from '../dist';
 import { ModelUnderTest, OpenAIModel, SeedData, TestRunType } from "../dist";
 
@@ -74,9 +75,7 @@ Speak to a human
 
 describe('Evaluations', () => {
     beforeAll(async () => {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY });
-        const pData: any[] = await okareo.getProjects();
-        project_id = pData.find(p => p.name === "Global")?.id;
+        project_id = await getProjectId();
     });
     
     test('Classification', async () =>  {
@@ -85,7 +84,7 @@ describe('Evaluations', () => {
             {
                 name: "CI Small Class Scenario Set",
                 project_id: project_id,
-                seed_data: TEST_SEED_DATA,
+                seed_data: TEST_SEED_DATA
             }
         );
         
@@ -100,7 +99,7 @@ describe('Evaluations', () => {
                     system_prompt_template:CLASSIFICATION_CONTEXT_TEMPLATE,
                     user_prompt_template:USER_PROMPT_TEMPLATE
                 }),
-                update: true
+                update: true,
             })
         );
         

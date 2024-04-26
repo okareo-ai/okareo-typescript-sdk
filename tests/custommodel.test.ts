@@ -1,4 +1,5 @@
-import { Okareo, RunTestProps, components, SeedData, TestRunType, ModelUnderTest, CustomModel, TCustomModelResponse } from "../dist";
+import { Okareo, RunTestProps, components, SeedData, TestRunType, ModelUnderTest, CustomModel } from "../dist";
+import { getProjectId } from './setup-env';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const UNIQUE_BUILD_ID = (process.env["github.run_number"] || `local.${(Math.random() + 1).toString(36).substring(7)}`);
@@ -33,9 +34,7 @@ const TEST_SEED_DATA = [
 
 describe('Evaluations', () => {
     beforeAll(async () => {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY });
-        const pData: any[] = await okareo.getProjects();
-        project_id = pData.find(p => p.name === "Global")?.id;
+        project_id = await getProjectId();
     });
 
     test('Custom Evaluation', async () =>  {
