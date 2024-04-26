@@ -1,3 +1,4 @@
+/* eslint-disable */
 import createClient from "openapi-fetch";
 import fetch from 'node-fetch';
 import type { paths, components } from "./api/v1/okareo_endpoints";
@@ -29,7 +30,7 @@ export interface UploadEvaluatorProps {
     generated_code?: string;
     requires_scenario_input?: boolean;
     requires_scenario_result?: boolean;
-    output_data_type: string; // "boolean" | "integer" | "float";
+    output_data_type: string; // "bool" | "int" | "float";
     update?: boolean;
 }
 
@@ -509,7 +510,7 @@ export class Okareo {
             headers: headers,
             'body':form, // eslint-disable-line quote-props
         };
-        
+
         return fetch(`${api_endpoint}`, reqOptions)
             .then(response => response.json())
             .then((data: any) => {
@@ -528,7 +529,7 @@ export class Okareo {
                 }
             })
             .catch((error) => {
-                console.error(error);
+                console.error("Error uploading check:" + error);
                 throw error;
             });
     }
@@ -563,7 +564,7 @@ export class Okareo {
     }
 
 
-    async get_check(evaluator_id: string): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
+    async get_check(check_id: string): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.GET("/v0/evaluator/{evaluator_id}", {
@@ -571,7 +572,7 @@ export class Okareo {
                 header: {
                     "api-key": this.api_key
                 },
-                path: { evaluator_id: evaluator_id }
+                path: { evaluator_id: check_id }
             }
         });
         if (error) {
@@ -586,28 +587,40 @@ export class Okareo {
         return this.get_check(evaluator_id);
     }
 
-    async delete_check(evaluator_id: string, evaluator_name: string): Promise<string> {
-        const client = createClient<paths>({ baseUrl: this.endpoint });
-        const { error } = await client.DELETE(`/v0/evaluator/{evaluator_id}`, {
-            params: {
-                header: {
-                    "api-key": this.api_key
-                },
-                path: { evaluator_id: evaluator_id }
-            },
-            body: { name: evaluator_name }
-        });
-        if (error) {
-            throw error;
-        }
-        return "Check deletion was successful";
-    }
+    async delete_check(check_id: string, check_name: string): Promise<string> {
+        const eLength = this.endpoint.length;
+        const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/evaluator/"+check_id;
 
+        const form = new FormData();
+        form.append("name", check_name);
+        const headers = Object.assign({
+            'api-key': `${this.api_key}`,
+        }, form.getHeaders());
+
+        const reqOptions = {
+            method: 'DELETE',
+            headers: headers,
+            'body':form, // eslint-disable-line quote-props
+        };
+
+        return fetch(`${api_endpoint}`, reqOptions)
+            .then(response => {
+                if (response.status === 204) {
+                    return "Check deletion was successful";
+                }
+                else {
+                    throw new Error(`Check deletion failed with code ${response.status}`);
+                }
+            })
+            .catch((error) => {
+                console.error("Error deleting check: " + error);
+                throw error;
+            });
+    }
 
     async delete_evaluator(evaluator_id: string, evaluator_name: string): Promise<string> {
         console.warn(CHECK_DEPRECATION_WARNING);
         return this.delete_check(evaluator_id, evaluator_name);
     }
-
 
 }
