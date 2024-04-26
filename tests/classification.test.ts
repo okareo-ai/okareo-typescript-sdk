@@ -1,9 +1,10 @@
 import { Okareo } from '../dist';
 import { RunTestProps } from '../dist';
-import { ModelUnderTest, OpenAIModel, SeedData, ScenarioType, TestRunType } from "../dist";
+import { ModelUnderTest, OpenAIModel, SeedData, TestRunType } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const UNIQUE_BUILD_ID = (process.env["github.run_number"] || `local.${(Math.random() + 1).toString(36).substring(7)}`);
+let project_id: string;
 
 const TEST_SEED_DATA = [
     SeedData({
@@ -72,25 +73,26 @@ Speak to a human
 `;
 
 describe('Evaluations', () => {
-    test('E2E Classification Evaluation', async () =>  {
+    beforeAll(async () => {
         const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const pData: any[] = await okareo.getProjects();
-        const project_id = pData.find(p => p.name === "Demo")?.id;
-        console.log("OPENAI_API_KEY", OPENAI_API_KEY);
-        console.log("project_id", project_id);
-        
+        project_id = pData.find(p => p.name === "Global")?.id;
+    });
+    
+    test('Classification', async () =>  {
+        const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const sData: any = await okareo.create_scenario_set(
             {
-                name: "Test SEED Small",
+                name: "CI Small Class Scenario Set",
                 project_id: project_id,
                 seed_data: TEST_SEED_DATA,
             }
         );
         
-        await okareo.register_model(
+        const model = await okareo.register_model(
             ModelUnderTest({
-                name: "Test Class Model",
-                tags: ["TS-SDK", "Testing"],
+                name: `CI: Classification Model`,
+                tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
                 project_id: project_id,
                 model: OpenAIModel({
                     model_id:"gpt-3.5-turbo",
@@ -103,14 +105,14 @@ describe('Evaluations', () => {
         );
         
         const data: any = await okareo.run_test({
+            name: `CI: Classification Run ${UNIQUE_BUILD_ID}`,
+            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
             project_id: project_id,
             scenario_id: sData.scenario_id,
-            name: "Test Class Eval "+Date.now(),
             calculate_metrics: true,
             type: TestRunType.MULTI_CLASS_CLASSIFICATION,
         } as RunTestProps);
-        
-       
+
         expect(data).toBeDefined();
     });
 
