@@ -1,4 +1,3 @@
-import createClient from "openapi-fetch";
 import fetch from 'node-fetch';
 import type { paths, components } from "./api/v1/okareo_endpoints";
 import FormData from "form-data";
@@ -7,6 +6,9 @@ import { TestRunType } from "./okareo_api_client/models";
 
 const CHECK_DEPRECATION_WARNING = "The `evaluator` naming convention is deprecated and will not be supported in a future release. " +
 "Please use `check` in place of `evaluator` when invoking this method.";
+
+const CHECK_IN_RUN_TEST_WARNING = "The `checks` parameter was passed to `run_test` for an unsupported TestRunType. " +
+"Currently, `checks` are only used when type=TestRunType.NL_GENERATION.";
 
 export interface OkareoProps {
     api_key: string;
@@ -327,6 +329,9 @@ export class Okareo {
     async run_test(props: RunTestProps): Promise<components["schemas"]["TestRunItem"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         if (!this.model) { throw new Error("A registered model is required"); }
+        if (props.type !== TestRunType.NL_GENERATION && props.checks && props.checks.length > 0) {
+            console.warn(CHECK_IN_RUN_TEST_WARNING);
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const modelKeys = Object.getOwnPropertyNames(this.model_config?.models)
         const mType = modelKeys[0];
