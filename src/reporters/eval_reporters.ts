@@ -1,32 +1,6 @@
 import { error } from "console";
 import type { paths, components } from "../api/v1/okareo_endpoints";
 
-/*
-    model_metrics {
-      weighted_average: {
-        precision: 0.7083333333333334,
-        recall: 0.8333333333333334,
-        f1: 0.7619047619047619,
-        accuracy: 0.8333333333333334
-      },
-      scores_by_label: {
-        'Account Management': { precision: 0, recall: 0, f1: 0 },
-        'Technical Support': { precision: 0.75, recall: 1, f1: 0.8571428571428571 },
-        'General Inquiry': { precision: 1, recall: 1, f1: 1 },
-        Billing: { precision: 1, recall: 1, f1: 1 }
-      }
-    }
-
-      at log (src/reporters/eval_reporters.ts:13:13)
-
-  console.log
-    error_matrix [
-      { 'Account Management': [ 0, 0, 0, 1 ] },
-      { Billing: [ 0, 1, 0, 0 ] },
-      { 'General Inquiry': [ 0, 0, 1, 0 ] },
-      { 'Technical Support': [ 0, 0, 0, 3 ] }
-    ]
-*/
 /**
  * Properties to call the classification_reporter function
  */

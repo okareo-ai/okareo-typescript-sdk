@@ -1,75 +1,62 @@
-import { Okareo } from '../dist';
+import { Okareo, TestRunType } from '../dist';
 import { RunTestProps } from '../dist';
-import { DatapointSearch, ModelUnderTest, OpenAIModel } from "../dist";
+import { ModelUnderTest, OpenAIModel } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
-const TEST_SEED_DATA = [
-  {
-    "input": "The quick brown fox jumps over the lazy dog",
-    "result": "dogs are lazy"
-  },
-  {
-    "input": "The quiet mouse ran under the lazy cat",
-    "result": "cats are lazy"
-  },
-  {
-    "input": "The barking dog chased the bird.",
-    "result": "birds are fast"
-  },
-  {
-    "input": "The patient cat lost the bird.",
-    "result": "birds are fast"
-  },
-  {
-    "input": "The turtle sat and was wonderfully warmed by the sun.",
-    "result": "reptiles like the sun"
-  }
-];
+const UNIQUE_BUILD_ID = (process.env["github.run_number"] || `local.${(Math.random() + 1).toString(36).substring(7)}`);
+let project_id: string;
+
+const SYSTEM_PROMPT: string = `You will get some a long passage of text.  As an expert at distilling information to the most basic results, provide a short one sentence summary of the provided material.`;
+const USER_PROMPT: string = `{input}`;
 
 describe('Evaluations', () => {
-    test('E2E Generation Evaluation', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY});
-        const random_string = (Math.random() + 1).toString(36).substring(7);
-        const pData: any[] = await okareo.getProjects();
-        const project_id = pData.find(p => p.name === "Global")?.id;
-        const sData: any = await okareo.create_scenario_set({
-          name: `TS-SDK SEED Data ${random_string}`,
+  beforeAll(async () => {
+      const okareo = new Okareo({api_key:OKAREO_API_KEY });
+      const pData: any[] = await okareo.getProjects();
+      project_id = pData.find(p => p.name === "Global")?.id;
+  });
+  test('Generation', async () =>  {
+      const okareo = new Okareo({api_key:OKAREO_API_KEY});
+      const upload_scenario: any = await okareo.upload_scenario_set(
+        {
+          scenario_name: `CI: Upload WebBizz Scenario`,
+          file_path: "./tests/generation_scenario.jsonl",
           project_id: project_id,
-          seed_data: TEST_SEED_DATA
-        });
-        const rephraseData = await okareo.generate_scenario_set({
-          name: `TS-SDK generated Data ${random_string}`,
-          source_scenario_id: sData.scenario_id,
-          generation_type: "REPHRASE_INVARIANT",
-          number_examples: 2,
+        }
+      );
+      
+      const model = await okareo.register_model(
+        ModelUnderTest({
+          name: `CI: Generation ${UNIQUE_BUILD_ID}`,
+          tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
           project_id: project_id,
-        });
-        await okareo.register_model(
-          ModelUnderTest({
-              name: `TS-SDK Eval Model v2 ${random_string}`,
-              tags: ["TS-SDK", "Testing"],
-              project_id: project_id,
-              model: OpenAIModel({
-              api_key: OPENAI_API_KEY,
-              model_id:"gpt-3.5-turbo",
-              temperature:0.5,
-              system_prompt_template:"Since this is a test, always answer in a testy, snarky way. Be creatitve and have fun!",
-              user_prompt_template:"How often have you been tested and found wanting?"
-              }),
+          model: OpenAIModel({
+            api_key: OPENAI_API_KEY,
+            model_id:"gpt-3.5-turbo",
+            temperature:0.5,
+            system_prompt_template:SYSTEM_PROMPT,
+            user_prompt_template:USER_PROMPT
           })
-        );
-        const data: any = await okareo.run_test({
-              project_id: project_id,
-              scenario_id: rephraseData.scenario_id,
-              name: "TS-SDK Evaluation",
-              calculate_metrics: true,
-              type: "NL_GENERATION",
-              checks: ["866c14bc-5201-4440-9444-456168de63bb"],
-          } as RunTestProps
-        );
-        expect(data).toBeDefined();
-    });
+        })
+      );
+        
+      const data: any = await okareo.run_test({
+        name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
+        tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+        project_id: project_id,
+        scenario: upload_scenario,
+        calculate_metrics: true,
+        type: TestRunType.NL_GENERATION,
+        checks: [
+          "consistency_summary",
+          "relevance_summary"
+        ],
+      } as RunTestProps);
+      
+      expect(data).toBeDefined();
+
+  });
 
 });
 

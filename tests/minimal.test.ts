@@ -1,43 +1,61 @@
-import { Okareo } from '../dist';
+import { Okareo, TestRunType } from '../dist';
+import { ModelUnderTest, OpenAIModel } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
+const UNIQUE_BUILD_ID = (process.env["github.run_number"] || `local.${(Math.random() + 1).toString(36).substring(7)}`);
+let project_id: string;
 
-describe('Minimal Runner', () => {
-    test('Config Classification', async () =>  {
+const TEST_SEED_DATA = [
+    {
+      "input": "The quick brown fox jumps over the lazy dog",
+      "result": "Dogs are lazy"
+    },
+];
+
+describe('Evaluations', () => {
+    beforeAll(async () => {
         const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const pData: any[] = await okareo.getProjects();
-        const project_id = pData.find(p => p.name === "Global")?.id;
-        const scenario_id: string = "733ab11a-cee5-49e4-b0f6-c2386752c9ac";
-        const model_id: string = "1c2298d8-0223-4b0a-bc88-1c67a4807b4f";
+        project_id = pData.find(p => p.name === "Global")?.id;
+    });
+    test('Minimal Config Test Run', async () =>  {
+        const okareo = new Okareo({api_key:OKAREO_API_KEY });
+        
+        const scenario: any = await okareo.create_scenario_set({
+            name: "Minimal Scenario Set",
+            project_id: project_id,
+            seed_data: TEST_SEED_DATA
+        });
+      
+        const model = await okareo.register_model(
+          ModelUnderTest({
+            name: `CI: Generation ${UNIQUE_BUILD_ID}`,
+            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+            project_id: project_id,
+            model: OpenAIModel({
+              api_key: OPENAI_API_KEY,
+              model_id:"gpt-3.5-turbo",
+              temperature:0.5,
+              system_prompt_template:"Summarize the input to onely three words.",
+              user_prompt_template:"{input}"
+            })
+          })
+        );
+
+        const scenario_id: string = scenario.scenario_id;
+        const model_id: string = model.id;
         const results: any = await okareo.run_config_test({
+            name: `CI: Minimal Test Run ${UNIQUE_BUILD_ID}`,
+            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
             project_id,
             scenario_id, 
             model_id,
-            type: "MULTI_CLASS_CLASSIFICATION",
+            type: TestRunType.MULTI_CLASS_CLASSIFICATION,
         });
-        console.log(JSON.stringify(results, null, 2));
+        
         expect(results).toBeDefined();
     });
-    test('Config Generation Checks', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY });
-        const pData: any[] = await okareo.getProjects();
-        const project_id = pData.find(p => p.name === "Global")?.id;
-        const scenario_id: string = "7cf8e6df-6023-47ed-b2eb-8d1ff8ed1c2f";
-        const model_id: string = "a664de82-d9fe-482b-815f-8b007edb70d6";
-        const results: any = await okareo.run_config_test({
-            project_id,
-            scenario_id, 
-            model_id,
-            type: "NL_GENERATION",
-            checks: [
-                "uniqueness",
-                "fluency"
-            ]
-        });
-        expect(results).toBeDefined();
-    });
-    //
-
-
+    
 });
 

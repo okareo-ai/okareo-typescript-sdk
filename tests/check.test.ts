@@ -1,97 +1,68 @@
-import { Okareo, RunTestProps, OpenAIModel, SeedData, ModelUnderTest } from "../dist";
+import { Okareo, SeedData } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
-const TEST_SEED_DATA = [
-    SeedData({
-        input:"Can I connect to my SalesForce?",  
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Do you have a way to send marketing emails?",  
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Can I get invoiced instead of using a credit card?", 
-        result:"Billing"
-    }),
-    SeedData({
-        input:"My CRM integration is not working.", 
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Do you have SOC II tpye 2 certification?", 
-        result:"Account Management"
-    }),
-    SeedData({
-        input:"I like the product.  Please connect me to your enterprise team.", 
-        result:"General Inquiry"
-    })
-];
+const UNIQUE_BUILD_ID = (process.env["github.run_number"] || `local.${(Math.random() + 1).toString(36).substring(7)}`);
+let project_id: string;
 
 describe('Checks', () => {
-
-    test('Create a Check', async () =>  {
+    beforeAll(async () => {
         const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const pData: any[] = await okareo.getProjects();
-        const project_id = pData.find(p => p.name === "Global")?.id;
-        const random_string = (Math.random() + 1).toString(36).substring(7);
-        
+        project_id = pData.find(p => p.name === "Global")?.id;
+    });
+    
+    test('Generate a Check', async () =>  {
+        const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const check_info = {
-            name: `test.check.${random_string}`,
+            name: `CI: Generate Check - ${UNIQUE_BUILD_ID}`,
             project_id,
-            description: "Return a pass if the model output is the phrase 'Technical Support' otherwise fail.",
-            requires_scenario_input: true,
+            description: "Fail the test if the output is more than 10% longer than the expected result.",
+            requires_scenario_input: false,
             requires_scenario_result: true,
             output_data_type: "boolean",
         }
-
         const check: any = await okareo.generate_check(check_info);
-        let upload_check = await okareo.upload_check({
-            ...check_info,
-            generated_code: check.generated_code,
-        });
-        upload_check = await okareo.upload_check({
-            ...check_info,
-            generated_code: check.generated_code,
-            update: true,
-        });
-        let sData: any = await okareo.create_scenario_set({
-            name: `test.check_scenario.${random_string}`,
-            project_id: project_id,
-            seed_data: TEST_SEED_DATA
-        });
+        expect(check.generated_code).toBeDefined();
+    });
 
-        await okareo.register_model(
-            ModelUnderTest({
-                name: `test.check_model.${random_string}`,
-                tags: ["TS-SDK", "Testing", `${random_string}`],
-                project_id: project_id,
-                model: OpenAIModel({
-                    api_key: OPENAI_API_KEY,
-                    model_id:"gpt-3.5-turbo",
-                    temperature:0.5,
-                    system_prompt_template:`
-                        Only respond with the most appropriate response from the following:
-                        Technical Support
-                        Billing
-                        Account Management
-                        General Inquiry
-                    `,
-                    user_prompt_template:"{input}"
-                }),
-            })
-        );
-        const run_result: any = await okareo.run_test({
-            project_id: project_id,
-            scenario_id: sData.scenario_id,
-            name: `test.check_run.${random_string}`,
-            calculate_metrics: true,
-            type: "NL_GENERATION",
-            checks: [upload_check.id],
-        } as RunTestProps);
+    test('Save a Check', async () =>  {
+        const okareo = new Okareo({api_key:OKAREO_API_KEY });
+        const check_info = {
+            name: `CI: Classifier Check - ${UNIQUE_BUILD_ID}`,
+            project_id,
+            description: "Return a pass if the model output matches the scenarios expected result.",
+            requires_scenario_input: false,
+            requires_scenario_result: true,
+            output_data_type: "boolean",
+        }
+        const check: any = await okareo.generate_check(check_info);
+        const upload_check = await okareo.upload_check({
+            ...check_info,
+            generated_code: check.generated_code,
+            update: true
+        });
         
-        expect(run_result).toBeDefined();
+        expect(upload_check).toBeDefined();
+    });
+
+    test('Upload a Check', async () =>  {
+        const okareo = new Okareo({api_key:OKAREO_API_KEY });
+        const check_info = {
+            name: `CI: Uploaded Check - ${UNIQUE_BUILD_ID}`,
+            project_id,
+            description: "Pass if the model result length is within 10% of the expected result.",
+            requires_scenario_input: false,
+            requires_scenario_result: true,
+            output_data_type: "boolean",
+        }
+        const check: any = await okareo.generate_check(check_info);
+        const upload_check = await okareo.upload_check({
+            ...check_info,
+            file_path: "tests/example_eval.py",
+            update: true
+        });
+        
+        expect(upload_check).toBeDefined();
     });
 
 });

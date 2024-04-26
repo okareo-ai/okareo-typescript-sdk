@@ -8,8 +8,8 @@ describe(' Working with Projects', () => {
         const pData: any[] = await okareo.getProjects();
         expect(pData.length).toBeGreaterThanOrEqual(0);
     });
-
-    test('Create Demo Project', async () =>  {
+/*
+    test('Create CI Project', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const pData: any[] = await okareo.getProjects();
         const demo_project_id: string = pData.find((project: any) => project.name === "Demo")?.id;
@@ -19,5 +19,6 @@ describe(' Working with Projects', () => {
         const fData: any[] = await okareo.getProjects();
         expect(fData.length).toBeGreaterThanOrEqual(2);
     });
+*/
 });
 

@@ -1,6 +1,8 @@
 import { Okareo, RunTestProps, components, SeedData, TestRunType, ModelUnderTest, CustomModel, TCustomModelResponse } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
+const UNIQUE_BUILD_ID = (process.env["github.run_number"] || `local.${(Math.random() + 1).toString(36).substring(7)}`);
+let project_id: string;
 
 const TEST_SEED_DATA = [
     SeedData({
@@ -30,22 +32,24 @@ const TEST_SEED_DATA = [
 ];
 
 describe('Evaluations', () => {
-    test('Custom Endpoint Evaluation', async () =>  {
+    beforeAll(async () => {
         const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const pData: any[] = await okareo.getProjects();
-        const project_id = pData.find(p => p.name === "Global")?.id;
-        const sData: any = await okareo.create_scenario_set(
-            {
-            name: "TS-SDK Testing Scenario Set",
+        project_id = pData.find(p => p.name === "Global")?.id;
+    });
+
+    test('Custom Evaluation', async () =>  {
+        const okareo = new Okareo({api_key:OKAREO_API_KEY });
+        const sData: any = await okareo.create_scenario_set({
+            name: "CI Custom Model Test Data",
             project_id: project_id,
             seed_data: TEST_SEED_DATA
-            }
-        );
+        });
         
         await okareo.register_model(
             ModelUnderTest({
-                name: "TS-SDK Custom Model",
-                tags: ["TS-SDK", "Custom", "Testing"],
+                name: "CI Custom Model",
+                tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
                 project_id: project_id,
                 model: CustomModel({
                     invoke: async (input: string, result: string) => { 
@@ -66,14 +70,13 @@ describe('Evaluations', () => {
         );
         
         const data: any = await okareo.run_test({
-                project_id: project_id,
-                //scenario_id: sData.scenario_id,
-                scenario: sData,
-                name: "TS-SDK Custom Run",
-                calculate_metrics: true,
-                type: TestRunType.MULTI_CLASS_CLASSIFICATION,
-            } as RunTestProps
-        );
+            name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
+            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+            project_id: project_id,
+            scenario: sData,
+            calculate_metrics: true,
+            type: TestRunType.MULTI_CLASS_CLASSIFICATION,
+        } as RunTestProps);
         
         expect(data).toBeDefined();
     });

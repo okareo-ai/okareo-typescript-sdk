@@ -16,7 +16,8 @@ export interface OkareoProps {
 
 export interface UploadScenarioSetProps {
     project_id: string;
-    scenario_name: string;
+    scenario_name?: string;
+    name?: string;
     file_path: string;
 }
 
@@ -47,11 +48,12 @@ export interface RunTestProps {
 }
 
 interface RunConfigTestProps {
+    name: string;
+    tags?: string[];
     project_id: string;
     model_id: string;
     scenario_id: string;
     type: string;
-    tags?: string[];
     checks?: string[];
 }
 
@@ -233,12 +235,18 @@ export class Okareo {
         if (!file)
             throw new Error("File read error");
 
+        if (props.scenario_name && props.scenario_name.length > 0) { 
+            console.log("Warning: deprecated property.  Please use 'name' instead."); 
+            props.name = props.scenario_name;
+        }
+        const { name = props.scenario_name } = props;
+
         const body: any = {
             project_id: props.project_id,
-            name: props.scenario_name
+            name: name
         };
         const form = new FormData();
-        form.append("name", props.scenario_name);
+        form.append("name", name);
         form.append("project_id", props.project_id);
         form.append(
             'file', file
@@ -322,10 +330,10 @@ export class Okareo {
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const modelKeys = Object.getOwnPropertyNames(this.model_config?.models)
         const mType = modelKeys[0];
+        if (!props.scenario_id && props.scenario) {
+            props.scenario_id = props.scenario.scenario_id;
+        }
         if (mType === "custom") {
-            if (!props.scenario_id && props.scenario) {
-                props.scenario_id = props.scenario.scenario_id;
-            }
             let { scenario_id = "NONE" } = props;
             delete props.scenario;
             const seed_data = await this.get_scenario_data_points(scenario_id);
@@ -379,7 +387,7 @@ export class Okareo {
     }
     async run_config_test(props: RunConfigTestProps): Promise<components["schemas"]["TestRunItem"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
-        const { project_id, model_id, scenario_id, type, tags = [], checks = [] } = props;
+        const { project_id, model_id, scenario_id, type, tags = [], checks = [], name } = props;
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const model: any = await this.get_model(model_id);
         const modelKeys = Object.getOwnPropertyNames(model?.models);
@@ -396,7 +404,7 @@ export class Okareo {
             api_keys: {
                 [mType]: mKey
             },
-            name: "Config Test",
+            name: name,
             type: type,
             calculate_metrics: true,
             tags: tags,
@@ -474,8 +482,6 @@ export class Okareo {
             fs.writeFileSync(tmpFileName, generated_code);
             props.file_path = tmpFileName;
         }
-
-        console.log(props);
         const file_path: string = props.file_path as string; // file_path is rewritten as needed
         if (!fs.existsSync(file_path))
             throw new Error("File not found");
