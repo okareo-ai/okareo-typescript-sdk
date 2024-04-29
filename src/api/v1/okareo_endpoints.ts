@@ -265,29 +265,70 @@ export interface paths {
      */
     post: operations["find_test_data_points_v0_find_test_data_points_post"];
   };
-  "/v0/evaluator_generate": {
+  "/v0/check_generate": {
     /**
-     * Evaluator Generate
+     * Check Generate
      * @description Generate code for an evaluator for testing.
      * Returns:
      *     the evaluator object with the generated code
      */
-    post: operations["evaluator_generate_v0_evaluator_generate_post"];
+    post: operations["check_generate_v0_check_generate_post"];
+  };
+  "/v0/evaluator_generate": {
+    /**
+     * Check Generate
+     * @description Generate code for an evaluator for testing.
+     * Returns:
+     *     the evaluator object with the generated code
+     */
+    post: operations["check_generate_v0_evaluator_generate_post"];
+  };
+  "/v0/check_upload": {
+    /**
+     * Check Upload
+     * @description Upload a new check
+     *
+     * Returns:
+     *     the check object with its ID
+     */
+    post: operations["check_upload_v0_check_upload_post"];
   };
   "/v0/evaluator_upload": {
     /**
-     * Evaluator Upload
-     * @description Upload a new evaluator
+     * Check Upload
+     * @description Upload a new check
      *
      * Returns:
-     *     the evaluator object with its ID
+     *     the check object with its ID
      */
-    post: operations["evaluator_upload_v0_evaluator_upload_post"];
+    post: operations["check_upload_v0_evaluator_upload_post"];
+  };
+  "/v0/check/{check_id}": {
+    /**
+     * Get Check
+     * @description Get a check
+     *
+     * Raises:
+     *     HTTPException: 404 if check_id is not found
+     *
+     * Returns: the check
+     */
+    get: operations["get_check_v0_check__check_id__get"];
+    /**
+     * Check Delete
+     * @description Deletes a check
+     *
+     * Raises:
+     *     HTTPException: 404 if check_id is not found
+     *
+     * Returns: 204 status code on successful deletion
+     */
+    delete: operations["check_delete_v0_check__check_id__delete"];
   };
   "/v0/evaluator/{evaluator_id}": {
     /**
      * Get Evaluator
-     * @description Get an evaluator
+     * @description Get an evaluator. Note: This is a wrapper for /check/{check_id}, which uses the proper naming convention.
      *
      * Raises:
      *     HTTPException: 404 if evaluator_id is not found
@@ -297,7 +338,7 @@ export interface paths {
     get: operations["get_evaluator_v0_evaluator__evaluator_id__get"];
     /**
      * Evaluator Delete
-     * @description Deletes an evaluator
+     * @description Deletes an evaluator. Note: This is a wrapper for /check/{check_id}, which uses the proper naming convention.
      *
      * Raises:
      *     HTTPException: 404 if evaluator_id is not found
@@ -306,15 +347,25 @@ export interface paths {
      */
     delete: operations["evaluator_delete_v0_evaluator__evaluator_id__delete"];
   };
-  "/v0/evaluators": {
+  "/v0/checks": {
     /**
-     * Get All Evaluators
-     * @description Get a list of evaluators for this organization
+     * Get All Checks
+     * @description Get a list of checks for this organization
      *
      * Returns:
-     *     a list of requested evaluators
+     *     a list of requested checks
      */
-    get: operations["get_all_evaluators_v0_evaluators_get"];
+    get: operations["get_all_checks_v0_checks_get"];
+  };
+  "/v0/evaluators": {
+    /**
+     * Get All Checks
+     * @description Get a list of checks for this organization
+     *
+     * Returns:
+     *     a list of requested checks
+     */
+    get: operations["get_all_checks_v0_evaluators_get"];
   };
 }
 
@@ -322,40 +373,40 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    /** Body_evaluator_delete_v0_evaluator__evaluator_id__delete */
-    Body_evaluator_delete_v0_evaluator__evaluator_id__delete: {
+    /** Body_check_delete_v0_check__check_id__delete */
+    Body_check_delete_v0_check__check_id__delete: {
       /**
        * Name
-       * @description Name of the Evaluator to delete
+       * @description Name of the Check to delete
        */
       name: string;
     };
-    /** Body_evaluator_upload_v0_evaluator_upload_post */
-    Body_evaluator_upload_v0_evaluator_upload_post: {
+    /** Body_check_upload_v0_check_upload_post */
+    Body_check_upload_v0_check_upload_post: {
       /**
        * Name
-       * @description Name of the Evaluator
+       * @description Name of the Check
        */
       name: string;
       /**
        * Description
-       * @description Description of the Evaluator
-       * @default
+       * @description Description of the Check
+       * @default No description provided
        */
       description?: string;
       /**
        * Requires Scenario Input
-       * @description Whether the evaluator requires scenario input
+       * @description Whether the check requires scenario input
        */
       requires_scenario_input: boolean;
       /**
        * Requires Scenario Result
-       * @description Whether the evaluator requires scenario expected result
+       * @description Whether the check requires scenario expected result
        */
       requires_scenario_result: boolean;
       /**
        * Output Data Type
-       * @description Evaluator output data type (i.e., bool, int, float)
+       * @description Check output data type (i.e., bool, int, float)
        */
       output_data_type?: string;
       /**
@@ -371,10 +422,64 @@ export interface components {
       file?: string;
       /**
        * Update
-       * @description Update the evaluator
+       * @description Update the check
        * @default false
        */
       update?: boolean;
+    };
+    /** Body_check_upload_v0_evaluator_upload_post */
+    Body_check_upload_v0_evaluator_upload_post: {
+      /**
+       * Name
+       * @description Name of the Check
+       */
+      name: string;
+      /**
+       * Description
+       * @description Description of the Check
+       * @default No description provided
+       */
+      description?: string;
+      /**
+       * Requires Scenario Input
+       * @description Whether the check requires scenario input
+       */
+      requires_scenario_input: boolean;
+      /**
+       * Requires Scenario Result
+       * @description Whether the check requires scenario expected result
+       */
+      requires_scenario_result: boolean;
+      /**
+       * Output Data Type
+       * @description Check output data type (i.e., bool, int, float)
+       */
+      output_data_type?: string;
+      /**
+       * Project Id
+       * Format: uuid
+       * @description ID for the project
+       */
+      project_id?: string;
+      /**
+       * File
+       * Format: binary
+       */
+      file?: string;
+      /**
+       * Update
+       * @description Update the check
+       * @default false
+       */
+      update?: boolean;
+    };
+    /** Body_evaluator_delete_v0_evaluator__evaluator_id__delete */
+    Body_evaluator_delete_v0_evaluator__evaluator_id__delete: {
+      /**
+       * Name
+       * @description Name of the Evaluator to delete
+       */
+      name: string;
     };
     /** Body_scenario_sets_upload_v0_scenario_sets_upload_post */
     Body_scenario_sets_upload_v0_scenario_sets_upload_post: {
@@ -624,8 +729,16 @@ export interface components {
       id?: string;
       /** Name */
       name?: string;
-      /** Description */
+      /**
+       * Description
+       * @default
+       */
       description?: string;
+      /**
+       * Output Data Type
+       * @default
+       */
+      output_data_type?: string;
       /**
        * Time Created
        * Format: date-time
@@ -646,15 +759,24 @@ export interface components {
       project_id?: string;
       /** Name */
       name?: string;
-      /** Description */
+      /**
+       * Description
+       * @default
+       */
       description?: string;
       /** Requires Scenario Input */
       requires_scenario_input?: boolean;
       /** Requires Scenario Result */
       requires_scenario_result?: boolean;
-      /** Output Data Type */
+      /**
+       * Output Data Type
+       * @default
+       */
       output_data_type?: string;
-      /** Code Contents */
+      /**
+       * Code Contents
+       * @default
+       */
       code_contents?: string;
       /**
        * Time Created
@@ -805,6 +927,10 @@ export interface components {
       project_id: string;
       /** Name */
       name: string;
+      /** Models */
+      models?: {
+        [key: string]: Record<string, never>;
+      };
       /** Tags */
       tags: string[];
       /** Time Created */
@@ -1307,12 +1433,6 @@ export interface components {
        * @description ID of the scenario set
        */
       scenario_id: string;
-      /**
-       * Project Id
-       * Format: uuid
-       * @description ID of the project
-       */
-      project_id?: string;
       /** Model Results */
       model_results?: Record<string, never>;
       /**
@@ -2565,12 +2685,12 @@ export interface operations {
     };
   };
   /**
-   * Evaluator Generate
+   * Check Generate
    * @description Generate code for an evaluator for testing.
    * Returns:
    *     the evaluator object with the generated code
    */
-  evaluator_generate_v0_evaluator_generate_post: {
+  check_generate_v0_check_generate_post: {
     parameters: {
       header: {
         "api-key": string;
@@ -2609,13 +2729,12 @@ export interface operations {
     };
   };
   /**
-   * Evaluator Upload
-   * @description Upload a new evaluator
-   *
+   * Check Generate
+   * @description Generate code for an evaluator for testing.
    * Returns:
-   *     the evaluator object with its ID
+   *     the evaluator object with the generated code
    */
-  evaluator_upload_v0_evaluator_upload_post: {
+  check_generate_v0_evaluator_generate_post: {
     parameters: {
       header: {
         "api-key": string;
@@ -2623,7 +2742,52 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "multipart/form-data": components["schemas"]["Body_evaluator_upload_v0_evaluator_upload_post"];
+        "application/json": components["schemas"]["EvaluatorSpecRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["EvaluatorGenerateResponse"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Check Upload
+   * @description Upload a new check
+   *
+   * Returns:
+   *     the check object with its ID
+   */
+  check_upload_v0_check_upload_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["Body_check_upload_v0_check_upload_post"];
       };
     };
     responses: {
@@ -2654,21 +2818,66 @@ export interface operations {
     };
   };
   /**
-   * Get Evaluator
-   * @description Get an evaluator
+   * Check Upload
+   * @description Upload a new check
+   *
+   * Returns:
+   *     the check object with its ID
+   */
+  check_upload_v0_evaluator_upload_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["Body_check_upload_v0_evaluator_upload_post"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["EvaluatorDetailedResponse"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Check
+   * @description Get a check
    *
    * Raises:
-   *     HTTPException: 404 if evaluator_id is not found
+   *     HTTPException: 404 if check_id is not found
    *
-   * Returns: the evaluator
+   * Returns: the check
    */
-  get_evaluator_v0_evaluator__evaluator_id__get: {
+  get_check_v0_check__check_id__get: {
     parameters: {
       header: {
         "api-key": string;
       };
       path: {
-        evaluator_id: string;
+        check_id: string;
       };
     };
     responses: {
@@ -2699,8 +2908,101 @@ export interface operations {
     };
   };
   /**
+   * Check Delete
+   * @description Deletes a check
+   *
+   * Raises:
+   *     HTTPException: 404 if check_id is not found
+   *
+   * Returns: 204 status code on successful deletion
+   */
+  check_delete_v0_check__check_id__delete: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        check_id: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/x-www-form-urlencoded": components["schemas"]["Body_check_delete_v0_check__check_id__delete"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      204: {
+        content: never;
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Evaluator
+   * @description Get an evaluator. Note: This is a wrapper for /check/{check_id}, which uses the proper naming convention.
+   *
+   * Raises:
+   *     HTTPException: 404 if evaluator_id is not found
+   *
+   * Returns: the evaluator
+   */
+  get_evaluator_v0_evaluator__evaluator_id__get: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        evaluator_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
    * Evaluator Delete
-   * @description Deletes an evaluator
+   * @description Deletes an evaluator. Note: This is a wrapper for /check/{check_id}, which uses the proper naming convention.
    *
    * Raises:
    *     HTTPException: 404 if evaluator_id is not found
@@ -2747,13 +3049,53 @@ export interface operations {
     };
   };
   /**
-   * Get All Evaluators
-   * @description Get a list of evaluators for this organization
+   * Get All Checks
+   * @description Get a list of checks for this organization
    *
    * Returns:
-   *     a list of requested evaluators
+   *     a list of requested checks
    */
-  get_all_evaluators_v0_evaluators_get: {
+  get_all_checks_v0_checks_get: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["EvaluatorBriefResponse"][];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get All Checks
+   * @description Get a list of checks for this organization
+   *
+   * Returns:
+   *     a list of requested checks
+   */
+  get_all_checks_v0_evaluators_get: {
     parameters: {
       header: {
         "api-key": string;

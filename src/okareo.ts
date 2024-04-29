@@ -1,3 +1,4 @@
+/* eslint-disable */
 import createClient from 'openapi-fetch';
 import fetch from 'node-fetch';
 import type { paths, components } from "./api/v1/okareo_endpoints";
@@ -451,7 +452,7 @@ export class Okareo {
     async generate_check(props: components["schemas"]["EvaluatorSpecRequest"]): Promise<components["schemas"]["EvaluatorGenerateResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
-        const { data, error } = await client.POST("/v0/evaluator_generate", {
+        const { data, error } = await client.POST("/v0/check_generate", {
             params: {
                 header: {
                     "api-key": this.api_key
@@ -476,7 +477,7 @@ export class Okareo {
     async upload_check(props: UploadEvaluatorProps): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const eLength = this.endpoint.length;
-        const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/evaluator_upload";
+        const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/check_upload";
         
         const tmpFileName = "temp_evaluator_code.py";
         const { generated_code = "" } = props; // file_path is rewritten as needed
@@ -555,7 +556,7 @@ export class Okareo {
     async get_all_checks(): Promise<components["schemas"]["EvaluatorBriefResponse"][]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
-        const { data, error } = await client.GET("/v0/evaluators", {
+        const { data, error } = await client.GET("/v0/checks", {
             params: {
                 header: {
                     "api-key": this.api_key
@@ -578,12 +579,12 @@ export class Okareo {
     async get_check(check_id: string): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
-        const { data, error } = await client.GET("/v0/evaluator/{evaluator_id}", {
+        const { data, error } = await client.GET("/v0/check/{check_id}", {
             params: {
                 header: {
                     "api-key": this.api_key
                 },
-                path: { evaluator_id: check_id }
+                path: { check_id: check_id }
             }
         });
         if (error) {
@@ -600,7 +601,7 @@ export class Okareo {
 
     async delete_check(check_id: string, check_name: string): Promise<string> {
         const eLength = this.endpoint.length;
-        const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/evaluator/"+check_id;
+        const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/check/"+check_id;
 
         const form = new FormData();
         form.append("name", check_name);
