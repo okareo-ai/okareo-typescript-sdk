@@ -1,3 +1,4 @@
+import createClient from 'openapi-fetch';
 import fetch from 'node-fetch';
 import type { paths, components } from "./api/v1/okareo_endpoints";
 import FormData from "form-data";
@@ -233,7 +234,7 @@ export class Okareo {
 
         console.log("Found File: "+altFile.toString().substring(0, 50)+"...");
 
-        const file = fs.createReadStream(props.file_path);
+        const file = await fs.createReadStream(props.file_path);
         if (!file)
             throw new Error("File read error");
 
@@ -493,7 +494,7 @@ export class Okareo {
         //const altFile = fs.readFileSync(file_path);
         //console.log("Uploading Eval: "+altFile.toString().substring(0, 75)+"...");
 
-        const file = fs.createReadStream(file_path);
+        const file = await fs.createReadStream(file_path);
         if (!file)
             throw new Error("File read error");
 
