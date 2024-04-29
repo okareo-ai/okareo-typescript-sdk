@@ -4,7 +4,7 @@ export async function getProjectId(): Promise<string> {
     const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
     
     const okareo = new Okareo({api_key:OKAREO_API_KEY });
-    //const PROJECT_NAME = (process.env["github.run_number"])?"TS SDK CI":"TS SDK Local";
+    //const PROJECT_NAME = (process.env.SDK_BUILD_ID)?"TS SDK CI":"TS SDK Local";
     const PROJECT_NAME = "Global"; // this should be modified to fit the above once projects are working
     const pData: any[] = await okareo.getProjects();
     const project_id = pData.find(p => p.name === PROJECT_NAME)?.id;

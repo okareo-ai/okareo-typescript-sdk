@@ -2,6 +2,7 @@
 name: Build and Test
 env:
   SKIP_YARN_COREPACK_CHECK: true
+  SDK_BUILD_ID: ${{ github.run_number }}
   OKAREO_API_KEY: ${{ secrets.OKAREO_API_KEY }}
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
