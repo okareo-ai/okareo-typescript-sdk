@@ -2,6 +2,8 @@
 name: Build and Test
 env:
   SKIP_YARN_COREPACK_CHECK: true
+  OKAREO_API_KEY: ${{ secrets.OKAREO_API_KEY }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
 on:
   push:
