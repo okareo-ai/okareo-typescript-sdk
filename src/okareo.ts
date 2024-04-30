@@ -39,10 +39,10 @@ export interface UploadEvaluatorProps {
 }
 
 export interface RunTestProps {
+    model_api_key?: string| undefined;
     project_id: string;
     scenario_id?: string;
     scenario?: any;
-    model_api_key?: string| undefined;
     name: string;
     type: string;
     calculate_metrics: boolean;
@@ -52,6 +52,7 @@ export interface RunTestProps {
 }
 
 interface RunConfigTestProps {
+    model_api_key?: string| undefined;
     name: string;
     tags?: string[];
     project_id: string;
@@ -282,10 +283,12 @@ export class Okareo {
 
     async register_model(props: any): Promise<components["schemas"]["ModelUnderTestResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
-        const model_config: any = props; // this is used for the non-custom models
-        const { type = "unknown", invoke} = model_config;
-        if (type === "custom") {
-            delete model_config.invoke;
+        const model_config: any = JSON.parse(JSON.stringify(props)); // Create a deep clone of props 
+
+        const modelType = Object.keys(model_config.models)[0];
+
+        if (modelType === "custom") {
+            delete model_config.models?.custom?.invoke;
         }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.POST("/v0/register_model", {
@@ -369,7 +372,8 @@ export class Okareo {
             }
             return data || {};
         } else {
-            const mKey = (mType === "openai" && this.model_config?.models)?this.model_config?.models[mType]?.api_keys[mType]:"NONE";
+            const mKey = props.model_api_key ?? "NONE";
+
             const body:components["schemas"]["TestRunPayloadV2"] = {
                 ...props,
                 mut_id: this.model.id,
@@ -403,7 +407,8 @@ export class Okareo {
             throw new Error("Custom Models can't be run from yaml config"); 
         }
         
-        const mKey = (mType === "openai" && model?.models)?model?.models[mType]?.api_keys[mType]:"NONE";
+        const mKey = props.model_api_key ?? "NONE";
+
         const body:components["schemas"]["TestRunPayloadV2"] = {
             project_id,
             mut_id: model_id,

@@ -31,7 +31,6 @@ describe('Evaluations', () => {
           tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
           project_id: project_id,
           model: OpenAIModel({
-            api_key: OPENAI_API_KEY,
             model_id:"gpt-3.5-turbo",
             temperature:0.5,
             system_prompt_template:SYSTEM_PROMPT,
@@ -41,6 +40,7 @@ describe('Evaluations', () => {
       );
         
       const data: any = await okareo.run_test({
+        model_api_key: OPENAI_API_KEY,
         name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
         tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
         project_id: project_id,

@@ -54,18 +54,15 @@ export interface TCustomModelResponse {
     response: any | string;
 }
 export interface TOpenAIModel extends BaseModel {
-    api_key?: string;
     model_id: string;
     temperature: number;
     system_prompt_template: string;
     user_prompt_template: string;
-    api_keys?: any;
 }
 export interface TCohereModel extends BaseModel {
-    api_key?: string;
     model_id: string;
     model_type: string;
-    input_type: string;
+    input_type?: string;
 }
 export interface TPineconeDB extends BaseModel {
     index_name: string;
@@ -112,22 +109,16 @@ export function CustomModel(props: TCustomModel): TCustomModel {
 }
 
 export function OpenAIModel(props: TOpenAIModel): TOpenAIModel {
-    if (!props.api_key) { props.api_key = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>" }
-    const { temperature = "0.0", system_prompt_template = "", api_key } = props;
-    delete props.api_key;
+    const { temperature = "0.0", system_prompt_template = ""} = props;
     return {
         type: "openai",
         ...props,
         temperature,
         system_prompt_template,
-        api_keys: {
-            openai: api_key
-        }
     } as TOpenAIModel;
 }
 
 export function CohereModel(props: TCohereModel): TCohereModel {
-    if (!props.api_key) { props.api_key = process.env.COHERE_API_KEY || "<YOUR_OPENAI_KEY>" }
     return {
         type: "cohere",
         ...props } as TCohereModel;

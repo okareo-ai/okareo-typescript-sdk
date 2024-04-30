@@ -5,6 +5,8 @@ import { ModelUnderTest, OpenAIModel, SeedData, TestRunType } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const UNIQUE_BUILD_ID = (process.env.SDK_BUILD_ID || `local.${(Math.random() + 1).toString(36).substring(7)}`);
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
+
 let project_id: string;
 
 const TEST_SEED_DATA = [
@@ -104,6 +106,7 @@ describe('Evaluations', () => {
         );
         
         const data: any = await okareo.run_test({
+            model_api_key: OPENAI_API_KEY,
             name: `CI: Classification Run ${UNIQUE_BUILD_ID}`,
             tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
             project_id: project_id,

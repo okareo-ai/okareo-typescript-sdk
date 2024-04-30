@@ -31,7 +31,6 @@ describe('Model Interactions', () => {
         tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
         project_id: project_id,
         model: OpenAIModel({
-          api_key: OPENAI_API_KEY,
           model_id:"gpt-3.5-turbo",
           temperature:0.5,
           system_prompt_template:SYSTEM_PROMPT,
@@ -41,6 +40,7 @@ describe('Model Interactions', () => {
     );
       
     await okareo.run_test({
+      model_api_key: OPENAI_API_KEY,
       name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
       tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
       project_id: project_id,
@@ -63,7 +63,6 @@ describe('Model Interactions', () => {
           tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
           project_id: project_id,
           model: OpenAIModel({
-            api_key: OPENAI_API_KEY,
             model_id:"gpt-3.5-turbo",
             temperature:0.5,
             system_prompt_template:SYSTEM_PROMPT,
@@ -72,6 +71,7 @@ describe('Model Interactions', () => {
         })
       );
       expect(existing_model).toBeDefined();
+      expect(existing_model.models?.['openai']?.api_keys).toBeUndefined();
   });
 
   test('Find Datapoints', async () =>  {
