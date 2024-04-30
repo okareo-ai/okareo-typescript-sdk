@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { get } from "http";
 import { Okareo, SeedData } from "../dist";
 import { getProjectId } from './setup-env';
@@ -19,7 +20,7 @@ describe('Checks', () => {
             description: "Fail the test if the output is more than 10% longer than the expected result.",
             requires_scenario_input: false,
             requires_scenario_result: true,
-            output_data_type: "boolean",
+            output_data_type: "bool",
         }
         const check: any = await okareo.generate_check(check_info);
         expect(check.generated_code).toBeDefined();
@@ -33,16 +34,19 @@ describe('Checks', () => {
             description: "Return a pass if the model output matches the scenarios expected result.",
             requires_scenario_input: false,
             requires_scenario_result: true,
-            output_data_type: "boolean",
+            output_data_type: "bool",
         }
         const check: any = await okareo.generate_check(check_info);
-        const upload_check = await okareo.upload_check({
+        const upload_check: any = await okareo.upload_check({
             ...check_info,
             generated_code: check.generated_code,
             update: true
         });
         
         expect(upload_check).toBeDefined();
+
+        const del_data = await okareo.delete_check(upload_check.id, upload_check.name);
+        expect(del_data).toEqual("Check deletion was successful");
     });
 
     test('Upload a Check', async () =>  {
@@ -56,13 +60,28 @@ describe('Checks', () => {
             output_data_type: "boolean",
         }
         const check: any = await okareo.generate_check(check_info);
-        const upload_check = await okareo.upload_check({
+        const upload_check: any = await okareo.upload_check({
             ...check_info,
             file_path: "tests/example_eval.py",
             update: true
         });
         
         expect(upload_check).toBeDefined();
+
+        const del_data = await okareo.delete_check(upload_check.id, upload_check.name);
+        expect(del_data).toEqual("Check deletion was successful");
+    });
+
+    test('Get Check(s)', async () =>  {
+        const okareo = new Okareo({api_key:OKAREO_API_KEY });
+        const allEvals = await okareo.get_all_checks();
+        expect(allEvals).toBeDefined();
+        let evalObj;
+        if (allEvals.length > 0) {
+        const eval_id = allEvals[0].id;
+        evalObj = (eval_id)?await okareo.get_check(eval_id):null;
+        }
+        expect(evalObj).toBeDefined();
     });
 
 });
