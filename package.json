@@ -17,7 +17,7 @@
     "type": "git"
   },
   "scripts": {
-    "start": "rollup -c rollup.config.js -w",
+    "clean": "rm -rf node_modules && rm -rf dist",
     "gen-api": "npx openapi-typescript https://api.okareo.com/openapi.json -o ./src/api/v1/okareo_endpoints.ts",
     "build": "rm -rf dist && rollup -c rollup.config.js",
     "release": "yarn build && yarn publish",
