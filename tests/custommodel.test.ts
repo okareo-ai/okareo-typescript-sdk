@@ -65,6 +65,7 @@ describe('Evaluations', () => {
                         }
                     }
                 }),
+                update: true,
             })
         );
         

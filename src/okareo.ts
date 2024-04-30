@@ -263,7 +263,7 @@ export class Okareo {
         const reqOptions = {
             method: 'POST',
             headers: headers,
-            'body':form, // eslint-disable-line quote-props
+            'body':form,
         };
         
         return fetch(`${api_endpoint}`, reqOptions)
@@ -350,7 +350,7 @@ export class Okareo {
             const results: any = {model_data: {} };
             for (let i = 0; i < seed_data.length; i++) {
                 const { id, input, result } = seed_data[i];
-                const customResult = await this.model_config?.models?.custom.invoke(input, result);
+                const customResult: unknown = await this.model_config?.models?.custom.invoke(input, result);
                 results.model_data[id] = customResult;
             }
             const body:components["schemas"]["TestRunPayloadV2"] = {
@@ -525,7 +525,7 @@ export class Okareo {
         const reqOptions = {
             method: 'POST',
             headers: headers,
-            'body':form, // eslint-disable-line quote-props
+            'body':form,
         };
 
         return fetch(`${api_endpoint}`, reqOptions)
@@ -617,7 +617,7 @@ export class Okareo {
         const reqOptions = {
             method: 'DELETE',
             headers: headers,
-            'body':form, // eslint-disable-line quote-props
+            'body':form,
         };
 
         return fetch(`${api_endpoint}`, reqOptions)

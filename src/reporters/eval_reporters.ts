@@ -1,5 +1,16 @@
-import { error } from "console";
-import type { paths, components } from "../api/v1/okareo_endpoints";
+import type { components } from "../api/v1/okareo_endpoints";
+
+
+export type IFailMetricItem = {
+    metric: string,
+    value: number,
+    expected: number,
+    k?: number;
+}
+export type IFailMetrics = {
+    [key: string]: IFailMetricItem
+}
+
 
 /**
  * Properties to call the classification_reporter function
@@ -15,14 +26,21 @@ export interface ClassificationReporterProps {
 export interface ClassificationReporterResponse {
     pass: boolean;
     errors: number;
-    fail_metrics: {
-        [key: string]: {
-            metric: string;
-            value: number;
-            expected: number;
-        }
-    };
+    fail_metrics: IFailMetrics;
 }
+
+/**
+ * Classification error matrix
+ * error_matrix: [
+        { 'Account Management': [ 0, 0, 0, 1 ] },
+        { 'Billing': [ 0, 1, 0, 0 ] },
+        { 'General Inquiry': [ 0, 0, 1, 0 ] },
+        { 'Technical Support': [ 0, 0, 0, 3 ] }
+    ]
+ */
+
+type ErrorMatrixRow = {[key: string]: number[]};
+
 /**
  * Convenience function to evaluate a classification test run
  * @param props ClassificationReporterProps
@@ -34,8 +52,8 @@ export const classification_reporter = (props: ClassificationReporterProps): Cla
     if (!model_metrics || !error_matrix) {
         throw new Error("Invalid Classification eval_run");
     }
-    const fail_metrics: any = {};
-    let pass = true;
+    const fail_metrics: IFailMetrics = {};
+    let pass:boolean = true;
     if (metrics_min) {
         for (const key in metrics_min) {
             if (model_metrics.weighted_average[key] < metrics_min[key]) {
@@ -50,10 +68,10 @@ export const classification_reporter = (props: ClassificationReporterProps): Cla
     }
     let error_count: number = 0;
     let error_index: number = 0;
-    error_matrix.map((row: any) => {
+    error_matrix.map((row: unknown) => {
         let row_index = 0;
-        for (const key in row) {
-            const row_errors: number = row[key].reduce((a: number, b: number) => {
+        for (const key in row as ErrorMatrixRow) {
+            const row_errors: number = (row as ErrorMatrixRow)[key].reduce((a: number, b: number) => {
                 let result: number = a;
                 if (row_index !== error_index) 
                     result = a + b;
@@ -130,13 +148,7 @@ export interface GenerationReporterProps {
 export interface GenerationReporterResponse {
     pass: boolean;
     errors: number;
-    fail_metrics: {
-        [key: string]: {
-            metric: string;
-            value: number;
-            expected: number;
-        }
-    };
+    fail_metrics: IFailMetrics;
 }
 
 export const generation_reporter = (props: GenerationReporterProps): GenerationReporterResponse => {
@@ -145,7 +157,7 @@ export const generation_reporter = (props: GenerationReporterProps): GenerationR
     if (!(model_metrics)) {
         throw new Error("Invalid Generation TestRunItem");
     }
-    const fail_metrics: any = {};
+    const fail_metrics: IFailMetrics = {};
     let errors: number = 0;
     let pass = true;
     if (metrics_min) {
@@ -245,24 +257,19 @@ export const generation_reporter = (props: GenerationReporterProps): GenerationR
         '10': 0.8833333333333332
       }
       */
+
+export type IMetricMin = {
+    value: number;
+    at_k: number;
+}
 export interface RetrievalReporterProps {
     eval_run: components["schemas"]["TestRunItem"];
-    metrics_min?: {[key: string]: {
-        value: number;
-        at_k: number;
-    }};
+    metrics_min?: {[key: string]: IMetricMin};
 }
 export interface RetrievalReporterResponse {
     pass: boolean;
     errors: number;
-    fail_metrics: {
-        [key: string]: {
-            metric: string;
-            k: number;
-            value: number;
-            expected: number;
-        }
-    };
+    fail_metrics: IFailMetrics
 }
 
 export const retrieval_reporter = (props: RetrievalReporterProps): RetrievalReporterResponse => {
@@ -271,12 +278,13 @@ export const retrieval_reporter = (props: RetrievalReporterProps): RetrievalRepo
     if (!(model_metrics)) {
         throw new Error("Invalid Generation TestRunItem");
     }
-    const fail_metrics: any = {};
+    const fail_metrics: IFailMetrics = {};
     let pass = true;
     let errors = 0;
+
     if (metrics_min) {
         for (const key in metrics_min) {
-            const min_item:any = metrics_min[key];
+            const min_item:IMetricMin = metrics_min[key];
             if (model_metrics[key][min_item.at_k] < min_item.value) {
                 errors++;
                 fail_metrics[key] = {

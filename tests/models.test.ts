@@ -19,7 +19,7 @@ describe('Model Interactions', () => {
     project_id = await getProjectId();
     const upload_scenario: any = await okareo.upload_scenario_set(
       {
-        scenario_name: `CI: Upload WebBizz Scenario`,
+        name: `CI: Upload WebBizz Scenario`,
         file_path: "./tests/generation_scenario.jsonl",
         project_id: project_id,
       }

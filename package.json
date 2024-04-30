@@ -21,30 +21,27 @@
     "gen-api": "npx openapi-typescript https://api.okareo.com/openapi.json -o ./src/api/v1/okareo_endpoints.ts",
     "build": "rm -rf dist && rollup -c rollup.config.js",
     "release": "yarn build && yarn publish",
-    "make:docs": "typedoc",
     "test": "yarn build && jest",
     "test:ci": "cross-env CI=1 jest",
-    "test:ts": "tsc --noEmit"
+    "test:ts": "tsc --noEmit",
+    "lint": "eslint",
+    "lint-fix": "eslint --fix"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "^17.4.4",
+    "@eslint/js": "^9.1.1",
     "@rollup/plugin-commonjs": "^24.0.1",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@types/jest": "^29.4.0",
     "@types/node": "^18.14.0",
-    "@typescript-eslint/eslint-plugin": "^5.53.0",
-    "@typescript-eslint/parser": "^5.53.0",
     "cross-env": "^7.0.3",
-    "eslint": "^8.34.0",
+    "eslint": "^9.1.1",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.3",
     "jest": "^29.4.3",
-    "lint-staged": "^13.1.2",
     "lru-cache": "^10.2.1",
     "postcss": "^8.4.21",
-    "prettier": "^2.8.4",
     "rollup": "^3.17.2",
     "rollup-plugin-delete": "^2.0.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
@@ -54,26 +51,8 @@
     "rollup-plugin-typescript2": "^0.34.1",
     "ts-jest": "^29.0.5",
     "tslib": "^2.5.0",
-    "typedoc": "^0.23.25",
-    "typescript": "^5.4.2"
-  },
-  "lint-staged": {
-    "src/**/*.ts": [
-      "./node_modules/.bin/prettier --write",
-      "./node_modules/.bin/eslint"
-    ]
-  },
-  "prettier": {
-    "tabWidth": 2,
-    "useTabs": false,
-    "semi": true,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^7.8.0"
   },
   "dependencies": {
     "form-data": "^4.0.0",

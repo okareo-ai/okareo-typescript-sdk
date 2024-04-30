@@ -1,5 +1,4 @@
-import { compileFunction } from "vm";
-import type { paths, components } from "../api/v1/okareo_endpoints";
+import type { components } from "../api/v1/okareo_endpoints";
 
 export function ScenarioSetCreate(props: components["schemas"]["ScenarioSetCreate"]): components["schemas"]["ScenarioSetCreate"] {
     return props;
@@ -47,11 +46,12 @@ export interface BaseModel  {
     tags?: string[] | undefined;
 }
 export interface TCustomModel extends BaseModel {
-    invoke: Function;
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    invoke: (input: any, result: any) => unknown;
 }
 export interface TCustomModelResponse {
-    actual: any | string;
-    response: any | string;
+    actual: unknown | string;
+    response: unknown | string;
 }
 export interface TOpenAIModel extends BaseModel {
     model_id: string;
@@ -101,7 +101,6 @@ export function ModelUnderTest(props: ModelUnderTestProps): components["schemas"
 }
 
 export function CustomModel(props: TCustomModel): TCustomModel {
-    const { invoke } = props;
     return {
         ...props,
         type: "custom",
