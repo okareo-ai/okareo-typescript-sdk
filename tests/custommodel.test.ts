@@ -1,4 +1,4 @@
-import { Okareo, RunTestProps, components, SeedData, TestRunType, ModelUnderTest, CustomModel } from "../dist";
+import { Okareo, RunTestProps, components, SeedData, TestRunType, ModelUnderTest, CustomModel, RegisterModelProps } from "../dist";
 import { getProjectId } from './setup-env';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
@@ -45,12 +45,12 @@ describe('Evaluations', () => {
             seed_data: TEST_SEED_DATA
         });
         
-        await okareo.register_model(
-            ModelUnderTest({
+        const model = await okareo.register_model({
                 name: "CI Custom Model",
                 tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
                 project_id: project_id,
-                model: CustomModel({
+                models: {
+                    type: "custom",
                     invoke: async (input: string, result: string) => { 
                         return {
                             actual: "Technical Support",
@@ -64,12 +64,12 @@ describe('Evaluations', () => {
                             }
                         }
                     }
-                }),
+                } as CustomModel,
                 update: true,
-            })
+            }
         );
         
-        const data: any = await okareo.run_test({
+        const data: any = await model.run_test({
             name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
             tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
             project_id: project_id,

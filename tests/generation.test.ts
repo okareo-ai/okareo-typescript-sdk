@@ -1,6 +1,6 @@
 import { Okareo, TestRunType } from '../dist';
 import { RunTestProps } from '../dist';
-import { ModelUnderTest, OpenAIModel } from "../dist";
+import { OpenAIModel } from "../dist";
 import { getProjectId } from './setup-env';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
@@ -24,22 +24,22 @@ describe('Evaluations', () => {
           project_id: project_id,
         }
       );
-      
-      const model = await okareo.register_model(
-        ModelUnderTest({
-          name: `CI: Generation ${UNIQUE_BUILD_ID}`,
-          tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
-          project_id: project_id,
-          model: OpenAIModel({
-            model_id:"gpt-3.5-turbo",
-            temperature:0.5,
-            system_prompt_template:SYSTEM_PROMPT,
-            user_prompt_template:USER_PROMPT
-          })
-        })
-      );
         
-      const data: any = await okareo.run_test({
+      const model = await okareo.register_model({
+        name: `CI: Generation ${UNIQUE_BUILD_ID}`,
+        tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+          project_id: project_id,
+          models: {
+              type: "openai",
+              model_id:"gpt-3.5-turbo",
+              temperature:0.5,
+              system_prompt_template:SYSTEM_PROMPT,
+              user_prompt_template:USER_PROMPT
+            } as OpenAIModel,
+          update: true,
+      });
+        
+      const data: any = await model.run_test({
         model_api_key: OPENAI_API_KEY,
         name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
         tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],

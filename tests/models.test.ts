@@ -25,21 +25,20 @@ describe('Model Interactions', () => {
       }
     );
     
-    model = await okareo.register_model(
-      ModelUnderTest({
+    model = await okareo.register_model({
         name: `CI: Generation ${UNIQUE_BUILD_ID}`,
         tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
         project_id: project_id,
-        model: OpenAIModel({
+        models: {
+          type: "openai",
           model_id:"gpt-3.5-turbo",
           temperature:0.5,
           system_prompt_template:SYSTEM_PROMPT,
           user_prompt_template:USER_PROMPT
-        })
-      })
-    );
+        } as OpenAIModel
+    });
       
-    await okareo.run_test({
+    await model.run_test({
       model_api_key: OPENAI_API_KEY,
       name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
       tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
@@ -57,21 +56,21 @@ describe('Model Interactions', () => {
 
   test('Create or Return Model', async () =>  {
       const okareo = new Okareo({api_key:OKAREO_API_KEY});
-      const existing_model = await okareo.register_model(
-        ModelUnderTest({
+      const existing_model = await okareo.register_model({
           name: `CI: Generation ${UNIQUE_BUILD_ID}`,
           tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
           project_id: project_id,
-          model: OpenAIModel({
+          models: {
+            type: "openai",
             model_id:"gpt-3.5-turbo",
             temperature:0.5,
             system_prompt_template:SYSTEM_PROMPT,
             user_prompt_template:USER_PROMPT
-          })
-        })
+          } as OpenAIModel
+        }
       );
       expect(existing_model).toBeDefined();
-      expect(existing_model.models?.['openai']?.api_keys).toBeUndefined();
+      expect(existing_model.mut?.models?.openai?.api_keys).toBeUndefined();
   });
 
   test('Find Datapoints', async () =>  {

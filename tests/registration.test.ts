@@ -1,5 +1,5 @@
-import { Okareo } from '../dist';
-import {ModelUnderTest, OpenAIModel, CohereModel, CustomModel } from "../dist";
+import { ModelUnderTest, Okareo } from '../dist';
+import { OpenAIModel, CohereModel, CustomModel } from "../dist";
 import { getProjectId } from './setup-env';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
@@ -16,53 +16,60 @@ describe('Scenarios', () => {
     const okareo = new Okareo({api_key:OKAREO_API_KEY});
     const MODEL_TEST_KEY = "test_key";
 
-    const openai_model = await okareo.register_model(
-      ModelUnderTest({
-        name: `CI: Register OpenAI ${UNIQUE_BUILD_ID}`,
-        tags: [],
-        project_id: project_id,
-        model: OpenAIModel({
-          model_id:"dummy",
-          temperature:0.5,
-          system_prompt_template:"dummy",
-          user_prompt_template:"dummy"
-        })
-      })
-    );
+    const openai_model: ModelUnderTest = await okareo.register_model({
+      name: `CI: Register OpenAI ${UNIQUE_BUILD_ID}`,
+      tags: [],
+      project_id: project_id,
+      models: {
+        type: "openai",
+        model_id:"dummy",
+        temperature:0.5,
+        system_prompt_template:"dummy",
+        user_prompt_template:"dummy"
+      } as OpenAIModel,
+      update: true,
+    });
     expect(openai_model).toBeDefined();
-    expect(openai_model.models?.['openai']?.api_keys).toBeUndefined();
+    expect(openai_model.mut).toBeDefined();
+    expect(openai_model.mut?.models).toBeDefined();
+    expect(openai_model.mut?.models?.openai).toBeDefined();
+    expect(openai_model.mut?.models?.openai?.api_keys).toBeUndefined();
 
-    const cohere_model = await okareo.register_model(
-        ModelUnderTest({
-          name: `CI: Register Cohere ${UNIQUE_BUILD_ID}`,
-          tags: [],
-          project_id: project_id,
-          model: CohereModel({
-            model_id:"dummy",
-            model_type:"classify"
-          })
-        })
-      );
-      expect(cohere_model).toBeDefined();
-      expect(cohere_model.models?.['cohere']?.api_key).toBeUndefined();
+    const cohere_model = await okareo.register_model({
+      name: `CI: Register Cohere ${UNIQUE_BUILD_ID}`,
+      tags: [],
+      project_id: project_id,
+      models: {
+        type: "cohere",
+        model_id:"dummy",
+        model_type:"classify"
+      } as CohereModel
+    });
+    expect(cohere_model).toBeDefined();
+    expect(cohere_model.mut).toBeDefined();
+    expect(cohere_model.mut?.models).toBeDefined();
+    expect(cohere_model.mut?.models?.cohere).toBeDefined();
+    expect(cohere_model.mut?.models?.cohere?.api_keys).toBeUndefined();
 
-      const custom_model = await okareo.register_model(
-        ModelUnderTest({
-          name: `CI: Register Custom ${UNIQUE_BUILD_ID}`,
-          tags: [],
-          project_id: project_id,
-          model: CustomModel({
-            invoke: async (input: string, result: string) => { 
-                return {
-                    actual: "noop",
-                    model_response: {}
-                }
+    const custom_model = await okareo.register_model({
+      name: `CI: Register Custom ${UNIQUE_BUILD_ID}`,
+      tags: [],
+      project_id: project_id,
+      models: {
+        type: "custom",
+        invoke: async (input: string, result: string) => { 
+            return {
+                actual: "noop",
+                model_response: {}
             }
-        })
-        })
-      );
-      expect(custom_model).toBeDefined();
-      expect(custom_model.models?.['custom']?.invoke).toBeUndefined();
+        } 
+      } as CustomModel
+    });
+    expect(custom_model).toBeDefined();
+    expect(custom_model.mut).toBeDefined();
+    expect(custom_model.mut?.models).toBeDefined();
+    expect(custom_model.mut?.models?.custom).toBeDefined();
+    expect(custom_model.mut?.models?.custom?.invoke).toBeUndefined();
 
   });
 
