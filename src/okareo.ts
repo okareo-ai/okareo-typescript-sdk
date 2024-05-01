@@ -236,48 +236,52 @@ export class Okareo {
 
         console.log("Found File: "+altFile.toString().substring(0, 50)+"...");
 
-        const file = await fs.createReadStream(props.file_path);
-        if (!file)
-            throw new Error("File read error");
-
-        if (props.scenario_name && props.scenario_name.length > 0) { 
-            console.log("Warning: deprecated property.  Please use 'name' instead."); 
-            props.name = props.scenario_name;
-        }
-        const { name = props.scenario_name } = props;
-
-        const body: any = {
-            project_id: props.project_id,
-            name: name
-        };
-        const form = new FormData();
-        form.append("name", name);
-        form.append("project_id", props.project_id);
-        form.append(
-            'file', file
-        );
-        const headers = Object.assign({
-            'api-key': `${this.api_key}`,
-        }, form.getHeaders());
-
-        const reqOptions = {
-            method: 'POST',
-            headers: headers,
-            'body':form,
-        };
+        const file = fs.createReadStream(props.file_path);
         
-        return fetch(`${api_endpoint}`, reqOptions)
-            .then(response => response.json())
-            .then((data: any) => {
-                if (data && data.warning) {
-                    console.log(data.warning);
-                }
-                return data;
-            })
-            .catch((error) => {
-                console.error(error);
-                throw error;
-            });
+            if (!file)
+                throw new Error("File read error");
+
+            if (props.scenario_name && props.scenario_name.length > 0) { 
+                console.log("Warning: deprecated property.  Please use 'name' instead."); 
+                props.name = props.scenario_name;
+            }
+            const { name = props.scenario_name } = props;
+
+            const body: any = {
+                project_id: props.project_id,
+                name: name
+            };
+            const form = new FormData();
+            form.append("name", name);
+            form.append("project_id", props.project_id);
+            form.append(
+                'file', file
+            );
+            const headers = Object.assign({
+                'api-key': `${this.api_key}`,
+            }, form.getHeaders());
+
+            const reqOptions = {
+                method: 'POST',
+                headers: headers,
+                'body':form,
+            };
+            
+            return fetch(`${api_endpoint}`, reqOptions)
+                .then(response => response.json())
+                .then((data: any) => {
+                    if (data && data.warning) {
+                        console.log(data.warning);
+                    }
+                    return data;
+                })
+                .finally(() => {
+                    file.close();
+                })
+                .catch((error) => {
+                    console.error(error);
+                    throw error;
+                });
     }
 
 
@@ -500,7 +504,8 @@ export class Okareo {
         //const altFile = fs.readFileSync(file_path);
         //console.log("Uploading Eval: "+altFile.toString().substring(0, 75)+"...");
 
-        const file = await fs.createReadStream(file_path);
+        const file = fs.createReadStream(file_path);
+        
         if (!file)
             throw new Error("File read error");
 
@@ -528,7 +533,7 @@ export class Okareo {
             'body':form,
         };
 
-        return fetch(`${api_endpoint}`, reqOptions)
+        return await fetch(`${api_endpoint}`, reqOptions)
             .then(response => response.json())
             .then((data: any) => {
                 if (data.detail) {
@@ -541,6 +546,7 @@ export class Okareo {
                 }
             })
             .finally(() => {
+                file.close();
                 if (isGeneratedEval && fs.existsSync(tmpFileName)) {
                     fs.unlinkSync(tmpFileName);
                 }
@@ -620,24 +626,24 @@ export class Okareo {
             'body':form,
         };
 
-        return fetch(`${api_endpoint}`, reqOptions)
+        return await fetch(`${api_endpoint}`, reqOptions)
             .then(response => {
-                if (response.status === 204) {
-                    return "Check deletion was successful";
-                }
-                else {
+                if (response.status !== 204) {
+                    console.log('error deleting check');
                     throw new Error(`Check deletion failed with code ${response.status}`);
                 }
+                return  "Check deletion was successful";
             })
             .catch((error) => {
                 console.error("Error deleting check: " + error);
                 throw error;
             });
+            
     }
 
     async delete_evaluator(evaluator_id: string, evaluator_name: string): Promise<string> {
         console.warn(CHECK_DEPRECATION_WARNING);
-        return this.delete_check(evaluator_id, evaluator_name);
+        return await this.delete_check(evaluator_id, evaluator_name);
     }
 
 }

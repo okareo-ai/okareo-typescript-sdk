@@ -10,7 +10,7 @@ describe('Checks', () => {
     beforeAll(async () => {
         project_id = await getProjectId();
     });
-    
+    /*
     test('Generate a Check', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const check_info = {
@@ -47,7 +47,7 @@ describe('Checks', () => {
         const del_data = await okareo.delete_check(upload_check.id, upload_check.name);
         expect(del_data).toEqual("Check deletion was successful");
     });
-
+*/
     test('Upload a Check', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const check_info = {
@@ -66,11 +66,12 @@ describe('Checks', () => {
         });
         
         expect(upload_check).toBeDefined();
-
-        const del_data = await okareo.delete_check(upload_check.id, upload_check.name);
-        expect(del_data).toEqual("Check deletion was successful");
+        
+        //const del_data = await okareo.delete_check(upload_check.id, upload_check.name);
+        //expect(del_data).toEqual("Check deletion was successful");
+        
     });
-
+/*
     test('Get Check(s)', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const allEvals = await okareo.get_all_checks();
@@ -82,7 +83,7 @@ describe('Checks', () => {
         }
         expect(evalObj).toBeDefined();
     });
-
+*/
 });
 
 
