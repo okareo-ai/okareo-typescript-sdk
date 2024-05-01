@@ -69,7 +69,10 @@ export class Okareo {
 
     async register_model(props: RegisterModelProps): Promise<ModelUnderTest> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
-        if (!(props.models instanceof Array)) {
+        if (!(props.models instanceof Array) || (props.models instanceof Array && props.models.length === 1)) {
+            if (props.models instanceof Array) {
+                props.models = props.models[0];
+            }
             if (!props.models.type || props.models.type.length === 0) { throw new Error("Models require a type."); }
             //const modelType = Object.keys(model_config.models)[0];
             const modelType = props.models.type;

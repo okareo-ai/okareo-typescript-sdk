@@ -29,13 +29,13 @@ describe('Evaluations', () => {
         name: `CI: Generation ${UNIQUE_BUILD_ID}`,
         tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
           project_id: project_id,
-          models: {
+          models: [{
               type: "openai",
               model_id:"gpt-3.5-turbo",
               temperature:0.5,
               system_prompt_template:SYSTEM_PROMPT,
               user_prompt_template:USER_PROMPT
-            } as OpenAIModel,
+            } as OpenAIModel],
           update: true,
       });
         

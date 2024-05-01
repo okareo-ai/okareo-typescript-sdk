@@ -20,13 +20,13 @@ describe('Scenarios', () => {
       name: `CI: Register OpenAI ${UNIQUE_BUILD_ID}`,
       tags: [],
       project_id: project_id,
-      models: {
+      models: [{
         type: "openai",
         model_id:"dummy",
         temperature:0.5,
         system_prompt_template:"dummy",
         user_prompt_template:"dummy"
-      } as OpenAIModel,
+      } as OpenAIModel],
       update: true,
     });
     expect(openai_model).toBeDefined();
