@@ -144,30 +144,65 @@ export const classification_reporter = (props: ClassificationReporterProps): Cla
 export interface GenerationReporterProps {
     eval_run: components["schemas"]["TestRunItem"];
     metrics_min?: {[key: string]: number};
+    metrics_max?: {[key: string]: number};
+    pass_rate?: {[key: string]: number};
 }
 export interface GenerationReporterResponse {
     pass: boolean;
     errors: number;
-    fail_metrics: IFailMetrics;
+    fail_metrics: {
+        min: IFailMetrics;
+        max: IFailMetrics;
+        pass_rate: IFailMetrics;
+    }
 }
 
 export const generation_reporter = (props: GenerationReporterProps): GenerationReporterResponse => {
-    const { eval_run, metrics_min } = props;
+    const { eval_run, metrics_min, metrics_max, pass_rate } = props;
     const { model_metrics } = eval_run;
     if (!(model_metrics)) {
         throw new Error("Invalid Generation TestRunItem");
     }
-    const fail_metrics: IFailMetrics = {};
+    const fail_metrics_min: IFailMetrics = {};
+    const fail_metrics_max: IFailMetrics = {};
+    const fail_metrics_pass_rate: IFailMetrics = {};
     let errors: number = 0;
     let pass = true;
     if (metrics_min) {
         for (const key in metrics_min) {
             if (model_metrics.mean_scores[key] < metrics_min[key]) {
                 errors++;
-                fail_metrics[key] = {
+                fail_metrics_min[key] = {
                     metric: key,
                     value: model_metrics.mean_scores[key],
                     expected: metrics_min[key],
+                }
+                pass = false;
+            }
+        }
+    }
+    if (metrics_max) {
+        for (const key in metrics_max) {
+            if (model_metrics.mean_scores[key] >= metrics_max[key]) {
+                errors++;
+                fail_metrics_max[key] = {
+                    metric: key,
+                    value: model_metrics.mean_scores[key],
+                    expected: metrics_max[key],
+                }
+                pass = false;
+            }
+        }
+    }
+    if (pass_rate) {
+        for (const key in pass_rate) {
+            console.log(key, model_metrics.mean_scores[key],pass_rate[key])
+            if (Number(model_metrics.mean_scores[key]) < Number(pass_rate[key])) {
+                errors++;
+                fail_metrics_pass_rate[key] = {
+                    metric: key,
+                    value: model_metrics.mean_scores[key],
+                    expected: pass_rate[key],
                 }
                 pass = false;
             }
@@ -177,7 +212,11 @@ export const generation_reporter = (props: GenerationReporterProps): GenerationR
     return {
         pass: pass,
         errors: errors,
-        fail_metrics: fail_metrics,
+        fail_metrics: {
+            min: fail_metrics_min,
+            max: fail_metrics_max,
+            pass_rate: fail_metrics_pass_rate,
+        }
     };
 }
 
