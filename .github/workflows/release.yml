@@ -33,6 +33,7 @@ jobs:
           manifest-path: ${{ env.MANIFEST_PATH }}
   
   release:
+    needs: check-version
     runs-on: ubuntu-latest
   
     permissions:
