@@ -67,7 +67,7 @@ jobs:
       - name: Publish SDK
         run: yarn release
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKENZ }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 
 
