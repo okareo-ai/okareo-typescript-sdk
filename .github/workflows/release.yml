@@ -5,7 +5,7 @@ env:
   SDK_BUILD_ID: ${{ github.run_number }}
   OKAREO_API_KEY: ${{ secrets.OKAREO_API_KEY }}
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-  MANIFEST_PATH: package.json
+  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 on:
   release:
