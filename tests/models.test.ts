@@ -78,7 +78,7 @@ describe('Model Interactions', () => {
       const datapoints: any = await okareo.find_datapoints(
         DatapointSearch({ 
             project_id: project_id,
-            mut_id: model.id,
+            mut_id: model.mut.id,
         })
       );
       
