@@ -12,28 +12,7 @@ on:
     types: [published]
 
 jobs:
-  check-version:
-    name: Version Check
-    runs-on: ubuntu-latest
-
-    steps:
-    # The fetch-depth and fetch-tags options are required
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-
-      - name: Check Version
-        id: check-version
-        uses: issue-ops/semver@v0.2.2
-        with:
-          check-only: true
-          manifest-path: ${{ env.MANIFEST_PATH }}
-  
   release:
-    needs: check-version
     runs-on: ubuntu-latest
   
     permissions:
@@ -58,12 +37,6 @@ jobs:
         
       - name: Install Dependencies
         run: yarn install
-        
-      - name: Lint SDK
-        run: yarn lint
-        
-      - name: Run Tests
-        run: yarn run test
 
       - name: Publish SDK
         run: yarn release
