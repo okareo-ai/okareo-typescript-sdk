@@ -5,13 +5,34 @@ env:
   SDK_BUILD_ID: ${{ github.run_number }}
   OKAREO_API_KEY: ${{ secrets.OKAREO_API_KEY }}
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  MANIFEST_PATH: package.json
 
 on:
   release:
     types: [published]
 
 jobs:
-  build:
+  check-version:
+    name: Version Check
+    runs-on: ubuntu-latest
+
+    steps:
+    # The fetch-depth and fetch-tags options are required
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Check Version
+        id: check-version
+        uses: issue-ops/semver@v0.2.2
+        with:
+          check-only: true
+          manifest-path: ${{ env.MANIFEST_PATH }}
+  
+  release:
     runs-on: ubuntu-latest
   
     permissions:
@@ -44,9 +65,9 @@ jobs:
         run: yarn run test
 
       - name: Publish SDK
-        run: yarn relese
+        run: yarn release
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKENZ }}
 
 
 
