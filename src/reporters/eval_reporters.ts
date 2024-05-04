@@ -160,7 +160,7 @@ export interface GenerationReporterResponse {
 export const generation_reporter = (props: GenerationReporterProps): GenerationReporterResponse => {
     const { eval_run, metrics_min, metrics_max, pass_rate } = props;
     const { model_metrics } = eval_run;
-    if (!(model_metrics)) {
+    if (!(model_metrics && model_metrics.mean_scores) ) {
         throw new Error("Invalid Generation TestRunItem");
     }
     const fail_metrics_min: IFailMetrics = {};
@@ -170,7 +170,7 @@ export const generation_reporter = (props: GenerationReporterProps): GenerationR
     let pass = true;
     if (metrics_min) {
         for (const key in metrics_min) {
-            if (model_metrics.mean_scores[key] < metrics_min[key]) {
+            if (model_metrics.mean_scores[key] && model_metrics.mean_scores[key] < metrics_min[key]) {
                 errors++;
                 fail_metrics_min[key] = {
                     metric: key,
@@ -183,7 +183,7 @@ export const generation_reporter = (props: GenerationReporterProps): GenerationR
     }
     if (metrics_max) {
         for (const key in metrics_max) {
-            if (model_metrics.mean_scores[key] >= metrics_max[key]) {
+            if (model_metrics.mean_scores[key] && model_metrics.mean_scores[key] >= metrics_max[key]) {
                 errors++;
                 fail_metrics_max[key] = {
                     metric: key,
@@ -196,8 +196,7 @@ export const generation_reporter = (props: GenerationReporterProps): GenerationR
     }
     if (pass_rate) {
         for (const key in pass_rate) {
-            console.log(key, model_metrics.mean_scores[key],pass_rate[key])
-            if (Number(model_metrics.mean_scores[key]) < Number(pass_rate[key])) {
+            if (model_metrics.mean_scores[key] && Number(model_metrics.mean_scores[key]) < Number(pass_rate[key])) {
                 errors++;
                 fail_metrics_pass_rate[key] = {
                     metric: key,

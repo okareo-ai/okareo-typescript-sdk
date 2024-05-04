@@ -121,6 +121,23 @@ export class Okareo {
         }
     }
 
+    async find_test_runs(find_runs: components["schemas"]["GeneralFindPayload"]): Promise<components["schemas"]["TestRunItem"][]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { data, error } = await client.POST("/v0/find_test_runs", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+            },
+            body: find_runs
+        });
+        if (error) {
+            throw error;
+        }
+        return data || [];
+    }
+
     async get_test_run(test_run_id: string): Promise<components["schemas"]["TestRunItem"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
@@ -331,6 +348,26 @@ export class Okareo {
                 });
     }
 
+    //
+
+    async get_all_models(project_id: string ): Promise<components["schemas"]["ModelUnderTestResponse"][]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { data, error } = await client.GET("/v0/models_under_test", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+                query: {
+                    project_id: project_id
+                }
+            }
+        });
+        if (error) {
+            throw error;
+        }
+        return data || [];
+    }
 
     async get_model(mut_id: string ): Promise<components["schemas"]["ModelUnderTestResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
