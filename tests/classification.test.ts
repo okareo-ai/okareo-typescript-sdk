@@ -1,7 +1,7 @@
 import { Okareo } from '../dist';
 import { getProjectId } from './setup-env';
 import { RunTestProps } from '../dist';
-import { ModelUnderTest, OpenAIModel, SeedData, TestRunType,BaseModel } from "../dist";
+import { OpenAIModel, SeedData, TestRunType,BaseModel } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const UNIQUE_BUILD_ID = (process.env.SDK_BUILD_ID || `local.${(Math.random() + 1).toString(36).substring(7)}`);

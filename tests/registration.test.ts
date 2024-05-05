@@ -57,11 +57,11 @@ describe('Scenarios', () => {
       project_id: project_id,
       models: {
         type: "custom",
-        invoke: async (input: string, result: string) => { 
-            return {
-                actual: "noop",
-                model_response: {}
-            }
+        invoke: (input: string, result: string) => { 
+            return [
+                "noop",
+                {}
+            ]
         } 
       } as CustomModel
     });
@@ -69,7 +69,6 @@ describe('Scenarios', () => {
     expect(custom_model.mut).toBeDefined();
     expect(custom_model.mut?.models).toBeDefined();
     expect(custom_model.mut?.models?.custom).toBeDefined();
-    expect(custom_model.mut?.models?.custom?.invoke).toBeUndefined();
 
   });
 

@@ -68,58 +68,52 @@ export class Okareo {
     }
 
     async register_model(props: RegisterModelProps): Promise<ModelUnderTest> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
-        if (!(props.models instanceof Array) || (props.models instanceof Array && props.models.length === 1)) {
-            if (props.models instanceof Array) {
-                props.models = props.models[0];
-            }
-            if (!props.models.type || props.models.type.length === 0) { throw new Error("Models require a type."); }
-            //const modelType = Object.keys(model_config.models)[0];
-            const modelType = props.models.type;
 
-            // model_config is what is sent on the wire to regsiter the model
-            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-            const model_config: any = JSON.parse(JSON.stringify(props)); // Create a deep clone of props 
-            if (modelType === "custom") {
-                delete (model_config.models as CustomModel).invoke;
-            }
-            const model_details = model_config.models;
-            delete model_config.models;
-            model_config.models = {
-                [modelType]: model_details
-            }
-            
-            const client = createClient<paths>({ baseUrl: this.endpoint });
-            const { data, error } = await client.POST("/v0/register_model", {
-                params: {
-                    header: {
-                        "api-key": this.api_key
-                    },
-                },
-                body: model_config
-            });
-            if (error) {
-                throw error;
-            }
-            if (data && data.warning) {
-                console.log(data.warning);
-            }
-            if (!data.id) {
-                throw new Error("Model registration failed");
-            }
-
-            return new ModelUnderTest({ 
-                api_key: this.api_key, 
-                endpoint: this.endpoint, 
-                mut: data as components["schemas"]["ModelUnderTestResponse"],
-                models: props.models,
-            });
-            // handle list of models
-        } else {
-            // multi-model implementation
-            return {} as ModelUnderTest;
+        const models = Array.isArray(props.models) ? props.models : [props.models];
+        let modelInvoker: any = null;
+        // model_config is what is sent on the wire to regsiter the model
+        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        const register_payload: any = JSON.parse(JSON.stringify(props)); // Create a deep clone of props 
+        register_payload["models"] = {};
+        for (let model of models) {
+            register_payload["models"][model.type] = model
+            delete register_payload["models"][model.type].type;
         }
-    }
+        if ("custom" in register_payload["models"]) {
+            modelInvoker = (register_payload["models"]["custom"] as CustomModel).invoke
+            delete (register_payload["models"]["custom"] as CustomModel).invoke;
+        }
+
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { data: response, error } = await client.POST("/v0/register_model", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+            },
+            body: register_payload
+        });
+        if (error) {
+            throw error;
+        }
+        if (response && response.warning) {
+            console.log(response.warning);
+        }
+        if (!response.id) {
+            throw new Error("Model registration failed");
+        }
+
+        if (modelInvoker && response.models && response.models.custom) {
+            (response.models.custom as any).invoke = modelInvoker;
+        }
+
+        return new ModelUnderTest({
+            api_key: this.api_key,
+            endpoint: this.endpoint,
+            mut: response as components["schemas"]["ModelUnderTestResponse"],
+        });
+
+    } 
 
     async find_test_runs(find_runs: components["schemas"]["GeneralFindPayload"]): Promise<components["schemas"]["TestRunItem"][]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
