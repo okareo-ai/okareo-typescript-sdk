@@ -26,7 +26,9 @@ export interface ClassificationReporterProps {
 export interface ClassificationReporterResponse {
     pass: boolean;
     errors: number;
-    fail_metrics: IFailMetrics;
+    fail_metrics: {
+        min: IFailMetrics;
+    }
 }
 
 /**
@@ -52,12 +54,12 @@ export const classification_reporter = (props: ClassificationReporterProps): Cla
     if (!model_metrics || !error_matrix) {
         throw new Error("Invalid Classification eval_run");
     }
-    const fail_metrics: IFailMetrics = {};
+    const fail_metrics_min: IFailMetrics = {};
     let pass:boolean = true;
     if (metrics_min) {
         for (const key in metrics_min) {
             if (model_metrics.weighted_average[key] < metrics_min[key]) {
-                fail_metrics[key] = {
+                fail_metrics_min[key] = {
                     metric: key,
                     value: model_metrics.weighted_average[key],
                     expected: metrics_min[key],
@@ -88,7 +90,9 @@ export const classification_reporter = (props: ClassificationReporterProps): Cla
     return {
         pass: pass,
         errors: error_count,
-        fail_metrics: fail_metrics,
+        fail_metrics: {
+            min: fail_metrics_min,
+        }
     };
 }
 
@@ -307,7 +311,9 @@ export interface RetrievalReporterProps {
 export interface RetrievalReporterResponse {
     pass: boolean;
     errors: number;
-    fail_metrics: IFailMetrics
+    fail_metrics: {
+        min: IFailMetrics,
+    }
 }
 
 export const retrieval_reporter = (props: RetrievalReporterProps): RetrievalReporterResponse => {
@@ -316,7 +322,7 @@ export const retrieval_reporter = (props: RetrievalReporterProps): RetrievalRepo
     if (!(model_metrics)) {
         throw new Error("Invalid Generation TestRunItem");
     }
-    const fail_metrics: IFailMetrics = {};
+    const fail_metrics_min: IFailMetrics = {};
     let pass = true;
     let errors = 0;
 
@@ -325,7 +331,7 @@ export const retrieval_reporter = (props: RetrievalReporterProps): RetrievalRepo
             const min_item:IMetricMin = metrics_min[key];
             if (model_metrics[key][min_item.at_k] < min_item.value) {
                 errors++;
-                fail_metrics[key] = {
+                fail_metrics_min[key] = {
                     metric: key,
                     k: min_item.at_k,
                     value: model_metrics[key][min_item.at_k],
@@ -338,6 +344,8 @@ export const retrieval_reporter = (props: RetrievalReporterProps): RetrievalRepo
     return {
         pass: pass,
         errors: errors,
-        fail_metrics: fail_metrics,
+        fail_metrics: {
+            min: fail_metrics_min,
+        }
     };
 }
