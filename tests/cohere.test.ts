@@ -1,6 +1,6 @@
 import { Okareo, QDrant } from '../dist';
-import { CohereModel, PineconeDB, SeedData, RunTestProps, TestRunType } from "../dist";
 import { getProjectId } from './setup-env';
+import { CohereModel, PineconeDB, SeedData, RunTestProps, TestRunType } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const COHERE_API_KEY = process.env.COHERE_API_KEY || "<YOUR_COHERE_KEY>";
