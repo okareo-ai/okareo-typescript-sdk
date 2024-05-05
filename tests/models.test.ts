@@ -1,6 +1,6 @@
 import { Okareo } from '../dist';
 import { RunTestProps } from '../dist';
-import { DatapointSearch, ModelUnderTest, OpenAIModel, TestRunType } from "../dist";
+import { DatapointSearch, OpenAIModel, TestRunType } from "../dist";
 import { getProjectId } from './setup-env';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
