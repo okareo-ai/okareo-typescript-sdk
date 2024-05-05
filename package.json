@@ -1,6 +1,6 @@
 {
   "name": "okareo-ts-sdk",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "main": "dist/index.min.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
