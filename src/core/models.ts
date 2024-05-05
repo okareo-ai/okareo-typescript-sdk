@@ -77,7 +77,7 @@ export interface QDrant extends BaseModel {
 export interface CustomModel extends BaseModel {
     type: "custom";
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    invoke?: (input: any, result: any) => [any, any]; // optional as to not be sent to backend
+    invoke?: (input: any, result: any) => unknown; // allows a Promise or direct return in the response
 }
 
 export interface ModelUnderTestProps {
