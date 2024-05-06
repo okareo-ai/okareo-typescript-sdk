@@ -57,14 +57,19 @@ export const classification_reporter = (props: ClassificationReporterProps): Cla
     const fail_metrics_min: IFailMetrics = {};
     let pass:boolean = true;
     if (metrics_min) {
-        for (const key in metrics_min) {
-            if (model_metrics.weighted_average[key] < metrics_min[key]) {
-                fail_metrics_min[key] = {
-                    metric: key,
-                    value: model_metrics.weighted_average[key],
-                    expected: metrics_min[key],
+        const weighted_keys = (model_metrics.weighted_average)? Object.keys(model_metrics.weighted_average): [];
+        if (weighted_keys.length === 0) {
+            console.log(`WARNING: No weighted average metrics found in "${eval_run.name}". Likely means the model was misconfigured.`);
+        } else {
+            for (const key in metrics_min) {
+                if (model_metrics.weighted_average[key] < metrics_min[key]) {
+                    fail_metrics_min[key] = {
+                        metric: key,
+                        value: model_metrics.weighted_average[key],
+                        expected: metrics_min[key],
+                    }
+                    pass = false;
                 }
-                pass = false;
             }
         }
     }
