@@ -248,6 +248,28 @@ export class Okareo {
         return data || {};
     }
 
+    async get_scenario_sets(props: { project_id: string, scenario_id?:string} ): Promise<components["schemas"]["ScenarioSetResponse"][]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const { project_id, scenario_id = "" } = props;
+        const query: { project_id: string, scenario_id?:string } = {
+            project_id
+        }
+        if (scenario_id.length > 0) { query.scenario_id = scenario_id; }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { data, error } = await client.GET("/v0/scenario_sets", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+                query
+            }
+        });
+        if (error) {
+            throw error;
+        }
+        return data || [];
+    }
+
     async get_scenario_data_points(scenario_id: string): Promise<components["schemas"]["ScenarioDataPoinResponse"][]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         if (!scenario_id || scenario_id.length === 0) { throw new Error("API Key is required"); }
