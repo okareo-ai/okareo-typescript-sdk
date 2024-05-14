@@ -265,6 +265,16 @@ export interface paths {
      */
     post: operations["find_test_data_points_v0_find_test_data_points_post"];
   };
+  "/v0/update_test_data_point": {
+    /**
+     * Update Test Data Point
+     * @description Find Test Data Point
+     *
+     * Returns:
+     *     a list of Test Data Points
+     */
+    post: operations["update_test_data_point_v0_update_test_data_point_post"];
+  };
   "/v0/check_generate": {
     /**
      * Check Generate
@@ -1184,9 +1194,9 @@ export interface components {
     /** SeedData */
     SeedData: {
       /** Input */
-      input: string;
+      input: Record<string, never> | unknown[] | string;
       /** Result */
-      result: string | string[];
+      result: Record<string, never> | unknown[] | string;
     };
     /** SemanticPayload */
     SemanticPayload: {
@@ -1239,6 +1249,8 @@ export interface components {
        * Format: uuid
        */
       id: string;
+      /** Tags */
+      tags?: string[];
       /**
        * Scenario Data Point Id
        * Format: uuid
@@ -1447,6 +1459,21 @@ export interface components {
      * @enum {string}
      */
     TestRunType: "MULTI_CLASS_CLASSIFICATION" | "INFORMATION_RETRIEVAL" | "NL_GENERATION" | "invariant";
+    /** UpdateTestDataPointPayload */
+    UpdateTestDataPointPayload: {
+      /**
+       * Id
+       * Format: uuid
+       * @description ID of the datapoint
+       */
+      id?: string;
+      /**
+       * Tags
+       * @description Tags are strings that can be used to filter test data points in the Okareo app
+       * @default []
+       */
+      tags?: string[];
+    };
   };
   responses: never;
   parameters: never;
@@ -2662,6 +2689,51 @@ export interface operations {
       201: {
         content: {
           "application/json": components["schemas"]["TestDataPointItem"][];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Update Test Data Point
+   * @description Find Test Data Point
+   *
+   * Returns:
+   *     a list of Test Data Points
+   */
+  update_test_data_point_v0_update_test_data_point_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateTestDataPointPayload"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": string;
         };
       };
       /** @description Input data is incorrect */

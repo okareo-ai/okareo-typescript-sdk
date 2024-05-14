@@ -53,6 +53,7 @@ export interface OpenAIModel extends BaseModel {
     temperature: number;
     system_prompt_template: string;
     user_prompt_template: string;
+    dialog_template: string;
 }
 export interface CohereModel extends BaseModel {
     type: "cohere";

@@ -51,6 +51,16 @@ export interface RegisterModelProps {
     update?: boolean;
 }
 
+
+export interface CreateScenarioProps {
+    name: string;
+    project_id: string;
+    seed_data: {
+        input: Record<string, any> | unknown[] | string;
+        result: Record<string, any> | unknown[] | string;
+    }[];
+}
+
 export class Okareo {
     api_key: string = '';
     endpoint: string = '';
@@ -209,8 +219,9 @@ export class Okareo {
         return data || [];
     }
 
-    async create_scenario_set(props: components["schemas"]["ScenarioSetCreate"]): Promise<components["schemas"]["ScenarioSetResponse"]> {
+    async create_scenario_set(props: CreateScenarioProps): Promise<components["schemas"]["ScenarioSetResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const create_scenario_payload: any = JSON.parse(JSON.stringify(props));
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.POST("/v0/scenario_sets", {
             params: {
@@ -218,7 +229,7 @@ export class Okareo {
                     "api-key": this.api_key
                 },
             },
-            body: props
+            body: create_scenario_payload
             
         });
         if (error) {

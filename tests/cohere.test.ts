@@ -12,33 +12,33 @@ const UNIQUE_BUILD_ID = (process.env.SDK_BUILD_ID || `local.${(Math.random() + 1
 let project_id: string;
 
 const TEST_CLASS_DATA = [
-  SeedData({
-    input: "what are you able to set up in aws?",
-    result: "capabilities"
-  }),
-  SeedData({
-    input: "what's the procedure to request for more information?",
-    result: "general"
-  }),
-  SeedData({
-    input: "what are the steps to deploy on heroku?",
-    result: "capabilities"
-  })
+  {
+      "input": "what are you able to set up in aws?",
+      "result": "capabilities"
+  },
+  {
+      "input": "what's the procedure to request for more information?",
+      "result": "general"
+  },
+  {
+      "input": "what are the steps to deploy on heroku?",
+      "result": "capabilities"
+  }
 ];
 
 const TEST_IR_DATA = [
-  SeedData({
-    input: "Can you explain how the WebBizz Rewards loyalty program works and its benefits?",
-    result: ["35a4fd5b-453e-4ca6-9536-f20db7303344"]
-  }),
-  SeedData({
-    input: "How does WebBizz help its users in finding a specific product or exploring new collections?",
-    result: ["a8a97b0e-8d9a-4a1c-b93e-83d2bc9e5266"]
-  }),
-  SeedData({
-    input: "How does WebBizz show appreciation to its newsletter subscribers every month?",
-    result: ["cda67f1d-19f2-4b45-9f3e-3b8d67f8c6c5"]
-  })
+  {
+      "input": "Can you explain how the WebBizz Rewards loyalty program works and its benefits?",
+      "result": ["35a4fd5b-453e-4ca6-9536-f20db7303344"]
+  },
+  {
+      "input": "How does WebBizz help its users in finding a specific product or exploring new collections?",
+      "result": ["a8a97b0e-8d9a-4a1c-b93e-83d2bc9e5266"]
+  },
+  {
+      "input": "How does WebBizz show appreciation to its newsletter subscribers every month?",
+      "result": ["cda67f1d-19f2-4b45-9f3e-3b8d67f8c6c5"]
+  }
 ];
 
 describe('Cohere Tests', () => {

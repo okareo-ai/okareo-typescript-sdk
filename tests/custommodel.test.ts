@@ -6,46 +6,47 @@ const UNIQUE_BUILD_ID = (process.env.SDK_BUILD_ID || `local.${(Math.random() + 1
 let project_id: string;
 
 const TEST_SEED_DATA = [
-    SeedData({
-        input:"Can I connect to my SalesForce?",  
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Do you have a way to send marketing emails?",  
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Can I get invoiced instead of using a credit card?", 
-        result:"Billing"
-    }),
-    SeedData({
-        input:"My CRM integration is not working.", 
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Do you have SOC II tpye 2 certification?", 
-        result:"Account Management"
-    }),
-    SeedData({
-        input:"I like the product.  Please connect me to your enterprise team.", 
-        result:"General Inquiry"
-    })
+    {
+        input: "Can I connect to my SalesForce?",  
+        result: "Technical Support"
+    },
+    {
+        input: "Do you have a way to send marketing emails?",  
+        result: "Technical Support"
+    },
+    {
+        input: "Can I get invoiced instead of using a credit card?", 
+        result: "Billing"
+    },
+    {
+        input: "My CRM integration is not working.", 
+        result: "Technical Support"
+    },
+    {
+        input: "Do you have SOC II type 2 certification?", 
+        result: "Account Management"
+    },
+    {
+        input: "I like the product. Please connect me to your enterprise team.", 
+        result: "General Inquiry"
+    }
 ];
 
 const TEST_IR_DATA = [
-    SeedData({
-      input: "What are top WebBizz Rewards loyalty programs?",
-      result: ["Spring Saver", "Free Shipping", "Birthday Gift"]
-    }),
-    SeedData({
-      input: "What are WebBizz most popular collections?",
-      result: ["Super Sunday", "Top 10", "New Arrivals"]
-    }),
-    SeedData({
-      input: "Which are biggest savings months for WebBizz?",
-      result: ["January", "July"]
-    })
-  ];
+    {
+        input: "What are top WebBizz Rewards loyalty programs?",
+        result: ["Spring Saver", "Free Shipping", "Birthday Gift"]
+    },
+    {
+        input: "What are WebBizz most popular collections?",
+        result: ["Super Sunday", "Top 10", "New Arrivals"]
+    },
+    {
+        input: "Which are biggest savings months for WebBizz?",
+        result: ["January", "July"]
+    }
+];
+
 
 describe('Evaluations', () => {
     beforeAll(async () => {
