@@ -1,5 +1,5 @@
 import { ModelUnderTest, Okareo } from '../dist';
-import { OpenAIModel, CohereModel, CustomModel } from "../dist";
+import { OpenAIModel, CohereModel, CustomModel, ModelInvocation } from "../dist";
 import { getProjectId } from './setup-env';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
@@ -58,10 +58,11 @@ describe('Scenarios', () => {
       models: {
         type: "custom",
         invoke: (input: string, result: string) => { 
-            return [
-                "noop",
-                {}
-            ]
+            return {
+              actual: "noop",
+              model_input: {},
+              model_result: {}
+          } as ModelInvocation
         } 
       } as CustomModel
     });
