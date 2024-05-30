@@ -10,31 +10,32 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
 let project_id: string;
 
 const TEST_SEED_DATA = [
-    SeedData({
-        input:"Can I connect to my SalesForce?",  
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Do you have a way to send marketing emails?",  
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Can I get invoiced instead of using a credit card?", 
-        result:"Billing"
-    }),
-    SeedData({
-        input:"My CRM integration is not working.", 
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Do you have SOC II tpye 2 certification?", 
-        result:"Account Management"
-    }),
-    SeedData({
-        input:"I like the product.  Please connect me to your enterprise team.", 
-        result:"General Inquiry"
-    })
+    {
+        "input": "Can I connect to my SalesForce?",
+        "result": "Technical Support"
+    },
+    {
+        "input": "Do you have a way to send marketing emails?",
+        "result": "Technical Support"
+    },
+    {
+        "input": "Can I get invoiced instead of using a credit card?",
+        "result": "Billing"
+    },
+    {
+        "input": "My CRM integration is not working.",
+        "result": "Technical Support"
+    },
+    {
+        "input": "Do you have SOC II type 2 certification?",
+        "result": "Account Management"
+    },
+    {
+        "input": "I like the product. Please connect me to your enterprise team.",
+        "result": "General Inquiry"
+    }
 ];
+
 
 
 const USER_PROMPT_TEMPLATE = `{input}`

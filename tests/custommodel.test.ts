@@ -1,4 +1,4 @@
-import { Okareo, RunTestProps, components, SeedData, TestRunType, CustomModel, RegisterModelProps } from "../dist";
+import { Okareo, RunTestProps, components, SeedData, TestRunType, CustomModel, RegisterModelProps, ModelInvocation } from "../dist";
 import { getProjectId } from './setup-env';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
@@ -6,46 +6,47 @@ const UNIQUE_BUILD_ID = (process.env.SDK_BUILD_ID || `local.${(Math.random() + 1
 let project_id: string;
 
 const TEST_SEED_DATA = [
-    SeedData({
-        input:"Can I connect to my SalesForce?",  
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Do you have a way to send marketing emails?",  
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Can I get invoiced instead of using a credit card?", 
-        result:"Billing"
-    }),
-    SeedData({
-        input:"My CRM integration is not working.", 
-        result:"Technical Support"
-    }),
-    SeedData({
-        input:"Do you have SOC II tpye 2 certification?", 
-        result:"Account Management"
-    }),
-    SeedData({
-        input:"I like the product.  Please connect me to your enterprise team.", 
-        result:"General Inquiry"
-    })
+    {
+        "input": "Can I connect to my SalesForce?",  
+        "result": "Technical Support"
+    },
+    {
+        "input": "Do you have a way to send marketing emails?",  
+        "result": "Technical Support"
+    },
+    {
+        "input": "Can I get invoiced instead of using a credit card?", 
+        "result": "Billing"
+    },
+    {
+        "input": "My CRM integration is not working.", 
+        "result": "Technical Support"
+    },
+    {
+        "input": "Do you have SOC II type 2 certification?", 
+        "result": "Account Management"
+    },
+    {
+        "input": "I like the product. Please connect me to your enterprise team.", 
+        "result": "General Inquiry"
+    }
 ];
 
 const TEST_IR_DATA = [
-    SeedData({
-      input: "What are top WebBizz Rewards loyalty programs?",
-      result: ["Spring Saver", "Free Shipping", "Birthday Gift"]
-    }),
-    SeedData({
-      input: "What are WebBizz most popular collections?",
-      result: ["Super Sunday", "Top 10", "New Arrivals"]
-    }),
-    SeedData({
-      input: "Which are biggest savings months for WebBizz?",
-      result: ["January", "July"]
-    })
-  ];
+    {
+        "input": "What are top WebBizz Rewards loyalty programs?",
+        "result": ["Spring Saver", "Free Shipping", "Birthday Gift"]
+    },
+    {
+        "input": "What are WebBizz most popular collections?",
+        "result": ["Super Sunday", "Top 10", "New Arrivals"]
+    },
+    {
+        "input": "Which are biggest savings months for WebBizz?",
+        "result": ["January", "July"]
+    }
+];
+
 
 describe('Evaluations', () => {
     beforeAll(async () => {
@@ -61,27 +62,28 @@ describe('Evaluations', () => {
         });
         
         const model = await okareo.register_model({
-                name: "CI Custom Classification Model",
-                tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
-                project_id: project_id,
-                models: {
-                    type: "custom",
-                    invoke: (input: string, result: string) => { 
-                        return [
-                            "Technical Support",
-                            {
+            name: "CI Custom Classification Model",
+            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+            project_id: project_id,
+            models: {
+                type: "custom",
+                invoke: (input: string, result: string) => {
+                    return {
+                        actual: "Technical Support",
+                        model_input: input,
+                        model_result: {
+                            input: input,
+                            method: "hard coded",
+                            context: {
                                 input: input,
-                                method: "hard coded",
-                                context: {
-                                    input: input,
-                                    result: result,
-                                },
-                            } 
-                        ]
-                    }
-                } as CustomModel,
-                update: true,
-            }
+                                result: result,
+                            }
+                        }
+                    } as ModelInvocation
+                }
+            } as CustomModel,
+            update: true,
+        }
         );
         
         const data: any = await model.run_test({
@@ -121,13 +123,14 @@ describe('Evaluations', () => {
         
                     const parsedIdsWithScores = scores.map(({ id, score }) => [id, score])
                             
-                    return [
-                        parsedIdsWithScores,
-                        {
+                    return {
+                        actual: parsedIdsWithScores,
+                        model_input: input,
+                        model_result: {
                             input: input,
                             result: result,
                         }
-                    ];
+                    } as ModelInvocation
                 }
             } as CustomModel,
             update: true,

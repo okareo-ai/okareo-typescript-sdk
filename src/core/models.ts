@@ -47,12 +47,20 @@ export enum TestRunType {
 export interface BaseModel {
     type: string;
 }
+
+export interface  ModelInvocation {
+    actual?: Record<string, any> | unknown[] | string;
+    model_input?: Record<string, any> | unknown[] | string;
+    model_result?: Record<string, any> | unknown[] | string;
+}
+
 export interface OpenAIModel extends BaseModel {
     type: "openai";
     model_id: string;
     temperature: number;
     system_prompt_template: string;
     user_prompt_template: string;
+    dialog_template: string;
 }
 export interface CohereModel extends BaseModel {
     type: "cohere";
@@ -77,7 +85,8 @@ export interface QDrant extends BaseModel {
 export interface CustomModel extends BaseModel {
     type: "custom";
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    invoke?: (input: any, result: any) => unknown; // allows a Promise or direct return in the response
+    invoke?: (input: Record<string, any> | unknown[] | string,
+         result: Record<string, any> | unknown[] | string) => ModelInvocation; // allows a Promise or direct return in the response
 }
 
 export interface ModelUnderTestProps {
@@ -150,10 +159,11 @@ export class ModelUnderTest {
                 const invoke = (this.mut.models?.custom as unknown as CustomModel).invoke;
                 if (invoke) {
                     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-                    const customResult: any = await invoke(input, result);
+                    const modelInvocation: ModelInvocation = await invoke(input, result);
                     results.model_data[id] = {
-                        "actual": customResult[0],
-                        "model_response": customResult[1],
+                        "actual": modelInvocation.actual,
+                        "model_input": modelInvocation.model_input,
+                        "model_response": modelInvocation.model_result,
                     };
                 }
             }
