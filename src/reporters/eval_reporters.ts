@@ -12,6 +12,19 @@ export type IFailMetrics = {
 }
 
 
+
+export const log_report = ({eval_run, report}: {eval_run: components["schemas"]["TestRunItem"], report: any}) => {
+    console.log(`\nEval: ${eval_run.name} - ${(report.pass)?"Pass 🟢" : "Fail 🔴"}`);
+    Object.keys(report.fail_metrics).map(m => {
+        const fMetrics: any = report.fail_metrics;
+        if (Object.keys(fMetrics[m]).length > 0) {
+            console.log(`\nFailures for ${m}`);
+            console.table(fMetrics[m]);
+        };
+    });
+    console.log(eval_run.app_link);
+}
+
 /**
  * Properties to call the classification_reporter function
  */
@@ -42,6 +55,7 @@ export interface ClassificationReporterResponse {
  */
 
 type ErrorMatrixRow = {[key: string]: number[]};
+
 
 /**
  * Convenience function to evaluate a classification test run
@@ -99,6 +113,26 @@ export const classification_reporter = (props: ClassificationReporterProps): Cla
             min: fail_metrics_min,
         }
     };
+}
+
+export class ClassificationReporter {
+    eval_run: components["schemas"]["TestRunItem"];
+    error_max?: number;
+    metrics_min?: {[key: string]: number};
+    report: ClassificationReporterResponse;
+    pass: boolean;
+
+    constructor(props: ClassificationReporterProps) {
+        this.eval_run = props.eval_run;
+        this.error_max = props.error_max || 0;
+        this.metrics_min = props.metrics_min || {};
+        this.report = classification_reporter(props);
+        this.pass = this.report.pass;
+    }
+
+    log() {
+        log_report({eval_run: this.eval_run, report: this.report});
+    }
 }
 
 
@@ -228,6 +262,28 @@ export const generation_reporter = (props: GenerationReporterProps): GenerationR
     };
 }
 
+export class GenerationReporter {
+    eval_run: components["schemas"]["TestRunItem"];
+    metrics_min?: {[key: string]: number};
+    metrics_max?: {[key: string]: number};
+    pass_rate?: {[key: string]: number};
+    report: GenerationReporterResponse;
+    pass: boolean;
+
+    constructor(props: GenerationReporterProps) {
+        this.eval_run = props.eval_run;
+        this.metrics_min = props.metrics_min || {};
+        this.metrics_max = props.metrics_max || {};
+        this.pass_rate = props.pass_rate || {};
+        this.report = generation_reporter(props);
+        this.pass = this.report.pass;
+    }
+
+    log() {
+        log_report({eval_run: this.eval_run, report: this.report});
+    }
+}
+
 
 /*
  model_metrics: {
@@ -334,7 +390,7 @@ export const retrieval_reporter = (props: RetrievalReporterProps): RetrievalRepo
     if (metrics_min) {
         for (const key in metrics_min) {
             const min_item:IMetricMin = metrics_min[key];
-            if (model_metrics[key][min_item.at_k] < min_item.value) {
+            if (model_metrics[key] && model_metrics[key][min_item.at_k] < min_item.value) {
                 errors++;
                 fail_metrics_min[key] = {
                     metric: key,
@@ -353,4 +409,22 @@ export const retrieval_reporter = (props: RetrievalReporterProps): RetrievalRepo
             min: fail_metrics_min,
         }
     };
+}
+
+export class RetrievalReporter {
+    eval_run: components["schemas"]["TestRunItem"];
+    metrics_min?: {[key: string]: IMetricMin};
+    report: RetrievalReporterResponse;
+    pass: boolean;
+
+    constructor(props: RetrievalReporterProps) {
+        this.eval_run = props.eval_run;
+        this.metrics_min = props.metrics_min || {};
+        this.report = retrieval_reporter(props);
+        this.pass = this.report.pass;
+    }
+    
+    log() {
+        log_report({eval_run: this.eval_run, report: this.report});
+    }
 }

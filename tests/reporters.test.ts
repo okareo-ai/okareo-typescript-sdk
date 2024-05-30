@@ -1,5 +1,5 @@
-import { components, classification_reporter, generation_reporter, retrieval_reporter } from '../dist';
-
+import { components } from '../dist';
+import { ClassificationReporter, GenerationReporter, RetrievalReporter } from '../dist';
 
 const TEST_RUN_CLASSIFICATION: any = {
     id: '2eed4076-fd4e-484d-928c-c56d5a4ed4fc',
@@ -181,73 +181,89 @@ const TEST_RUN_GENERATION: any = {
 
 describe('Reporters', () => {
     test('Classification Reporter', async () =>  {
-        const report = classification_reporter(
-            {
-                eval_run:TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"], 
-                error_max: 8, 
-                metrics_min: {
-                    precision: 0.7,
-                    recall: 0.8,
-                    f1: 0.7,
-                    accuracy: 0.8
-                }
-            }
-        );
-        expect(report.pass).toBeTruthy();
+        const metrics = {
+              error_max: 8, 
+              metrics_min: {
+                  precision: 0.7,
+                  recall: 0.8,
+                  f1: 0.7,
+                  accuracy: 0.8
+              }
+          }
+
+      const reporter = new ClassificationReporter(
+        {
+          eval_run:TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"], 
+          ...metrics,
+        }
+      );
+      reporter.log();
+
+      expect(reporter.pass).toBeTruthy();
     });
 
 
     test('Retrieval Reporter', async () =>  {
-        const report = retrieval_reporter(
-            {
-                eval_run:TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"], 
-                metrics_min: {
-                    'Accuracy@k': {
-                        value: 0.99,
-                        at_k: 3
-                    },
-                    'Precision@k': {
-                        value: 0.2,
-                        at_k: 3
-                    },
-                    'Recall@k': {
-                        value: 0.8,
-                        at_k: 3
-                    },
-                    'NDCG@k': {
-                        value: 0.2,
-                        at_k: 3
-                    },
-                    'MRR@k': {
-                        value: 0.99,
-                        at_k: 3
-                    },
-                    'MAP@k': {
-                        value: 0.99,
-                        at_k: 3
-                    }
-                }
+        const metrics = {
+          metrics_min: {
+            'Accuracy@k': {
+                value: 0.99,
+                at_k: 3
+            },
+            'Precision@k': {
+                value: 0.2,
+                at_k: 3
+            },
+            'Recall@k': {
+                value: 0.8,
+                at_k: 3
+            },
+            'NDCG@k': {
+                value: 0.2,
+                at_k: 3
+            },
+            'MRR@k': {
+                value: 0.99,
+                at_k: 3
+            },
+            'MAP@k': {
+                value: 0.99,
+                at_k: 3
             }
+          }
+        }
+
+        const reporter = new RetrievalReporter(
+          {
+            eval_run:TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"], 
+            ...metrics,
+          }
         );
+        reporter.log();
         
-        expect(report.errors).toBeGreaterThanOrEqual(2);
+        expect(reporter.report.errors).toBeGreaterThanOrEqual(2);
     });
 
 
     test('Generation Reporter', async () =>  {
-        const report = generation_reporter(
-            {
-                eval_run:TEST_RUN_GENERATION as components["schemas"]["TestRunItem"], 
-                metrics_min: {
-                    coherence: 5,
-                    consistency: 3,
-                    fluency: 5,
-                    relevance: 1,
-                    overall: 2
-                }
-            }
+        const metrics = {
+          metrics_min: {
+              coherence: 5,
+              consistency: 3,
+              fluency: 5,
+              relevance: 1,
+              overall: 2
+          }
+        };
+
+        const reporter = new GenerationReporter(
+          {
+            eval_run:TEST_RUN_GENERATION as components["schemas"]["TestRunItem"], 
+            ...metrics,
+          }
         );
-        expect(report.errors).toBeGreaterThanOrEqual(2);
+        reporter.log();
+        expect(reporter.report.errors).toBeGreaterThanOrEqual(2);
     });
 
 });
