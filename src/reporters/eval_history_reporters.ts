@@ -48,10 +48,14 @@ export const general_history_report = (type: TestRunType, results: {report: any,
         const data_checks = run.model_metrics.weighted_average || run.model_metrics.mean_scores || run.model_metrics || null;
         if (data_checks) {
             const metrics: any = {};
+            let errorRateAssert = (assertions.error_max)?assertions.error_max:null;
+            if (assertions.error_max && assertions.error_max > -1) {
+                metrics["errors"] = ((report.errors < errorRateAssert) ? "✅ " : "❌ ") + report.errors;
+            }
             for (const check in data_checks) {
                 if (assertion_keys.includes(check)) {
                     const m = data_checks[check];
-                    
+
                     let minKAssert = (assertions.metrics_min[check])?assertions.metrics_min[check]:null;
                     if (minKAssert) {
                         const minKeys = (report.fail_metrics.min)?Object.keys(report.fail_metrics.min):[];
@@ -59,7 +63,7 @@ export const general_history_report = (type: TestRunType, results: {report: any,
                         metrics[name] = (!(minKeys.includes(check)) ? "✅ " : "❌ ") + m.toFixed(2);
                     }
 
-                    let maxKAssert = (assertions.metrics_max[check])?assertions.metrics_min[check]:null;
+                    let maxKAssert = (assertions.metrics_max && assertions.metrics_max[check])?assertions.metrics_max[check]:null;
                     if (maxKAssert) {
                         const maxKeys = (report.fail_metrics.max)?Object.keys(report.fail_metrics.max):[];
                         const name = "< "+ check;
