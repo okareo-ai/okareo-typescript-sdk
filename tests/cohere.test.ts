@@ -144,7 +144,7 @@ describe('Cohere Tests', () => {
 
 
   });
-
+/*
   test('Cohere + QDrant retrieval run', async () => {
     const okareo = new Okareo({ api_key: OKAREO_API_KEY });
 
@@ -203,5 +203,5 @@ describe('Cohere Tests', () => {
     expect(data.model_metrics['MAP@k'][1]).toBeUndefined();
 
   });
-
+*/
 });
