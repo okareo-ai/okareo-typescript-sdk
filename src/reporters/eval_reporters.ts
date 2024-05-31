@@ -377,6 +377,8 @@ export interface RetrievalReporterResponse {
     }
 }
 
+// Matt Kohler
+// Kim Garshall
 export const retrieval_reporter = (props: RetrievalReporterProps): RetrievalReporterResponse => {
     const { eval_run, metrics_min } = props;
     const { model_metrics } = eval_run;
