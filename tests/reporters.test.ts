@@ -1,7 +1,5 @@
-import { report } from 'process';
 import { components } from '../dist';
 import { ClassificationReporter, GenerationReporter, RetrievalReporter } from '../dist';
-import { generation_reporter } from '../dist';
 import { TestRunType, EvaluationHistoryReporter } from '../dist';
 
 const TEST_RUN_CLASSIFICATION: any = {
@@ -184,22 +182,20 @@ const TEST_RUN_GENERATION: any = {
 
 describe('Reporters', () => {
     test('Classification Reporter', async () =>  {
-        const metrics = {
-              error_max: 8, 
-              metrics_min: {
-                  precision: 0.7,
-                  recall: 0.8,
-                  f1: 0.7,
-                  accuracy: 0.8
-              }
-          }
-
-      const reporter = new ClassificationReporter(
-        {
-          eval_run:TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"], 
-          ...metrics,
+      const metrics = {
+            error_max: 8, 
+            metrics_min: {
+                precision: 0.7,
+                recall: 0.8,
+                f1: 0.7,
+                accuracy: 0.8
+            }
         }
-      );
+
+      const reporter = new ClassificationReporter({
+        eval_run:TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"], 
+        ...metrics,
+      });
       reporter.log();
 
       expect(reporter.pass).toBeTruthy();
@@ -243,12 +239,10 @@ describe('Reporters', () => {
           }
         }
 
-        const reporter = new RetrievalReporter(
-          {
-            eval_run:TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"], 
-            ...metrics,
-          }
-        );
+        const reporter = new RetrievalReporter({
+          eval_run:TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"], 
+          ...metrics,
+        });
         reporter.log();
         
         expect(reporter.report.errors).toBeGreaterThanOrEqual(2);
@@ -266,13 +260,12 @@ describe('Reporters', () => {
           }
         };
 
-        const reporter = new GenerationReporter(
-          {
-            eval_run:TEST_RUN_GENERATION as components["schemas"]["TestRunItem"], 
-            ...metrics,
-          }
-        );
+        const reporter = new GenerationReporter({
+          eval_run:TEST_RUN_GENERATION as components["schemas"]["TestRunItem"], 
+          ...metrics,
+        });
         reporter.log();
+        
         expect(reporter.report.errors).toBeGreaterThanOrEqual(2);
     });
 

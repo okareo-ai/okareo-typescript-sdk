@@ -1,18 +1,13 @@
 import { run } from "node:test";
 import type { components } from "../api/v1/okareo_endpoints";
 import { TestRunType } from "../core/models";
-import { classification_reporter, retrieval_reporter, generation_reporter } from "./eval_reporters";
+import { ClassificationReporter, RetrievalReporter, GenerationReporter } from "./eval_reporters";
 
 /**
  * Generic type for asserions
  */
 export type Assertions = {
     [key: string]: any;
-    /*
-    metrics_min?: {[key: string]: number};
-    metrics_max?: {[key: string]: number};
-    pass_rate?: {[key: string]: number};
-    */
 };
 
 /**
@@ -25,6 +20,9 @@ export interface EvaluationHistoryReporterProps {
     last_n?: number;
 }
 
+/**
+ * Private function to generate a general history report 
+ */
 export const general_history_report = (type: TestRunType, results: {report: any, run: any}[], assertions: Assertions) => {
     const assertion_keys: string[] = [];
     for (const assertType in assertions) {
@@ -88,10 +86,9 @@ export const general_history_report = (type: TestRunType, results: {report: any,
     console.table(res_output);
 }
 
-const render_item = (item: any) => {
-    return item.value;
-}
-
+/**
+ * Private function to generate a retrieval history report
+ */
 export const retrieval_history_report = (type: TestRunType, results: {report: any, run: any}[], assertions: Assertions) => {
     const assertion_keys: string[] = [];
     for (const assertType in assertions) {
@@ -179,11 +176,11 @@ export class EvaluationHistoryReporter {
         this.last_n = props.last_n || 10;
 
         if (this.type === TestRunType.MULTI_CLASS_CLASSIFICATION) {
-            this.reporter = classification_reporter;
+            this.reporter = ClassificationReporter.reporter;
         } else if (this.type === TestRunType.INFORMATION_RETRIEVAL) {
-            this.reporter = retrieval_reporter;
+            this.reporter = RetrievalReporter.reporter;
         } else if (this.type === TestRunType.NL_GENERATION) {
-            this.reporter = generation_reporter;
+            this.reporter = GenerationReporter.reporter;
         } else {
             this.reporter = () => {
                 return {

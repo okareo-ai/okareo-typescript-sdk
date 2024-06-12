@@ -61,12 +61,14 @@ export interface CreateScenarioProps {
     }[];
 }
 
+/**
+ * Okareo SDK
+ * The Okareo class is the main entry point for the Okareo SDK.
+ * It provides methods for registering models, finding test runs, and creating projects.
+ */
 export class Okareo {
     api_key: string = '';
     endpoint: string = '';
-    //model_config: any; //components["schemas"]["ModelUnderTestSchema"] | undefined;
-    //model: components["schemas"]["ModelUnderTestResponse"] | undefined;
-    //project_id: string | undefined;
 
     constructor(props: OkareoProps) {
         if (!props.api_key || props.api_key.length === 0) { throw new Error("API Key is required"); }
@@ -77,12 +79,19 @@ export class Okareo {
         //this.project_id = project_id;
     }
 
+    /**
+     * Register a model with Okareo. Models can be registered with a project and tags.
+     * Thee are multiple models that can be registered and used for evaluation.
+     * The model types include CustomModel, OpenAIModel, CohereModel, PineconeDB, and QDrant
+     * Models are only updated if the update flag is set to true.
+     * @param props 
+     * @returns 
+     */
     async register_model(props: RegisterModelProps): Promise<ModelUnderTest> {
 
         const models = Array.isArray(props.models) ? props.models : [props.models];
         let modelInvoker: any = null;
-        // model_config is what is sent on the wire to regsiter the model
-        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+        
         const register_payload: any = JSON.parse(JSON.stringify(props)); // Create a deep clone of props 
         register_payload["models"] = {};
         for (let model of models) {
