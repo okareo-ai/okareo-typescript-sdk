@@ -235,6 +235,16 @@ export interface paths {
      */
     post: operations["run_test_v0_test_run_post"];
   };
+  "/v0/test_run/create_failure_scenario/{test_run_id}": {
+    /**
+     * Create Failure Scenario
+     * @description Create a ScenarioSet using the failed data points from a TestRun.
+     *
+     * Returns:
+     *     the new Failure Scenario response
+     */
+    post: operations["create_failure_scenario_v0_test_run_create_failure_scenario__test_run_id__post"];
+  };
   "/v0/test_data_point": {
     /**
      * Add Test Data Point
@@ -1093,6 +1103,16 @@ export interface components {
        * @default Neutral
        */
       generation_tone?: components["schemas"]["GenerationTone"];
+      /**
+       * Pre Template
+       * @description Template for pre-processing scenario before sending it to generator
+       */
+      pre_template?: string;
+      /**
+       * Post Template
+       * @description Template for post-processing scenario after generator before it's saved
+       */
+      post_template?: string;
     };
     /** ScenarioSetResponse */
     ScenarioSetResponse: {
@@ -1190,7 +1210,7 @@ export interface components {
      * @description An enumeration.
      * @enum {unknown}
      */
-    ScenarioType: "SEED" | "REPHRASE_INVARIANT" | "CONDITIONAL" | "TEXT_REVERSE_QUESTION" | "TEXT_REVERSE_LABELED" | "TERM_RELEVANCE_INVARIANT" | "COMMON_CONTRACTIONS" | "COMMON_MISSPELLINGS" | "WORD_INFLECTIONS" | "WORD_QWERTY_MISSPELL" | "WORD_CHARACTER_INSERTION" | "WORD_SYNONYM_EMBEDDING" | "LABEL_REVERSE_INVARIANT" | "ROUNDTRIP_INVARIANT" | "NEGATION" | "NAMED_ENTITY_SUBSTITUTION";
+    ScenarioType: "SEED" | "REPHRASE_INVARIANT" | "CONDITIONAL" | "TEXT_REVERSE_QUESTION" | "TEXT_REVERSE_LABELED" | "TEXT_REVERSE_QUESTION_ANSWER" | "TERM_RELEVANCE_INVARIANT" | "COMMON_CONTRACTIONS" | "COMMON_MISSPELLINGS" | "OFF_TOPIC" | "WORD_INFLECTIONS" | "WORD_QWERTY_MISSPELL" | "WORD_CHARACTER_INSERTION" | "WORD_SYNONYM_EMBEDDING" | "LABEL_REVERSE_INVARIANT" | "ROUNDTRIP_INVARIANT" | "NEGATION" | "NAMED_ENTITY_SUBSTITUTION";
     /** SeedData */
     SeedData: {
       /** Input */
@@ -1514,6 +1534,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -1559,6 +1585,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -1599,6 +1631,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -1652,6 +1690,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -1694,6 +1738,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -1744,6 +1794,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -1789,6 +1845,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -1844,6 +1906,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -1885,6 +1953,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -1933,6 +2007,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -1973,6 +2053,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -2023,6 +2109,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2064,6 +2156,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -2113,6 +2211,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2154,6 +2258,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -2203,6 +2313,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2243,6 +2359,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -2296,6 +2418,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2340,6 +2468,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2375,6 +2509,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -2424,6 +2564,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2464,6 +2610,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -2516,6 +2668,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2559,6 +2717,62 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Create Failure Scenario
+   * @description Create a ScenarioSet using the failed data points from a TestRun.
+   *
+   * Returns:
+   *     the new Failure Scenario response
+   */
+  create_failure_scenario_v0_test_run_create_failure_scenario__test_run_id__post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        /** @description The ID of the test run to use for getting failed scenario data points. */
+        test_run_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["ScenarioSetResponse"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -2608,6 +2822,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2648,6 +2868,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -2697,6 +2923,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2738,6 +2970,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -2786,6 +3024,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2826,6 +3070,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -2875,6 +3125,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2920,6 +3176,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -2961,6 +3223,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -3013,6 +3281,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -3054,6 +3328,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
@@ -3106,6 +3386,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -3146,6 +3432,12 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"];
         };
       };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
       /** @description Data is not found */
       404: {
         content: {
@@ -3182,6 +3474,12 @@ export interface operations {
       };
       /** @description Input data is incorrect */
       400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
         };
