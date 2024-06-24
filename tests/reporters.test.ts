@@ -1,5 +1,6 @@
-import { components, classification_reporter, generation_reporter, retrieval_reporter } from '../dist';
-
+import { components } from '../dist';
+import { ClassificationReporter, GenerationReporter, RetrievalReporter } from '../dist';
+import { TestRunType, EvaluationHistoryReporter } from '../dist';
 
 const TEST_RUN_CLASSIFICATION: any = {
     id: '2eed4076-fd4e-484d-928c-c56d5a4ed4fc',
@@ -22,7 +23,7 @@ const TEST_RUN_CLASSIFICATION: any = {
         scores_by_label: {
             'Account Management': { precision: 0, recall: 0, f1: 0 },
             'Technical Support': { precision: 0.75, recall: 1, f1: 0.8571428571428571 },
-            'General Inquiry': { precision: 1, recall: 1, f1: 1 },
+            'General Inquiry': { precision: .5, recall: 0.5, f1: 0.5 },
             'Billing': { precision: 1, recall: 1, f1: 1 }
         }
     },
@@ -181,73 +182,200 @@ const TEST_RUN_GENERATION: any = {
 
 describe('Reporters', () => {
     test('Classification Reporter', async () =>  {
-        const report = classification_reporter(
-            {
-                eval_run:TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"], 
-                error_max: 8, 
-                metrics_min: {
-                    precision: 0.7,
-                    recall: 0.8,
-                    f1: 0.7,
-                    accuracy: 0.8
-                }
+      const metrics = {
+            error_max: 8, 
+            metrics_min: {
+                precision: 0.7,
+                recall: 0.8,
+                f1: 0.7,
+                accuracy: 0.8
             }
-        );
-        expect(report.pass).toBeTruthy();
+        }
+
+      const reporter = new ClassificationReporter({
+        eval_run:TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"], 
+        ...metrics,
+      });
+      reporter.log();
+
+      expect(reporter.pass).toBeTruthy();
     });
 
 
     test('Retrieval Reporter', async () =>  {
-        const report = retrieval_reporter(
-            {
-                eval_run:TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"], 
-                metrics_min: {
-                    'Accuracy@k': {
-                        value: 0.99,
-                        at_k: 3
-                    },
-                    'Precision@k': {
-                        value: 0.2,
-                        at_k: 3
-                    },
-                    'Recall@k': {
-                        value: 0.8,
-                        at_k: 3
-                    },
-                    'NDCG@k': {
-                        value: 0.2,
-                        at_k: 3
-                    },
-                    'MRR@k': {
-                        value: 0.99,
-                        at_k: 3
-                    },
-                    'MAP@k': {
-                        value: 0.99,
-                        at_k: 3
-                    }
-                }
+        const metrics = {
+          metrics_min: {
+            'Accuracy@k': {
+                value: 0.99,
+                at_k: 3
+            },
+            'Precision@k': {
+                value: 0.99,
+                at_k: 3
+            },
+            'Recall@k': {
+                value: 0.8,
+                at_k: 3
+            },
+            'NDCG@k': {
+                value: 0.2,
+                at_k: 3
+            },
+            'MRR@k': {
+                value: 0.99,
+                at_k: 3
+            },
+            'MAP@k': {
+                value: 0.99,
+                at_k: 3
             }
-        );
+          },
+
+          metrics_max: {
+            'Precision@k': {
+                value: 0.2,
+                at_k: 1
+            },
+          }
+        }
+
+        const reporter = new RetrievalReporter({
+          eval_run:TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"], 
+          ...metrics,
+        });
+        reporter.log();
         
-        expect(report.errors).toBeGreaterThanOrEqual(2);
+        expect(reporter.report.errors).toBeGreaterThanOrEqual(2);
     });
 
 
     test('Generation Reporter', async () =>  {
-        const report = generation_reporter(
-            {
-                eval_run:TEST_RUN_GENERATION as components["schemas"]["TestRunItem"], 
-                metrics_min: {
-                    coherence: 5,
-                    consistency: 3,
-                    fluency: 5,
-                    relevance: 1,
-                    overall: 2
-                }
+        const metrics = {
+          metrics_min: {
+              coherence: 5,
+              consistency: 3,
+              fluency: 5,
+              relevance: 1,
+              overall: 2
+          }
+        };
+
+        const reporter = new GenerationReporter({
+          eval_run:TEST_RUN_GENERATION as components["schemas"]["TestRunItem"], 
+          ...metrics,
+        });
+        reporter.log();
+        
+        expect(reporter.report.errors).toBeGreaterThanOrEqual(2);
+    });
+
+
+    test('Generations History', async () =>  {
+        const metrics = {
+          metrics_min: {
+              coherence: 5,
+              consistency: 3,
+              fluency: 5,
+              relevance: 1,
+              overall: 2
+          },
+          metrics_max: {
+              coherence: 5,
+              consistency: 3,
+              fluency: 5,
+              relevance: 1,
+              overall: 2
+          }
+        };
+
+        const class_metrics = {
+          metrics_min: {
+            precision: 1.0,
+            recall: 1.0,
+            f1: 0.6,
+            accuracy: 0.6
+          },
+          metrics_max: {
+            precision: 0.9,
+            recall: 1.0,
+            f1: 0.8,
+            accuracy: 0.99
+          }
+        };
+
+        const retrieval_metrics = {
+          metrics_min: {
+            'Accuracy@k': {
+                value: 0.85,
+                at_k: 1
+            },
+            'Precision@k': {
+                value: 0.6,
+                at_k: 3
+            },
+            'Recall@k': {
+                value: 0.9,
+                at_k: 1
+            },
+            'NDCG@k': {
+                value: 0.2,
+                at_k: 3
+            },
+            'MRR@k': {
+                value: 0.99,
+                at_k: 3
+            },
+            'MAP@k': {
+                value: 0.99,
+                at_k: 3
             }
+          },
+
+          metrics_max: {
+            'Accuracy@k': {
+                value: 0.9,
+                at_k: 1
+            },
+            'Precision@k': {
+                value: 0.9,
+                at_k: 3
+            },
+          }
+        }
+
+        const history_class = new EvaluationHistoryReporter(
+          {
+            type: TestRunType.MULTI_CLASS_CLASSIFICATION,
+            evals:[TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"], TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"]],
+            assertions: class_metrics,
+            last_n: 5,
+          }
         );
-        expect(report.errors).toBeGreaterThanOrEqual(2);
+        history_class.log();
+        expect(history_class.last_n).toBeGreaterThanOrEqual(5);
+
+
+        const history_retrieve = new EvaluationHistoryReporter(
+          {
+            type: TestRunType.INFORMATION_RETRIEVAL,
+            evals:[TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"], TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"]],
+            assertions: retrieval_metrics,
+            last_n: 5,
+          }
+        );
+        history_retrieve.log();
+        expect(history_class.last_n).toBeGreaterThanOrEqual(5);
+
+
+        const history_gen = new EvaluationHistoryReporter(
+          {
+            type: TestRunType.NL_GENERATION,
+            evals:[TEST_RUN_GENERATION as components["schemas"]["TestRunItem"], TEST_RUN_GENERATION as components["schemas"]["TestRunItem"]], 
+            assertions: metrics,
+          }
+        );
+        history_gen.log();
+        expect(history_gen.last_n).toBeGreaterThanOrEqual(10);
     });
 
 });

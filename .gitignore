@@ -1,9 +1,5 @@
 ### okareo ###
-.okareo/node_modules
-.okareo/dist
-.okareo/package*
-.okareo/tsconfig.json
-
+.okareo
 
 ### macOS ###
 # General
