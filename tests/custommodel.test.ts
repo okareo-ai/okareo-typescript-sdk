@@ -69,9 +69,9 @@ describe('Evaluations', () => {
                 type: "custom",
                 invoke: (input: string, result: string) => {
                     return {
-                        actual: "Technical Support",
+                        model_prediction: "Technical Support",
                         model_input: input,
-                        model_result: {
+                        model_output_metadata: {
                             input: input,
                             method: "hard coded",
                             context: {
@@ -124,9 +124,9 @@ describe('Evaluations', () => {
                     const parsedIdsWithScores = scores.map(({ id, score }) => [id, score])
                             
                     return {
-                        actual: parsedIdsWithScores,
+                        model_prediction: parsedIdsWithScores,
                         model_input: input,
-                        model_result: {
+                        model_output_metadata: {
                             input: input,
                             result: result,
                         }

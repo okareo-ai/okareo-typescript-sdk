@@ -47,11 +47,24 @@ export enum TestRunType {
 export interface BaseModel {
     type: string;
 }
-
+/**
+ * Interface representing a model invocation returned from a CustomModel.invoke function
+ */
 export interface  ModelInvocation {
-    actual?: Record<string, any> | unknown[] | string;
+    /**
+     * Prediction from the model to be used when running the evaluation,
+     * e.g. predicted class from classification model or generated text completion from
+     * a generative model. This would typically be parsed out of the overall model_output_metadata
+     */
+    model_prediction?: Record<string, any> | unknown[] | string;
+    /**
+     * All the input sent to the model
+     */
     model_input?: Record<string, any> | unknown[] | string;
-    model_result?: Record<string, any> | unknown[] | string;
+    /**
+     * Full model response, including any metadata returned with model's output
+     */
+    model_output_metadata?: Record<string, any> | unknown[] | string;
 }
 
 export interface OpenAIModel extends BaseModel {
@@ -161,9 +174,9 @@ export class ModelUnderTest {
                     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
                     const modelInvocation: ModelInvocation = await invoke(input, result);
                     results.model_data[id] = {
-                        "actual": modelInvocation.actual,
+                        "actual": modelInvocation.model_prediction,
                         "model_input": modelInvocation.model_input,
-                        "model_response": modelInvocation.model_result,
+                        "model_response": modelInvocation.model_output_metadata,
                     };
                 }
             }

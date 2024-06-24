@@ -59,9 +59,9 @@ describe('Scenarios', () => {
         type: "custom",
         invoke: (input: string, result: string) => { 
             return {
-              actual: "noop",
+              model_prediction: "noop",
               model_input: {},
-              model_result: {}
+              model_output_metadata: {}
           } as ModelInvocation
         } 
       } as CustomModel
