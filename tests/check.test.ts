@@ -1,8 +1,6 @@
 import { get } from "http";
-import { CheckCreateUpdateProps } from "okareo-ts-sdk";
-import { Okareo, SeedData } from "../dist";
+import { Okareo, SeedData, CheckCreateUpdateProps, CheckOutputType } from "../dist";
 import { getProjectId } from './setup-env';
-import { CheckOutputType } from "okareo-ts-sdk";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const UNIQUE_BUILD_ID = (process.env.SDK_BUILD_ID || `local.${(Math.random() + 1).toString(36).substring(7)}`);
