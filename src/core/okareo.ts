@@ -34,17 +34,11 @@ export interface UploadEvaluatorProps {
     update?: boolean;
 }
 
-export interface CheckConfig {
-    prompt_template?: string;
-    code_contents?: string;
-    type: CheckOutputType;
-}
-
 export interface CheckCreateUpdateProps {
     project_id: string;
     name: string;
     description: string;
-    check_config: CheckConfig;
+    check_config: { [key: string]: string };
 }
 
 export interface CreateProjectProps {
@@ -460,7 +454,7 @@ export class Okareo {
         return this.generate_check(props);
     }
 
-    async create_or_update_check(props: CheckCreateUpdateProps): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
+    async create_or_update_check(props: components["schemas"]["CheckCreateUpdateSchema"]): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.POST("/v0/check_create_or_update", {

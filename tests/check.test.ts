@@ -1,5 +1,5 @@
 import { get } from "http";
-import { CheckCreateUpdateProps, CheckConfig } from "okareo-ts-sdk";
+import { CheckCreateUpdateProps } from "okareo-ts-sdk";
 import { Okareo, SeedData } from "../dist";
 import { getProjectId } from './setup-env';
 import { CheckOutputType } from "okareo-ts-sdk";
@@ -92,7 +92,7 @@ describe('Checks', () => {
         const check_config = {
             prompt_template: prompt,
             type: CheckOutputType.PASS_FAIL,
-        } as CheckConfig;
+        };
         const check_info = {
             project_id,
             name: `CI: Uploaded Model-based Check - ${UNIQUE_BUILD_ID}`,
