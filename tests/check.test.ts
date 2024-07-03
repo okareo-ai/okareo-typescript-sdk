@@ -1,6 +1,8 @@
 import { get } from "http";
+import { CheckCreateUpdateProps, CheckConfig } from "okareo-ts-sdk";
 import { Okareo, SeedData } from "../dist";
 import { getProjectId } from './setup-env';
+import { CheckOutputType } from "okareo-ts-sdk";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const UNIQUE_BUILD_ID = (process.env.SDK_BUILD_ID || `local.${(Math.random() + 1).toString(36).substring(7)}`);
@@ -82,6 +84,28 @@ describe('Checks', () => {
         evalObj = (eval_id)?await okareo.get_check(eval_id):null;
         }
         expect(evalObj).toBeDefined();
+    });
+
+    test('Upload a Model-based Check', async () =>  {
+        const okareo = new Okareo({api_key:OKAREO_API_KEY });
+        const prompt = "Only output True if the model_output is at least 20 characters long, otherwise return False.";
+        const check_config = {
+            prompt_template: prompt,
+            type: CheckOutputType.PASS_FAIL,
+        } as CheckConfig;
+        const check_info = {
+            project_id,
+            name: `CI: Uploaded Model-based Check - ${UNIQUE_BUILD_ID}`,
+            description: prompt,
+            check_config,
+        } as CheckCreateUpdateProps;
+        const upload_check: any = await okareo.create_or_update_check(check_info);
+        
+        expect(upload_check).toBeDefined();
+        
+        //const del_data = await okareo.delete_check(upload_check.id, upload_check.name);
+        //expect(del_data).toEqual("Check deletion was successful");
+        
     });
 
 });

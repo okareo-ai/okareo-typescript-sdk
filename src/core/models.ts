@@ -248,3 +248,8 @@ export class ModelUnderTest {
     }
 
 }
+
+export enum CheckOutputType {
+    SCORE = "score",
+    PASS_FAIL = "pass_fail",
+}
