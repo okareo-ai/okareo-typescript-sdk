@@ -1,14 +1,8 @@
-from abc import ABC, abstractmethod
+from okareo.checks import BaseCheck
 import re
 import nltk
 import spacy
 import sklearn
-
-class BaseCheck(ABC):
-    @staticmethod
-    @abstractmethod
-    def evaluate():
-        pass
 
 class Check(BaseCheck):
     @staticmethod

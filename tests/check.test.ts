@@ -58,7 +58,6 @@ describe('Checks', () => {
             requires_scenario_result: true,
             output_data_type: "bool",
         }
-        const check: any = await okareo.generate_check(check_info);
         const upload_check: any = await okareo.upload_check({
             ...check_info,
             file_path: "tests/example_eval.py",
