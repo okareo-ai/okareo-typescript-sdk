@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import type { paths, components } from "../api/v1/okareo_endpoints";
 import FormData from "form-data";
 import * as fs from "fs";
-import { ModelUnderTest, BaseModel, CustomModel } from "./models";
+import { ModelUnderTest, BaseModel, CustomModel, CheckOutputType } from "./models";
 
 const CHECK_DEPRECATION_WARNING = "The `evaluator` naming convention is deprecated and will not be supported in a future release. " +
 "Please use `check` in place of `evaluator` when invoking this method.";
@@ -32,6 +32,13 @@ export interface UploadEvaluatorProps {
     requires_scenario_result?: boolean;
     output_data_type: string; // "bool" | "int" | "float";
     update?: boolean;
+}
+
+export interface CheckCreateUpdateProps {
+    project_id: string;
+    name: string;
+    description: string;
+    check_config: { [key: string]: string };
 }
 
 export interface CreateProjectProps {
@@ -447,6 +454,23 @@ export class Okareo {
         return this.generate_check(props);
     }
 
+    async create_or_update_check(props: components["schemas"]["CheckCreateUpdateSchema"]): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { data, error } = await client.POST("/v0/check_create_or_update", {
+            params: {
+                header: {
+                    "api-key": this.api_key
+                },
+            },
+            body: props
+            
+        });
+        if (error) {
+            throw error;
+        }
+        return data || {};
+    }
 
     async upload_check(props: UploadEvaluatorProps): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }

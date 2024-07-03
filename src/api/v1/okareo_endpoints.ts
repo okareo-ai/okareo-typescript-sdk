@@ -303,25 +303,15 @@ export interface paths {
      */
     post: operations["check_generate_v0_evaluator_generate_post"];
   };
-  "/v0/check_upload": {
+  "/v0/check_create_or_update": {
     /**
-     * Check Upload
-     * @description Upload a new check
+     * Check Create Or Update
+     * @description Create or get check
      *
      * Returns:
      *     the check object with its ID
      */
-    post: operations["check_upload_v0_check_upload_post"];
-  };
-  "/v0/evaluator_upload": {
-    /**
-     * Check Upload
-     * @description Upload a new check
-     *
-     * Returns:
-     *     the check object with its ID
-     */
-    post: operations["check_upload_v0_evaluator_upload_post"];
+    post: operations["check_create_or_update_v0_check_create_or_update_post"];
   };
   "/v0/check/{check_id}": {
     /**
@@ -386,6 +376,26 @@ export interface paths {
      *     a list of requested checks
      */
     get: operations["get_all_checks_v0_evaluators_get"];
+  };
+  "/v0/check_upload": {
+    /**
+     * Check Upload
+     * @description Upload a new check
+     *
+     * Returns:
+     *     the check object with its ID
+     */
+    post: operations["check_upload_v0_check_upload_post"];
+  };
+  "/v0/evaluator_upload": {
+    /**
+     * Check Upload
+     * @description Upload a new check
+     *
+     * Returns:
+     *     the check object with its ID
+     */
+    post: operations["check_upload_v0_evaluator_upload_post"];
   };
 }
 
@@ -519,6 +529,23 @@ export interface components {
        * Format: binary
        */
       file?: string;
+    };
+    /** CheckCreateUpdateSchema */
+    CheckCreateUpdateSchema: {
+      /** Name */
+      name?: string;
+      /** Description */
+      description?: string;
+      /** Check Config */
+      check_config?: {
+        [key: string]: string;
+      };
+      /**
+       * Project Id
+       * Format: uuid
+       * @description ID of the project
+       */
+      project_id?: string;
     };
     /** DatapointListItem */
     DatapointListItem: {
@@ -764,6 +791,8 @@ export interface components {
        * Format: date-time
        */
       time_created?: string;
+      /** Check Config */
+      check_config?: Record<string, never>;
     };
     /** EvaluatorDetailedResponse */
     EvaluatorDetailedResponse: {
@@ -805,6 +834,8 @@ export interface components {
       time_created?: string;
       /** Warning */
       warning?: string;
+      /** Check Config */
+      check_config?: Record<string, never>;
     };
     /** EvaluatorGenerateResponse */
     EvaluatorGenerateResponse: {
@@ -932,7 +963,7 @@ export interface components {
      * @description An enumeration.
      * @enum {unknown}
      */
-    GenerationTone: "Neutral" | "Formal" | "Informal" | "Persuasive" | "Empathetic";
+    GenerationTone: "Neutral" | "Formal" | "Informal" | "Abbreviated Informal" | "Persuasive" | "Empathetic";
     /** ModelUnderTestResponse */
     ModelUnderTestResponse: {
       /**
@@ -1210,7 +1241,7 @@ export interface components {
      * @description An enumeration.
      * @enum {unknown}
      */
-    ScenarioType: "SEED" | "REPHRASE_INVARIANT" | "CONDITIONAL" | "TEXT_REVERSE_QUESTION" | "TEXT_REVERSE_LABELED" | "TEXT_REVERSE_QUESTION_ANSWER" | "TERM_RELEVANCE_INVARIANT" | "COMMON_CONTRACTIONS" | "COMMON_MISSPELLINGS" | "OFF_TOPIC" | "WORD_INFLECTIONS" | "WORD_QWERTY_MISSPELL" | "WORD_CHARACTER_INSERTION" | "WORD_SYNONYM_EMBEDDING" | "LABEL_REVERSE_INVARIANT" | "ROUNDTRIP_INVARIANT" | "NEGATION" | "NAMED_ENTITY_SUBSTITUTION";
+    ScenarioType: "SEED" | "REPHRASE_INVARIANT" | "CONDITIONAL" | "TEXT_REVERSE_QUESTION" | "TEXT_REVERSE_LABELED" | "TEXT_REVERSE_QUESTION_ANSWER" | "TERM_RELEVANCE_INVARIANT" | "COMMON_CONTRACTIONS" | "COMMON_MISSPELLINGS" | "OFF_TOPIC" | "ADVERSARIAL_QUESTION" | "WORD_INFLECTIONS" | "WORD_QWERTY_MISSPELL" | "WORD_CHARACTER_INSERTION" | "WORD_SYNONYM_EMBEDDING" | "LABEL_REVERSE_INVARIANT" | "ROUNDTRIP_INVARIANT" | "NEGATION" | "NAMED_ENTITY_SUBSTITUTION";
     /** SeedData */
     SeedData: {
       /** Input */
@@ -3095,13 +3126,13 @@ export interface operations {
     };
   };
   /**
-   * Check Upload
-   * @description Upload a new check
+   * Check Create Or Update
+   * @description Create or get check
    *
    * Returns:
    *     the check object with its ID
    */
-  check_upload_v0_check_upload_post: {
+  check_create_or_update_v0_check_create_or_update_post: {
     parameters: {
       header: {
         "api-key": string;
@@ -3109,58 +3140,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "multipart/form-data": components["schemas"]["Body_check_upload_v0_check_upload_post"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        content: {
-          "application/json": components["schemas"]["EvaluatorDetailedResponse"];
-        };
-      };
-      /** @description Input data is incorrect */
-      400: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Okareo API token has failed authentication */
-      401: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Data is not found */
-      404: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Input data is invalid */
-      422: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  /**
-   * Check Upload
-   * @description Upload a new check
-   *
-   * Returns:
-   *     the check object with its ID
-   */
-  check_upload_v0_evaluator_upload_post: {
-    parameters: {
-      header: {
-        "api-key": string;
-      };
-    };
-    requestBody: {
-      content: {
-        "multipart/form-data": components["schemas"]["Body_check_upload_v0_evaluator_upload_post"];
+        "application/json": components["schemas"]["CheckCreateUpdateSchema"];
       };
     };
     responses: {
@@ -3470,6 +3450,108 @@ export interface operations {
       201: {
         content: {
           "application/json": components["schemas"]["EvaluatorBriefResponse"][];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Check Upload
+   * @description Upload a new check
+   *
+   * Returns:
+   *     the check object with its ID
+   */
+  check_upload_v0_check_upload_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["Body_check_upload_v0_check_upload_post"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["EvaluatorDetailedResponse"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Check Upload
+   * @description Upload a new check
+   *
+   * Returns:
+   *     the check object with its ID
+   */
+  check_upload_v0_evaluator_upload_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "multipart/form-data": components["schemas"]["Body_check_upload_v0_evaluator_upload_post"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["EvaluatorDetailedResponse"];
         };
       };
       /** @description Input data is incorrect */
