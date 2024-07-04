@@ -1,4 +1,6 @@
 import { get } from "http";
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { Okareo, SeedData, CheckCreateUpdateProps, CheckOutputType } from "../dist";
 import { getProjectId } from './setup-env';
 
@@ -48,39 +50,27 @@ describe('Checks', () => {
         expect(del_data).toEqual("Check deletion was successful");
     });
 
-    test('Upload a Check', async () =>  {
+    test('Upload a Code-based Check', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY });
+        const filePath = join(__dirname, 'example_eval.py');
+        const code_contents = readFileSync(filePath, 'utf8');
+        const check_config = {
+            code_contents,
+            type: CheckOutputType.PASS_FAIL,
+        };
         const check_info = {
-            name: `CI: Uploaded Check - ${UNIQUE_BUILD_ID}`,
             project_id,
+            name: `CI: Uploaded Code-based Check - ${UNIQUE_BUILD_ID}`,
             description: "Pass if the model result length is within 10% of the expected result.",
-            requires_scenario_input: false,
-            requires_scenario_result: true,
-            output_data_type: "bool",
-        }
-        const upload_check: any = await okareo.upload_check({
-            ...check_info,
-            file_path: "tests/example_eval.py",
-            update: true
-        });
+            check_config,
+        } as CheckCreateUpdateProps;
+        const upload_check: any = await okareo.create_or_update_check(check_info);
         
         expect(upload_check).toBeDefined();
         
         //const del_data = await okareo.delete_check(upload_check.id, upload_check.name);
         //expect(del_data).toEqual("Check deletion was successful");
         
-    });
-
-    test('Get Check(s)', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY });
-        const allEvals = await okareo.get_all_checks();
-        expect(allEvals).toBeDefined();
-        let evalObj;
-        if (allEvals.length > 0) {
-        const eval_id = allEvals[0].id;
-        evalObj = (eval_id)?await okareo.get_check(eval_id):null;
-        }
-        expect(evalObj).toBeDefined();
     });
 
     test('Upload a Model-based Check', async () =>  {
@@ -103,6 +93,18 @@ describe('Checks', () => {
         //const del_data = await okareo.delete_check(upload_check.id, upload_check.name);
         //expect(del_data).toEqual("Check deletion was successful");
         
+    });
+
+    test('Get Check(s)', async () =>  {
+        const okareo = new Okareo({api_key:OKAREO_API_KEY });
+        const allEvals = await okareo.get_all_checks();
+        expect(allEvals).toBeDefined();
+        let evalObj;
+        if (allEvals.length > 0) {
+        const eval_id = allEvals[0].id;
+        evalObj = (eval_id)?await okareo.get_check(eval_id):null;
+        }
+        expect(evalObj).toBeDefined();
     });
 
 });
