@@ -27,29 +27,6 @@ describe('Checks', () => {
         expect(check.generated_code).toBeDefined();
     });
 
-    test('Save a Check', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY });
-        const check_info = {
-            name: `CI: Classifier Check - ${UNIQUE_BUILD_ID}`,
-            project_id,
-            description: "Return a pass if the model output matches the scenarios expected result.",
-            requires_scenario_input: false,
-            requires_scenario_result: true,
-            output_data_type: "bool",
-        }
-        const check: any = await okareo.generate_check(check_info);
-        const upload_check: any = await okareo.upload_check({
-            ...check_info,
-            generated_code: check.generated_code,
-            update: true
-        });
-        
-        expect(upload_check).toBeDefined();
-
-        const del_data = await okareo.delete_check(upload_check.id, upload_check.name);
-        expect(del_data).toEqual("Check deletion was successful");
-    });
-
     test('Upload a Code-based Check', async () =>  {
         const okareo = new Okareo({api_key:OKAREO_API_KEY });
         const filePath = join(__dirname, 'example_eval.py');

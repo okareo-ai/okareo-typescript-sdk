@@ -391,7 +391,6 @@ export class Okareo {
                 });
     }
 
-    //
 
     async get_all_models(project_id: string ): Promise<components["schemas"]["ModelUnderTestResponse"][]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
@@ -472,88 +471,6 @@ export class Okareo {
         return data || {};
     }
 
-    async upload_check(props: UploadEvaluatorProps): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
-        const eLength = this.endpoint.length;
-        const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/check_upload";
-        
-        const tmpFileName = "temp_evaluator_code.py";
-        const { generated_code = "" } = props; // file_path is rewritten as needed
-        if (props.file_path && generated_code.length > 0) {
-            throw new Error("Only one of file_path or evaluator_code is allowed");
-        }
-        const isGeneratedEval: boolean = (generated_code && generated_code.length > 0)?true:false;
-        if (isGeneratedEval) {
-            fs.writeFileSync(tmpFileName, generated_code);
-            props.file_path = tmpFileName;
-        }
-        const file_path: string = props.file_path as string; // file_path is rewritten as needed
-        if (!fs.existsSync(file_path))
-            throw new Error("File not found");
-        //const altFile = fs.readFileSync(file_path);
-        //console.log("Uploading Eval: "+altFile.toString().substring(0, 75)+"...");
-
-        const file = fs.createReadStream(file_path);
-        
-        if (!file)
-            throw new Error("File read error");
-
-        const requires_scenario_input: string = (props.requires_scenario_input && props.requires_scenario_input.toString() === "true")?"true":"false";
-        const requires_scenario_result: string = (props.requires_scenario_result && props.requires_scenario_result.toString() === "true")?"true":"false";
-        const update: string = (props.update && props.update.toString() === "true")?"true":"false";
-        const form = new FormData();
-        form.append("name", props.name);
-        form.append("project_id", props.project_id); 
-        form.append("description", props.description); 
-        form.append("requires_scenario_input", requires_scenario_input); 
-        form.append("requires_scenario_result", requires_scenario_result); 
-        form.append("output_data_type", props.output_data_type); 
-        form.append("update", update);
-        form.append(
-            'file', file
-        );
-        const headers = Object.assign({
-            'api-key': `${this.api_key}`,
-        }, form.getHeaders());
-        
-        const reqOptions = {
-            method: 'POST',
-            headers: headers,
-            'body':form,
-        };
-
-        return await fetch(`${api_endpoint}`, reqOptions)
-            .then(response => response.json())
-            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-            .then((data: any) => {
-                if (data.detail) {
-                    throw new Error(data.detail);
-                } else {
-                    if (data && data.warning) {
-                        console.log(data.warning);
-                    }
-                    return data as components["schemas"]["EvaluatorGenerateResponse"];
-                }
-            })
-            .finally(() => {
-                file.close();
-                if (isGeneratedEval && fs.existsSync(tmpFileName)) {
-                    fs.unlinkSync(tmpFileName);
-                }
-            })
-            .catch((error) => {
-                console.error("Error uploading check:" + error);
-                throw error;
-            });
-    }
-
-
-    async upload_evaluator(props: UploadEvaluatorProps): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
-        console.warn(CHECK_DEPRECATION_WARNING);
-        return this.upload_check(props);
-    }
-
-
     async get_all_checks(): Promise<components["schemas"]["EvaluatorBriefResponse"][]> {
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         const client = createClient<paths>({ baseUrl: this.endpoint });
@@ -570,11 +487,6 @@ export class Okareo {
         return data || {};
     }
 
-
-    async get_all_evaluators(): Promise<components["schemas"]["EvaluatorBriefResponse"][]> {
-        console.warn(CHECK_DEPRECATION_WARNING);
-        return this.get_all_checks();
-    }
 
 
     async get_check(check_id: string): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
@@ -594,11 +506,6 @@ export class Okareo {
         return data || {};
     }
 
-
-    async get_evaluator(evaluator_id: string): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
-        console.warn(CHECK_DEPRECATION_WARNING);
-        return this.get_check(evaluator_id);
-    }
 
     async delete_check(check_id: string, check_name: string): Promise<string> {
         const eLength = this.endpoint.length;
@@ -631,9 +538,5 @@ export class Okareo {
             
     }
 
-    async delete_evaluator(evaluator_id: string, evaluator_name: string): Promise<string> {
-        console.warn(CHECK_DEPRECATION_WARNING);
-        return await this.delete_check(evaluator_id, evaluator_name);
-    }
 
 }
