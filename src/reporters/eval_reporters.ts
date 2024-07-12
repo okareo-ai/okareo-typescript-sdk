@@ -311,3 +311,25 @@ export class RetrievalReporter {
         log_report({eval_run: this.eval_run, report: this.report});
     }
 }
+
+export interface JSONReporterProps {
+    eval_runs: components["schemas"]["TestRunItem"][];
+
+}
+
+export class JSONReporter {
+    eval_runs: components["schemas"]["TestRunItem"][];
+
+    constructor(props: JSONReporterProps) {
+        this.eval_runs = props.eval_runs;
+    }
+    
+    log() {
+        if (this.eval_runs) {  
+            this.eval_runs.forEach((eval_run) => {
+                console.log(eval_run);
+            });
+        } 
+    }
+}
+

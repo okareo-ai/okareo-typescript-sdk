@@ -1,5 +1,5 @@
 import { components } from '../dist';
-import { ClassificationReporter, GenerationReporter, RetrievalReporter } from '../dist';
+import { ClassificationReporter, GenerationReporter, RetrievalReporter, JSONReporter } from '../dist';
 import { TestRunType, EvaluationHistoryReporter } from '../dist';
 
 const TEST_RUN_CLASSIFICATION: any = {
@@ -377,6 +377,19 @@ describe('Reporters', () => {
         history_gen.log();
         expect(history_gen.last_n).toBeGreaterThanOrEqual(10);
     });
+
+    test('JSON Reporter', async () =>  {
+
+      const reporter = new JSONReporter({
+        eval_runs:[
+          TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"],
+          TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"],
+          TEST_RUN_GENERATION as components["schemas"]["TestRunItem"]
+        ]
+      });
+      reporter.log();
+      
+  });
 
 });
 
