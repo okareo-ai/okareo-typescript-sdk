@@ -325,11 +325,26 @@ export class JSONReporter {
     }
     
     log() {
-        if (this.eval_runs) {  
-            this.eval_runs.forEach((eval_run) => {
-                console.log(eval_run);
-            });
-        } 
+
+        if (!this.eval_runs || this.eval_runs.length === 0) {
+            console.log('No evaluation runs found to report');
+            return;
+        }
+
+        if (process.env.OKAREO_JSON_OUTPUT_FILE) {
+            const fs = require('fs');
+            const outputFilePath = process.env.OKAREO_JSON_OUTPUT_FILE;           
+
+            try {
+                fs.writeFileSync(outputFilePath, JSON.stringify(this.eval_runs, null, 2));
+                console.log('Evaluation runs written to', outputFilePath);
+            } catch (err) {
+                console.error('Error writing to file:', err);
+            }
+        }
+ 
+        // Output the entire eval_runs as array 
+        console.log(JSON.stringify(this.eval_runs, null, 2));
     }
 }
 
