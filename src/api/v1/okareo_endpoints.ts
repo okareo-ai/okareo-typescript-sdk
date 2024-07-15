@@ -192,10 +192,6 @@ export interface paths {
      */
     get: operations["get_all_models_under_test_v0_models_under_test_get"];
   };
-  "/v0/get_semantic_overlap": {
-    /** Get Semantic Overlap */
-    post: operations["get_semantic_overlap_v0_get_semantic_overlap_post"];
-  };
   "/v0/find_test_runs": {
     /**
      * Find Test Run
@@ -294,15 +290,6 @@ export interface paths {
      */
     post: operations["check_generate_v0_check_generate_post"];
   };
-  "/v0/evaluator_generate": {
-    /**
-     * Check Generate
-     * @description Generate code for an evaluator for testing.
-     * Returns:
-     *     the evaluator object with the generated code
-     */
-    post: operations["check_generate_v0_evaluator_generate_post"];
-  };
   "/v0/check_create_or_update": {
     /**
      * Check Create Or Update
@@ -335,28 +322,6 @@ export interface paths {
      */
     delete: operations["check_delete_v0_check__check_id__delete"];
   };
-  "/v0/evaluator/{evaluator_id}": {
-    /**
-     * Get Evaluator
-     * @description Get an evaluator. Note: This is a wrapper for /check/{check_id}, which uses the proper naming convention.
-     *
-     * Raises:
-     *     HTTPException: 404 if evaluator_id is not found
-     *
-     * Returns: the evaluator
-     */
-    get: operations["get_evaluator_v0_evaluator__evaluator_id__get"];
-    /**
-     * Evaluator Delete
-     * @description Deletes an evaluator. Note: This is a wrapper for /check/{check_id}, which uses the proper naming convention.
-     *
-     * Raises:
-     *     HTTPException: 404 if evaluator_id is not found
-     *
-     * Returns: 204 status code on successful deletion
-     */
-    delete: operations["evaluator_delete_v0_evaluator__evaluator_id__delete"];
-  };
   "/v0/checks": {
     /**
      * Get All Checks
@@ -367,16 +332,6 @@ export interface paths {
      */
     get: operations["get_all_checks_v0_checks_get"];
   };
-  "/v0/evaluators": {
-    /**
-     * Get All Checks
-     * @description Get a list of checks for this organization
-     *
-     * Returns:
-     *     a list of requested checks
-     */
-    get: operations["get_all_checks_v0_evaluators_get"];
-  };
   "/v0/check_upload": {
     /**
      * Check Upload
@@ -386,16 +341,6 @@ export interface paths {
      *     the check object with its ID
      */
     post: operations["check_upload_v0_check_upload_post"];
-  };
-  "/v0/evaluator_upload": {
-    /**
-     * Check Upload
-     * @description Upload a new check
-     *
-     * Returns:
-     *     the check object with its ID
-     */
-    post: operations["check_upload_v0_evaluator_upload_post"];
   };
 }
 
@@ -456,60 +401,6 @@ export interface components {
        * @default false
        */
       update?: boolean;
-    };
-    /** Body_check_upload_v0_evaluator_upload_post */
-    Body_check_upload_v0_evaluator_upload_post: {
-      /**
-       * Name
-       * @description Name of the Check
-       */
-      name: string;
-      /**
-       * Description
-       * @description Description of the Check
-       * @default No description provided
-       */
-      description?: string;
-      /**
-       * Requires Scenario Input
-       * @description Whether the check requires scenario input
-       */
-      requires_scenario_input: boolean;
-      /**
-       * Requires Scenario Result
-       * @description Whether the check requires scenario expected result
-       */
-      requires_scenario_result: boolean;
-      /**
-       * Output Data Type
-       * @description Check output data type (i.e., bool, int, float)
-       */
-      output_data_type?: string;
-      /**
-       * Project Id
-       * Format: uuid
-       * @description ID for the project
-       */
-      project_id?: string;
-      /**
-       * File
-       * Format: binary
-       */
-      file?: string;
-      /**
-       * Update
-       * @description Update the check
-       * @default false
-       */
-      update?: boolean;
-    };
-    /** Body_evaluator_delete_v0_evaluator__evaluator_id__delete */
-    Body_evaluator_delete_v0_evaluator__evaluator_id__delete: {
-      /**
-       * Name
-       * @description Name of the Evaluator to delete
-       */
-      name: string;
     };
     /** Body_scenario_sets_upload_v0_scenario_sets_upload_post */
     Body_scenario_sets_upload_v0_scenario_sets_upload_post: {
@@ -1248,22 +1139,6 @@ export interface components {
       input: Record<string, never> | unknown[] | string;
       /** Result */
       result: Record<string, never> | unknown[] | string;
-    };
-    /** SemanticPayload */
-    SemanticPayload: {
-      /** Source Text */
-      source_text: string;
-      /** Output Text */
-      output_text: string;
-    };
-    /** SemanticResult */
-    SemanticResult: {
-      /** Document Sentences */
-      document_sentences: string[];
-      /** Summary Sentences */
-      summary_sentences: string[];
-      /** Scores */
-      scores: string[][];
     };
     /** SummaryDatapointSearch */
     SummaryDatapointSearch: {
@@ -2519,51 +2394,6 @@ export interface operations {
       };
     };
   };
-  /** Get Semantic Overlap */
-  get_semantic_overlap_v0_get_semantic_overlap_post: {
-    parameters: {
-      header: {
-        "api-key": string;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["SemanticPayload"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        content: {
-          "application/json": components["schemas"]["SemanticResult"];
-        };
-      };
-      /** @description Input data is incorrect */
-      400: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Okareo API token has failed authentication */
-      401: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Data is not found */
-      404: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Input data is invalid */
-      422: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
   /**
    * Find Test Run
    * @description Find Test Runs
@@ -3076,56 +2906,6 @@ export interface operations {
     };
   };
   /**
-   * Check Generate
-   * @description Generate code for an evaluator for testing.
-   * Returns:
-   *     the evaluator object with the generated code
-   */
-  check_generate_v0_evaluator_generate_post: {
-    parameters: {
-      header: {
-        "api-key": string;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["EvaluatorSpecRequest"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        content: {
-          "application/json": components["schemas"]["EvaluatorGenerateResponse"];
-        };
-      };
-      /** @description Input data is incorrect */
-      400: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Okareo API token has failed authentication */
-      401: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Data is not found */
-      404: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Input data is invalid */
-      422: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  /**
    * Check Create Or Update
    * @description Create or get check
    *
@@ -3282,111 +3062,6 @@ export interface operations {
     };
   };
   /**
-   * Get Evaluator
-   * @description Get an evaluator. Note: This is a wrapper for /check/{check_id}, which uses the proper naming convention.
-   *
-   * Raises:
-   *     HTTPException: 404 if evaluator_id is not found
-   *
-   * Returns: the evaluator
-   */
-  get_evaluator_v0_evaluator__evaluator_id__get: {
-    parameters: {
-      header: {
-        "api-key": string;
-      };
-      path: {
-        evaluator_id: string;
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        content: {
-          "application/json": unknown;
-        };
-      };
-      /** @description Input data is incorrect */
-      400: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Okareo API token has failed authentication */
-      401: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Data is not found */
-      404: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Input data is invalid */
-      422: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  /**
-   * Evaluator Delete
-   * @description Deletes an evaluator. Note: This is a wrapper for /check/{check_id}, which uses the proper naming convention.
-   *
-   * Raises:
-   *     HTTPException: 404 if evaluator_id is not found
-   *
-   * Returns: 204 status code on successful deletion
-   */
-  evaluator_delete_v0_evaluator__evaluator_id__delete: {
-    parameters: {
-      header: {
-        "api-key": string;
-      };
-      path: {
-        evaluator_id: string;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/x-www-form-urlencoded": components["schemas"]["Body_evaluator_delete_v0_evaluator__evaluator_id__delete"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      204: {
-        content: never;
-      };
-      /** @description Input data is incorrect */
-      400: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Okareo API token has failed authentication */
-      401: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Data is not found */
-      404: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Input data is invalid */
-      422: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  /**
    * Get All Checks
    * @description Get a list of checks for this organization
    *
@@ -3394,52 +3069,6 @@ export interface operations {
    *     a list of requested checks
    */
   get_all_checks_v0_checks_get: {
-    parameters: {
-      header: {
-        "api-key": string;
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        content: {
-          "application/json": components["schemas"]["EvaluatorBriefResponse"][];
-        };
-      };
-      /** @description Input data is incorrect */
-      400: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Okareo API token has failed authentication */
-      401: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Data is not found */
-      404: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Input data is invalid */
-      422: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  /**
-   * Get All Checks
-   * @description Get a list of checks for this organization
-   *
-   * Returns:
-   *     a list of requested checks
-   */
-  get_all_checks_v0_evaluators_get: {
     parameters: {
       header: {
         "api-key": string;
@@ -3494,57 +3123,6 @@ export interface operations {
     requestBody: {
       content: {
         "multipart/form-data": components["schemas"]["Body_check_upload_v0_check_upload_post"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      200: {
-        content: {
-          "application/json": components["schemas"]["EvaluatorDetailedResponse"];
-        };
-      };
-      /** @description Input data is incorrect */
-      400: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Okareo API token has failed authentication */
-      401: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Data is not found */
-      404: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Input data is invalid */
-      422: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  /**
-   * Check Upload
-   * @description Upload a new check
-   *
-   * Returns:
-   *     the check object with its ID
-   */
-  check_upload_v0_evaluator_upload_post: {
-    parameters: {
-      header: {
-        "api-key": string;
-      };
-    };
-    requestBody: {
-      content: {
-        "multipart/form-data": components["schemas"]["Body_check_upload_v0_evaluator_upload_post"];
       };
     };
     responses: {
