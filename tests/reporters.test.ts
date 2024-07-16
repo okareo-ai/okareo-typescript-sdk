@@ -382,9 +382,9 @@ describe('Reporters', () => {
 
       const reporter = new JSONReporter({
         eval_runs:[
-          TEST_RUN_CLASSIFICATION as components["schemas"]["TestRunItem"],
-          TEST_RUN_RETRIEVAL as components["schemas"]["TestRunItem"],
-          TEST_RUN_GENERATION as components["schemas"]["TestRunItem"]
+          TEST_RUN_CLASSIFICATION,
+          TEST_RUN_RETRIEVAL,
+          TEST_RUN_GENERATION,
         ]
       });
       reporter.log();

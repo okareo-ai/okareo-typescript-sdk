@@ -331,20 +331,38 @@ export class JSONReporter {
             return;
         }
 
-        if (process.env.OKAREO_JSON_OUTPUT_FILE) {
+        // Held for compatibility with older versions of the reporter
+        if (process.env.OKAREO_JSON_OUTPUT_FILE && process.env.OKAREO_JSON_OUTPUT_FILE.length > 0) {
             const fs = require('fs');
             const outputFilePath = process.env.OKAREO_JSON_OUTPUT_FILE;           
-
             try {
                 fs.writeFileSync(outputFilePath, JSON.stringify(this.eval_runs, null, 2));
-                console.log('Evaluation runs written to', outputFilePath);
             } catch (err) {
                 console.error('Error writing to file:', err);
             }
         }
- 
-        // Output the entire eval_runs as array 
-        console.log(JSON.stringify(this.eval_runs, null, 2));
+
+        if (process.env.OKAREO_REPORT_DIR && process.env.OKAREO_REPORT_DIR.length > 0) {
+            const fs = require('fs');
+            const report_dir = process.env.OKAREO_REPORT_DIR;           
+            try {
+                for (let i = 0; i < this.eval_runs.length; i++) {
+                    const eval_item: components["schemas"]["TestRunItem"] = this.eval_runs[i];
+                    if (eval_item) {
+                        const eval_name = eval_item.name || eval_item.id;
+                        const eval_report_file_name = eval_name.replace(/ /g, '_') + '.json';
+                        fs.writeFileSync(report_dir+eval_report_file_name, JSON.stringify(eval_item, null, 2));
+                    }
+                }
+            } catch (err) {
+                console.error('Error writing to file:', err);
+            }
+        }
+
+        if (!process.env.OKAREO_JSON_OUTPUT_FILE && !process.env.OKAREO_REPORT_DIR) {
+            console.log(JSON.stringify(this.eval_runs, null, 2));
+        }
+
     }
 }
 
