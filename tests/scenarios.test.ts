@@ -57,6 +57,19 @@ describe('Scenarios', () => {
       number_examples: 2,
     });
     expect(data).toBeDefined();
+
+    // verify meta_data['seed_id'] is present for each generated data point
+    const seed_datapoints: any = await okareo.get_scenario_data_points(sData.scenario_id);
+    const seed_ids: string[] = seed_datapoints.map((dp: any) => dp.id);
+    const datapoints: any = await okareo.get_scenario_data_points(data.scenario_id);
+    expect(datapoints.length).toBeGreaterThan(0);
+    datapoints.forEach(
+      (dp: any) => {
+        expect(dp.meta_data['seed_id']).toBeDefined();
+        expect(seed_ids).toContain(dp.meta_data['seed_id']);
+      }
+    )
+    
   });
 
     
