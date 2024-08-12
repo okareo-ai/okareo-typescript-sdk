@@ -101,6 +101,11 @@ export interface CustomModel extends BaseModel {
     invoke?: (input: Record<string, any> | unknown[] | string,
          result: Record<string, any> | unknown[] | string) => ModelInvocation; // allows a Promise or direct return in the response
 }
+export interface MultiTurnDriver extends BaseModel {
+    type: "driver";
+    target: OpenAIModel;
+    driver_params: Record<string, any>;
+}
 
 export interface ModelUnderTestProps {
     api_key: string; // Okareo API Key
