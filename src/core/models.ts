@@ -103,7 +103,7 @@ export interface CustomModel extends BaseModel {
 }
 export interface MultiTurnDriver extends BaseModel {
     type: "driver";
-    target: OpenAIModel;
+    target: OpenAIModel | CustomModel;
     driver_params: Record<string, any>;
 }
 
