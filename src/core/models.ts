@@ -272,11 +272,11 @@ export class ModelUnderTest {
         throw new Error("Custom model invoke function not found");
     }
 
-    private getParamsFromCustomResult(result: ModelInvocation, args: any): any {
+    private getParamsFromCustomResult(result: any, args: any): any {
         return {
-            actual: result.model_prediction,
+            actual: result.model_prediction || result["actual"],
             model_input: result.model_input || args,
-            model_result: result.model_output_metadata || '',
+            model_result: result.model_output_metadata || result.model_response || '',
             ...(result.session_id ? { session_id: result.session_id } : {})
         };
     }

@@ -67,16 +67,15 @@ describe('Evaluations', () => {
             project_id: project_id,
             models: {
                 type: "custom",
-                invoke: (input: string, result: string) => {
+                invoke: (input: string) => {
                     return {
                         model_prediction: "Technical Support",
                         model_input: input,
                         model_output_metadata: {
-                            input: input,
+                          input: input,
                             method: "hard coded",
                             context: {
                                 input: input,
-                                result: result,
                             }
                         }
                     } as ModelInvocation
