@@ -41,6 +41,10 @@ export interface paths {
      */
     put: operations["update_project_v0_projects__project_id__put"];
   };
+  "/v0/generate_api_token": {
+    /** Generate Api Token */
+    post: operations["generate_api_token_v0_generate_api_token_post"];
+  };
   "/v0/scenario_sets": {
     /**
      * Get Scenario Sets
@@ -211,13 +215,6 @@ export interface paths {
      *     the Test Run
      */
     get: operations["get_test_run_v0_test_runs__test_run_id__get"];
-    /**
-     * Update Test Run
-     * @description Update a Test Run
-     * Returns:
-     *     the updated Test Run
-     */
-    put: operations["update_test_run_v0_test_runs__test_run_id__put"];
   };
   "/v0/test_run": {
     /**
@@ -280,6 +277,10 @@ export interface paths {
      *     a list of Test Data Points
      */
     post: operations["update_test_data_point_v0_update_test_data_point_post"];
+  };
+  "/v0/internal_custom_model_listener": {
+    /** Internal Custom Model Listener */
+    get: operations["internal_custom_model_listener_v0_internal_custom_model_listener_get"];
   };
   "/v0/check_generate": {
     /**
@@ -815,6 +816,43 @@ export interface components {
       scenario_data_point_id?: string;
       /** Metric Type */
       metric_type?: string;
+      /**
+       * Full Data Point
+       * @default false
+       */
+      full_data_point?: boolean;
+    };
+    /** FullDataPointItem */
+    FullDataPointItem: {
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Tags */
+      tags?: string[];
+      /**
+       * Scenario Data Point Id
+       * Format: uuid
+       */
+      scenario_data_point_id: string;
+      /**
+       * Test Run Id
+       * Format: uuid
+       */
+      test_run_id: string;
+      /** Metric Type */
+      metric_type: string;
+      /** Metric Value */
+      metric_value: Record<string, never>;
+      /** Model Input */
+      model_input?: unknown;
+      /** Model Result */
+      model_result?: unknown;
+      /** Scenario Input */
+      scenario_input: Record<string, never> | unknown[] | string;
+      /** Scenario Result */
+      scenario_result: Record<string, never> | unknown[] | string;
     };
     /** GeneralFindPayload */
     GeneralFindPayload: {
@@ -848,6 +886,18 @@ export interface components {
        * @default []
        */
       tags?: string[];
+      /**
+       * Return Model Metrics
+       * @description Boolean value indicating if model metrics should be returned. This increases the response size.
+       * @default false
+       */
+      return_model_metrics?: boolean;
+      /**
+       * Return Error Matrix
+       * @description Boolean value indicating if error matrix should be returned. This increases the response size.
+       * @default false
+       */
+      return_error_matrix?: boolean;
     };
     /**
      * GenerationTone
@@ -855,6 +905,11 @@ export interface components {
      * @enum {unknown}
      */
     GenerationTone: "Neutral" | "Formal" | "Informal" | "Abbreviated Informal" | "Persuasive" | "Empathetic";
+    /** HTTPValidationError */
+    HTTPValidationError: {
+      /** Detail */
+      detail?: components["schemas"]["ValidationError"][];
+    };
     /** ModelUnderTestResponse */
     ModelUnderTestResponse: {
       /**
@@ -963,9 +1018,9 @@ export interface components {
       result: Record<string, never> | unknown[] | string;
       /**
        * Meta Data
-       * Format: json-string
+       * @default {}
        */
-      meta_data?: string;
+      meta_data?: Record<string, never>;
     };
     /** ScenarioSetCreate */
     ScenarioSetCreate: {
@@ -1276,50 +1331,6 @@ export interface components {
        */
       app_link?: string;
     };
-    /** TestRunPayload */
-    TestRunPayload: {
-      /**
-       * Mut Id
-       * Format: uuid
-       * @description ID of model
-       */
-      mut_id?: string;
-      /**
-       * Scenario Set Id
-       * Format: uuid
-       * @description ID of scenario set
-       */
-      scenario_set_id?: string;
-      /**
-       * Name
-       * @description Name of test run
-       */
-      name?: string;
-      /**
-       * Tags
-       * @description Tags are strings that can be used to filter test runs in the Okareo app
-       * @default []
-       */
-      tags?: string[];
-      /** @description The type of test run will determine which relevant model metrics should be calculated. */
-      type?: components["schemas"]["TestRunType"];
-      /**
-       * Start Time
-       * Format: date-time
-       */
-      start_time?: string;
-      /**
-       * End Time
-       * Format: date-time
-       */
-      end_time?: string;
-      /**
-       * Calculate Model Metrics
-       * @description Boolean value indicating if model metrics should be calculated
-       * @default false
-       */
-      calculate_model_metrics?: boolean;
-    };
     /** TestRunPayloadV2 */
     TestRunPayloadV2: {
       /**
@@ -1384,7 +1395,7 @@ export interface components {
      * @description An enumeration.
      * @enum {string}
      */
-    TestRunType: "MULTI_CLASS_CLASSIFICATION" | "INFORMATION_RETRIEVAL" | "NL_GENERATION" | "invariant";
+    TestRunType: "MULTI_CLASS_CLASSIFICATION" | "INFORMATION_RETRIEVAL" | "NL_GENERATION" | "AGENT_EVAL" | "invariant";
     /** UpdateTestDataPointPayload */
     UpdateTestDataPointPayload: {
       /**
@@ -1399,6 +1410,15 @@ export interface components {
        * @default []
        */
       tags?: string[];
+    };
+    /** ValidationError */
+    ValidationError: {
+      /** Location */
+      loc: (string | number)[];
+      /** Message */
+      msg: string;
+      /** Error Type */
+      type: string;
     };
   };
   responses: never;
@@ -1588,6 +1608,46 @@ export interface operations {
       201: {
         content: {
           "application/json": components["schemas"]["ProjectResponse"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /** Generate Api Token */
+  generate_api_token_v0_generate_api_token_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": string;
         };
       };
       /** @description Input data is incorrect */
@@ -2496,60 +2556,6 @@ export interface operations {
     };
   };
   /**
-   * Update Test Run
-   * @description Update a Test Run
-   * Returns:
-   *     the updated Test Run
-   */
-  update_test_run_v0_test_runs__test_run_id__put: {
-    parameters: {
-      header: {
-        "api-key": string;
-      };
-      path: {
-        /** @description The ID of the test run to modify */
-        test_run_id: string;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["TestRunPayload"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        content: {
-          "application/json": components["schemas"]["TestRunItem"];
-        };
-      };
-      /** @description Input data is incorrect */
-      400: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Okareo API token has failed authentication */
-      401: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Data is not found */
-      404: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-      /** @description Input data is invalid */
-      422: {
-        content: {
-          "application/json": components["schemas"]["ErrorResponse"];
-        };
-      };
-    };
-  };
-  /**
    * Run Test
    * @description Runs tests on a model (mut_id) using previously generated scenario.
    * Feeds the scenario data (scenario_id) into the model and evaulates results
@@ -2775,7 +2781,7 @@ export interface operations {
       /** @description Successful Response */
       201: {
         content: {
-          "application/json": components["schemas"]["TestDataPointItem"][];
+          "application/json": (components["schemas"]["FullDataPointItem"] | components["schemas"]["TestDataPointItem"])[];
         };
       };
       /** @description Input data is incorrect */
@@ -2851,6 +2857,31 @@ export interface operations {
       422: {
         content: {
           "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /** Internal Custom Model Listener */
+  internal_custom_model_listener_v0_internal_custom_model_listener_get: {
+    parameters: {
+      query: {
+        mut_id: string;
+      };
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };

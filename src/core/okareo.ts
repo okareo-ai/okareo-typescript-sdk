@@ -109,6 +109,11 @@ export class Okareo {
             modelInvoker = (register_payload["models"]["custom"] as CustomModel).invoke
             delete (register_payload["models"]["custom"] as CustomModel).invoke;
         }
+        if ("driver" in register_payload["models"] &&
+            register_payload["models"]["driver"]["target"]["type"] === "custom") {
+            modelInvoker = register_payload["models"]["driver"]["target"]["invoke"];
+            delete register_payload["models"]["driver"]["target"]["invoke"];
+        }
 
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data: response, error } = await client.POST("/v0/register_model", {
@@ -131,6 +136,8 @@ export class Okareo {
 
         if (modelInvoker && response.models && response.models.custom) {
             (response.models.custom as any).invoke = modelInvoker;
+        } else if (modelInvoker && response.models && response.models.driver) {
+            (response.models.driver.target as any).invoke = modelInvoker;
         }
 
         return new ModelUnderTest({
