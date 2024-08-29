@@ -273,6 +273,12 @@ export class ModelUnderTest {
     }
 
     private getParamsFromCustomResult(result: any, args: any): any {
+        if (Array.isArray(result)) {
+            return result;
+        }
+        if (typeof result === 'object' && result !== null && 'length' in result) {
+            return Array.from(result);
+        }
         return {
             actual: result.model_prediction || result["actual"],
             model_input: result.model_input || args,

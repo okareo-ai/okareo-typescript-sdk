@@ -57,7 +57,7 @@ describe('Scenarios', () => {
       project_id: project_id,
       models: {
         type: "custom",
-        invoke: (input: string, result: string) => { 
+        invoke: (input: string) => { 
             return {
               model_prediction: "noop",
               model_input: {},
