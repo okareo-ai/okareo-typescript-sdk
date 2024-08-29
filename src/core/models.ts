@@ -1,9 +1,10 @@
 import createClient from 'openapi-fetch';
 import type { paths, components } from "../api/v1/okareo_endpoints";
+import * as nats from 'nats';
 
 
 const CHECK_IN_RUN_TEST_WARNING = "The `checks` parameter was passed to `run_test` for an unsupported TestRunType. " +
-"Currently, `checks` are only used when type=TestRunType.NL_GENERATION.";
+    "Currently, `checks` are only used when type=TestRunType.NL_GENERATION.";
 
 export function ScenarioSetCreate(props: components["schemas"]["ScenarioSetCreate"]): components["schemas"]["ScenarioSetCreate"] {
     return props;
@@ -50,7 +51,7 @@ export interface BaseModel {
 /**
  * Interface representing a model invocation returned from a CustomModel.invoke function
  */
-export interface  ModelInvocation {
+export interface ModelInvocation {
     /**
      * Prediction from the model to be used when running the evaluation,
      * e.g. predicted class from classification model or generated text completion from
@@ -65,6 +66,10 @@ export interface  ModelInvocation {
      * Full model response, including any metadata returned with model's output
      */
     model_output_metadata?: Record<string, any> | unknown[] | string;
+    /**
+     * Optional session ID for the model invocation
+     */
+    session_id?: string;
 }
 
 export interface OpenAIModel extends BaseModel {
@@ -98,8 +103,7 @@ export interface QDrant extends BaseModel {
 export interface CustomModel extends BaseModel {
     type: "custom";
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    invoke?: (input: Record<string, any> | unknown[] | string,
-         result: Record<string, any> | unknown[] | string) => ModelInvocation; // allows a Promise or direct return in the response
+    invoke?: (input: Record<string, any> | unknown[] | string) => ModelInvocation; // allows a Promise or direct return in the response
 }
 export interface MultiTurnDriver extends BaseModel {
     type: "driver";
@@ -114,14 +118,14 @@ export interface ModelUnderTestProps {
 }
 
 export interface RunTestProps {
-    model_api_key?: string| {[key: string]: string} | undefined;
+    model_api_key?: string | { [key: string]: string } | undefined;
     project_id: string;
     scenario_id?: string;
     scenario?: components["schemas"]["ScenarioSetResponse"];
     name: string;
     type: TestRunType;
     calculate_metrics: boolean;
-    metrics_kwargs?: {[key: string]: any};
+    metrics_kwargs?: { [key: string]: any };
     tags?: string[];
     checks?: string[];
 }
@@ -139,79 +143,59 @@ export class ModelUnderTest {
         this.mut = props.mut;
     }
 
+
     async run_test(props: RunTestProps): Promise<components["schemas"]["TestRunItem"]> {
+        let result: any;
         if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
         if (!this.mut) { throw new Error("A registered model is required"); }
         if (props.type !== TestRunType.NL_GENERATION && props.checks && props.checks.length > 0) {
             console.warn(CHECK_IN_RUN_TEST_WARNING);
         }
         const client = createClient<paths>({ baseUrl: this.endpoint });
-        
-        const modelKeys = Object.getOwnPropertyNames(this.mut?.models)
-        const mType = modelKeys[0];
-        if (!props.scenario_id && props.scenario) {
-            props.scenario_id = props.scenario.scenario_id;
-        }
-        if (mType === "custom") {
-            const { scenario_id = "NONE" } = props;
-            delete props.scenario;
-            /*
-            const seed_data = await this.okareo.get_scenario_data_points(scenario_id);
-            */
-            const scenario_results = await client.GET("/v0/scenario_data_points/{scenario_id}", {
-                params: {
-                    header: {
-                        "api-key": this.api_key
-                    },
-                    path: { scenario_id: scenario_id }
-                }
-            });
-            if (scenario_results.error) {
-                throw scenario_results.error;
+
+        let natsConnection: nats.NatsConnection | null = null;
+
+        try {
+            const modelKeys = Object.getOwnPropertyNames(this.mut?.models)
+            const mType = modelKeys[0];
+            if (!props.scenario_id && props.scenario) {
+                props.scenario_id = props.scenario.scenario_id;
             }
-            const seed_data = scenario_results.data;
-            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-            const results: any = { model_data: {} };
-            for (let i = 0; i < seed_data.length; i++) {
-                const { id, input, result } = seed_data[i];
-                const invoke = (this.mut.models?.custom as unknown as CustomModel).invoke;
-                if (invoke) {
-                    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-                    const modelInvocation: ModelInvocation = await invoke(input, result);
-                    results.model_data[id] = {
-                        "actual": modelInvocation.model_prediction,
-                        "model_input": modelInvocation.model_input,
-                        "model_response": modelInvocation.model_output_metadata,
-                    };
+
+
+            if (this.isCustom(mType)) {
+                const { data: creds, error: credsError } = await client.GET("/v0/internal_custom_model_listener", {
+                    params: {
+                        header: {
+                            "api-key": this.api_key
+                        },
+                        query: {
+                            mut_id: this.mut.id
+                        }
+                    }
+                });
+                if (credsError) {
+                    throw credsError;
+                }
+                if (creds && typeof creds === 'object' && 'jwt' in creds && 'seed' in creds) {
+                    const natsJwt = creds.jwt as string;
+                    const seed = creds.seed as string;
+
+                    natsConnection = await this.connectNats(natsJwt, seed);
+
+                    this.startCustomModelListener(natsConnection);
                 }
             }
-            const body:components["schemas"]["TestRunPayloadV2"] = {
-                ...props,
-                mut_id: this.mut.id,
-                model_results: results,
-                checks: props.checks,
-            } as components["schemas"]["TestRunPayloadV2"];
-            const { data, error } = await client.POST("/v0/test_run", {
-                params: {
-                    header: {
-                        "api-key": this.api_key
-                    },
-                },
-                body: body,
-            });
-            if (error) {
-                throw error;
-            }
-            return data || {};
-        } else {
+
             const mKey = props.model_api_key ?? "NONE";
 
-            const body:components["schemas"]["TestRunPayloadV2"] = {
+            const body: components["schemas"]["TestRunPayloadV2"] = {
                 ...props,
                 mut_id: this.mut.id,
-                api_keys: await this.validateRunTestParams(mKey, props.type),
+                api_keys: (this.isCustom(mType)) ? undefined : await this.validateRunTestParams(mKey, props.type),
+                model_results: { 'model_data': {} },
                 checks: props.checks,
-            } as components["schemas"]["TestRunPayloadV2"];
+            } as unknown as components["schemas"]["TestRunPayloadV2"];
             const { data, error } = await client.POST("/v0/test_run", {
                 params: {
                     header: {
@@ -223,28 +207,98 @@ export class ModelUnderTest {
             if (error) {
                 throw error;
             }
-            return data || {};
+            result = data;
+        } finally {
+            if (natsConnection) {
+                await natsConnection.close();
+            }
         }
+        return result || {};
+    }
+
+    private isCustom(mType: any): boolean {
+        return (mType === "custom" || (mType === "driver" && this.mut?.models?.driver.target['type'] === "custom"));
+    }
+
+    private async connectNats(natsJwt: string, seed: string): Promise<nats.NatsConnection> {
+        const natsOptions: nats.ConnectionOptions = {
+            servers: ["wss://connect.ngs.global"],
+            authenticator: nats.jwtAuthenticator(natsJwt, Uint8Array.from(Buffer.from(seed))),
+            timeout: 30000,
+            reconnect: true,
+            maxReconnectAttempts: 5,
+            reconnectTimeWait: 1000,
+        };
+        try {
+            const nc = await nats.connect(natsOptions);
+            return nc;
+        } catch (error) {
+            console.error('Failed to connect to NATS:', error);
+            throw error;
+        }
+    }
+
+    private async startCustomModelListener(natsConnection: nats.NatsConnection): Promise<void> {
+        const subscription = natsConnection.subscribe(`invoke.${this.mut?.id}`);
+        for await (const msg of subscription) {
+            try {
+                const data = JSON.parse(msg.data.toString());
+                if (data.close) {
+                    await msg.respond(nats.StringCodec().encode(JSON.stringify({ status: "disconnected" })));
+                    await natsConnection.close()
+                    return;
+                }
+                const args = data.args || [];
+                const result = this.callCustomInvoker(args);
+                const jsonEncodableResult = this.getParamsFromCustomResult(result, args);
+                await msg.respond(nats.StringCodec().encode(JSON.stringify(jsonEncodableResult)));
+            } catch (e) {
+                const errorMsg = `An error occurred in the custom model invocation: ${e}`;
+                console.error(errorMsg);
+                await msg.respond(nats.StringCodec().encode(JSON.stringify({ error: errorMsg })));
+            }
+        }
+    }
+
+    private callCustomInvoker(args: any[]): any {
+        const customModel = this.mut?.models?.custom as CustomModel | undefined;
+        if (customModel && customModel.invoke) {
+            return customModel.invoke(args);
+        }
+        const customTarget = this.mut?.models?.driver.target as CustomModel | undefined;
+        if (customTarget && customTarget.invoke) {
+            return customTarget.invoke(args)
+        }
+        throw new Error("Custom model invoke function not found");
+    }
+
+    private getParamsFromCustomResult(result: ModelInvocation, args: any): any {
+        return {
+            actual: result.model_prediction,
+            model_input: result.model_input || args,
+            model_result: result.model_output_metadata || '',
+            ...(result.session_id ? { session_id: result.session_id } : {})
+        };
     }
 
 
     private async validateRunTestParams(
-        model_api_key: string| {[key: string]: string},
+        model_api_key: string | { [key: string]: string },
         testRunType: TestRunType
-    ): Promise<{[key: string]: string}> {
+    ): Promise<{ [key: string]: string }> {
         const modelNames = this.mut?.models ? Object.keys(this.mut?.models) : [];
 
-        let runApiKeys: {[key: string]: string};
+        let runApiKeys: { [key: string]: string };
         runApiKeys = typeof model_api_key === 'object' ? model_api_key :
-             typeof model_api_key === 'string' ? {[modelNames[0]]: model_api_key} :
-             {};
+            typeof model_api_key === 'string' ? { [modelNames[0]]: model_api_key } :
+                {};
 
 
         if (!modelNames.includes("custom") && modelNames.length !== Object.keys(runApiKeys).length) {
             throw new Error("Number of models and API keys does not match");
         }
 
-        if (testRunType === TestRunType.INFORMATION_RETRIEVAL && 
+        if (testRunType === TestRunType.INFORMATION_RETRIEVAL &&
             ["pinecone", "qdrant", "custom"].every(db => !modelNames.includes(db))) {
             throw new Error("No vector database specified");
         }
