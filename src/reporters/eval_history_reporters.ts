@@ -1,4 +1,3 @@
-import { run } from "node:test";
 import type { components } from "../api/v1/okareo_endpoints";
 import { TestRunType } from "../core/models";
 import { ClassificationReporter, RetrievalReporter, GenerationReporter } from "./eval_reporters";
