@@ -53,14 +53,14 @@ describe('Evaluations', () => {
         project_id = await getProjectId();
     });
 
-    test('Custom Classification Evaluation', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY });
+    test('Custom Classification Evaluation', async () => {
+        const okareo = new Okareo({ api_key: OKAREO_API_KEY });
         const sData: any = await okareo.create_scenario_set({
             name: "CI Custom Classification Model Test Data",
             project_id: project_id,
             seed_data: TEST_SEED_DATA
         });
-        
+
         const model = await okareo.register_model({
             name: "CI Custom Classification Model",
             tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
@@ -72,7 +72,7 @@ describe('Evaluations', () => {
                         model_prediction: "Technical Support",
                         model_input: input,
                         model_output_metadata: {
-                          input: input,
+                            input: input,
                             method: "hard coded",
                             context: {
                                 input: input,
@@ -99,8 +99,8 @@ describe('Evaluations', () => {
 
     });
 
-    test('Custom Retrieval Evaluation', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY });
+    test('Custom Retrieval Evaluation', async () => {
+        const okareo = new Okareo({ api_key: OKAREO_API_KEY });
         const sData: any = await okareo.create_scenario_set({
             name: "CI Custom Retrieval Model Test Data",
             project_id: project_id,
@@ -168,7 +168,7 @@ describe('Evaluations', () => {
 
         const polite_chatbot = {
             type: 'custom',
-            invoke: (input_: any[]) => {
+            invoke: async (input_: any[]) => {
                 const message_data = input_[input_.length - 1];
                 const common_response_args = {
                     model_input: input_,
@@ -224,5 +224,66 @@ describe('Evaluations', () => {
         expect(data).toBeDefined();
         expect(data.model_metrics).toBeDefined();
     });
+    test('Custom Function Call Evaluation', async () => {
+
+        const okareo = new Okareo({ api_key: OKAREO_API_KEY });
+
+        const seedData = [
+            { input: "can you delete my account? my name is Bob", result: { name: "delete_account", parameter_definitions: { username: { value: "Bob", type: "str", required: true } } } },
+            { input: "how do I make an account? I'm Alice", result: { name: "create_account", parameter_definitions: { username: { value: "Alice", type: "str", required: true } } } },
+            { input: "how do I create an account?", result: { name: "create_account", parameter_definitions: { username: { value: "Alice", type: "str", required: true } } } },
+            { input: "my name is John. how do I create a project?", result: { name: "create_account", parameter_definitions: { username: { value: "Alice", type: "str", required: true } } } }];
+
+        const scenario: any = await okareo.create_scenario_set({
+            name: `Function Call Demo Scenario - ${(Math.random() + 1).toString(36).substring(7)}`,
+            project_id: project_id,
+            seed_data: seedData
+        });
+
+        const function_call_model = {
+            type: 'custom',
+            invoke: async (input_value) => {
+                const usernames = ["Alice", "Bob", "Charlie"];
+                const out: { tool_calls: { name: string; parameters: { [key: string]: any } }[] } = { tool_calls: [] };
+                const tool_call: { name: string; parameters: { [key: string]: any } } = { name: "unknown", parameters: {} };
+                if (input_value.includes("delete")) {
+                    tool_call.name = "delete_account";
+                }
+                if (input_value.includes("create")) {
+                    tool_call.name = "create_account";
+                }
+                for (const username of usernames) {
+                    if (input_value.includes(username)) {
+                        tool_call.parameters["username"] = username;
+                        break;
+                    }
+                }
+                out.tool_calls.push(tool_call);
+                return {
+                    model_prediction: out,
+                    model_input: input_value,
+                    model_output_metadata: {},
+                };
+            }
+        } as CustomModel;
+
+        const model = await okareo.register_model({
+            name: 'Function Call Demo Model',
+            project_id: project_id,
+            models: function_call_model,
+            update: true,
+        });
+
+        const data: any = await model.run_test({
+            name: 'Function Call Demo Evaluation',
+            project_id: project_id,
+            scenario_id: scenario.scenario_id,
+            calculate_metrics: true,
+            type: TestRunType.NL_GENERATION,
+            checks: ["is_function_correct", "are_required_params_present", "are_all_params_expected", "do_param_values_match"],
+        } as RunTestProps);
+        expect(data).toBeDefined();
+        expect(data.model_metrics).toBeDefined();
+    })
 });
 
