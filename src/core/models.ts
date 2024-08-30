@@ -249,7 +249,7 @@ export class ModelUnderTest {
                     return;
                 }
                 const args = data.args || [];
-                const result = this.callCustomInvoker(args);
+                const result = await this.callCustomInvoker(args);
                 const jsonEncodableResult = this.getParamsFromCustomResult(result, args);
                 await msg.respond(nats.StringCodec().encode(JSON.stringify(jsonEncodableResult)));
             } catch (e) {
@@ -260,14 +260,14 @@ export class ModelUnderTest {
         }
     }
 
-    private callCustomInvoker(args: any[]): any {
+    private async callCustomInvoker(args: any[]): Promise<any> {
         const customModel = this.mut?.models?.custom as CustomModel | undefined;
         if (customModel && customModel.invoke) {
-            return customModel.invoke(args);
+            return await customModel.invoke(args);
         }
         const customTarget = this.mut?.models?.driver.target as CustomModel | undefined;
         if (customTarget && customTarget.invoke) {
-            return customTarget.invoke(args)
+            return await customTarget.invoke(args)
         }
         throw new Error("Custom model invoke function not found");
     }
