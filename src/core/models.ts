@@ -103,7 +103,7 @@ export interface QDrant extends BaseModel {
 export interface CustomModel extends BaseModel {
     type: "custom";
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    invoke?: (input: Record<string, any> | unknown[] | string) => Promise<ModelInvocation> | ModelInvocation; // allows a Promise or direct return in the response
+    invoke?: (input: Record<string, any> | unknown[] | string) => ModelInvocation; // allows a Promise or direct return in the response
 }
 export interface MultiTurnDriver extends BaseModel {
     type: "driver";
