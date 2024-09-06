@@ -1,4 +1,4 @@
-import { Okareo, TestRunType } from '../dist';
+import { GenerationModel, Okareo, TestRunType } from '../dist';
 import { RunTestProps } from '../dist';
 import { OpenAIModel } from "../dist";
 import { getProjectId } from './setup-env';
@@ -15,45 +15,86 @@ describe('Evaluations', () => {
   beforeAll(async () => {
     project_id = await getProjectId();
   });
-  test('Generation', async () =>  {
-      const okareo = new Okareo({api_key:OKAREO_API_KEY});
-      const upload_scenario: any = await okareo.upload_scenario_set(
-        {
-          scenario_name: `CI: Upload WebBizz Scenario`,
-          file_path: "./tests/generation_scenario.jsonl",
-          project_id: project_id,
-        }
-      );
-        
-      const model = await okareo.register_model({
-        name: `CI: Generation ${UNIQUE_BUILD_ID}`,
-        tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
-          project_id: project_id,
-          models: [{
-              type: "openai",
-              model_id:"gpt-3.5-turbo",
-              temperature:0.5,
-              system_prompt_template:SYSTEM_PROMPT,
-              user_prompt_template:USER_PROMPT
-            } as OpenAIModel],
-          update: true,
-      });
-        
-      const data: any = await model.run_test({
-        model_api_key: OPENAI_API_KEY,
-        name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
-        tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+  test('Generation', async () => {
+    const okareo = new Okareo({ api_key: OKAREO_API_KEY });
+    const upload_scenario: any = await okareo.upload_scenario_set(
+      {
+        scenario_name: `CI: Upload WebBizz Scenario`,
+        file_path: "./tests/generation_scenario.jsonl",
         project_id: project_id,
-        scenario: upload_scenario,
-        calculate_metrics: true,
-        type: TestRunType.NL_GENERATION,
-        checks: [
-          "consistency_summary",
-          "relevance_summary"
-        ],
-      } as RunTestProps);
-      
-      expect(data).toBeDefined();
+      }
+    );
+
+    const model = await okareo.register_model({
+      name: `CI: Generation ${UNIQUE_BUILD_ID}`,
+      tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+      project_id: project_id,
+      models: [{
+        type: "openai",
+        model_id: "gpt-3.5-turbo",
+        temperature: 0.5,
+        system_prompt_template: SYSTEM_PROMPT,
+        user_prompt_template: USER_PROMPT
+      } as OpenAIModel],
+      update: true,
+    });
+
+    const data: any = await model.run_test({
+      model_api_key: OPENAI_API_KEY,
+      name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
+      tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+      project_id: project_id,
+      scenario: upload_scenario,
+      calculate_metrics: true,
+      type: TestRunType.NL_GENERATION,
+      checks: [
+        "consistency_summary",
+        "relevance_summary"
+      ],
+    } as RunTestProps);
+
+    expect(data).toBeDefined();
+
+  });
+  test('Generation LiteLLM', async () => {
+    const okareo = new Okareo({ api_key: OKAREO_API_KEY });
+    const upload_scenario: any = await okareo.upload_scenario_set(
+      {
+        scenario_name: `CI: Upload WebBizz Scenario`,
+        file_path: "./tests/generation_scenario.jsonl",
+        project_id: project_id,
+      }
+    );
+
+    const model = await okareo.register_model({
+      name: `CI: Generation ${UNIQUE_BUILD_ID}`,
+      tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+      project_id: project_id,
+      models: [{
+        type: "generation",
+        model_id: "gpt-3.5-turbo",
+        temperature: 0.5,
+        system_prompt_template: SYSTEM_PROMPT,
+        user_prompt_template: USER_PROMPT
+      } as GenerationModel],
+      update: true,
+    });
+
+    const data: any = await model.run_test({
+      model_api_key: OPENAI_API_KEY,
+      name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
+      tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+      project_id: project_id,
+      scenario: upload_scenario,
+      calculate_metrics: true,
+      type: TestRunType.NL_GENERATION,
+      checks: [
+        "consistency_summary",
+        "relevance_summary"
+      ],
+    } as RunTestProps);
+
+    expect(data).toBeDefined();
 
   });
 

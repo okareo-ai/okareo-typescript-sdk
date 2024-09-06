@@ -80,6 +80,14 @@ export interface OpenAIModel extends BaseModel {
     user_prompt_template: string;
     dialog_template: string;
 }
+export interface GenerationModel extends BaseModel {
+    type: "generation";
+    model_id: string;
+    temperature: number;
+    system_prompt_template: string;
+    user_prompt_template: string;
+    dialog_template: string;
+}
 export interface CohereModel extends BaseModel {
     type: "cohere";
     model_id: string;
@@ -107,7 +115,7 @@ export interface CustomModel extends BaseModel {
 }
 export interface MultiTurnDriver extends BaseModel {
     type: "driver";
-    target: OpenAIModel | CustomModel;
+    target: OpenAIModel | CustomModel | GenerationModel;
     driver_params: Record<string, any>;
 }
 
