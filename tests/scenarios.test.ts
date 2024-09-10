@@ -96,6 +96,7 @@ describe('Scenarios', () => {
       });
     const data: any = await okareo.generate_scenario_set({
       name: `CI: Scenario Custom Generator ${UNIQUE_BUILD_ID}`,
+      generation_type: "CUSTOM_GENERATOR",
       project_id: project_id,
       source_scenario_id: sData.scenario_id,
       number_examples: 1,
