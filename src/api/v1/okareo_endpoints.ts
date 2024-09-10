@@ -215,6 +215,13 @@ export interface paths {
      *     the Test Run
      */
     get: operations["get_test_run_v0_test_runs__test_run_id__get"];
+    /**
+     * Update Test Run
+     * @description Update a Test Run
+     * Returns:
+     *     the updated Test Run
+     */
+    put: operations["update_test_run_v0_test_runs__test_run_id__put"];
   };
   "/v0/test_run": {
     /**
@@ -1081,6 +1088,11 @@ export interface components {
        */
       generation_tone?: components["schemas"]["GenerationTone"];
       /**
+       * Generation Prompt
+       * @description Prompt for the generator to use when generating scenarios. Only supported by CustomGenerator type.
+       */
+      generation_prompt?: string;
+      /**
        * Pre Template
        * @description Template for pre-processing scenario before sending it to generator
        */
@@ -1187,7 +1199,7 @@ export interface components {
      * @description An enumeration.
      * @enum {unknown}
      */
-    ScenarioType: "SEED" | "REPHRASE_INVARIANT" | "CONDITIONAL" | "TEXT_REVERSE_QUESTION" | "TEXT_REVERSE_LABELED" | "TEXT_REVERSE_QUESTION_ANSWER" | "TERM_RELEVANCE_INVARIANT" | "COMMON_CONTRACTIONS" | "COMMON_MISSPELLINGS" | "OFF_TOPIC" | "ADVERSARIAL_QUESTION" | "WORD_INFLECTIONS" | "WORD_QWERTY_MISSPELL" | "WORD_CHARACTER_INSERTION" | "WORD_SYNONYM_EMBEDDING" | "LABEL_REVERSE_INVARIANT" | "ROUNDTRIP_INVARIANT" | "NEGATION" | "NAMED_ENTITY_SUBSTITUTION";
+    ScenarioType: "SEED" | "REPHRASE_INVARIANT" | "CONDITIONAL" | "TEXT_REVERSE_QUESTION" | "TEXT_REVERSE_LABELED" | "TEXT_REVERSE_QUESTION_ANSWER" | "TERM_RELEVANCE_INVARIANT" | "COMMON_CONTRACTIONS" | "COMMON_MISSPELLINGS" | "OFF_TOPIC" | "ADVERSARIAL_QUESTION" | "WORD_INFLECTIONS" | "WORD_QWERTY_MISSPELL" | "WORD_CHARACTER_INSERTION" | "WORD_SYNONYM_EMBEDDING" | "CUSTOM_GENERATOR" | "LABEL_REVERSE_INVARIANT" | "ROUNDTRIP_INVARIANT" | "NEGATION" | "NAMED_ENTITY_SUBSTITUTION";
     /** SeedData */
     SeedData: {
       /** Input */
@@ -1330,6 +1342,50 @@ export interface components {
        * @default
        */
       app_link?: string;
+    };
+    /** TestRunPayload */
+    TestRunPayload: {
+      /**
+       * Mut Id
+       * Format: uuid
+       * @description ID of model
+       */
+      mut_id?: string;
+      /**
+       * Scenario Set Id
+       * Format: uuid
+       * @description ID of scenario set
+       */
+      scenario_set_id?: string;
+      /**
+       * Name
+       * @description Name of test run
+       */
+      name?: string;
+      /**
+       * Tags
+       * @description Tags are strings that can be used to filter test runs in the Okareo app
+       * @default []
+       */
+      tags?: string[];
+      /** @description The type of test run will determine which relevant model metrics should be calculated. */
+      type?: components["schemas"]["TestRunType"];
+      /**
+       * Start Time
+       * Format: date-time
+       */
+      start_time?: string;
+      /**
+       * End Time
+       * Format: date-time
+       */
+      end_time?: string;
+      /**
+       * Calculate Model Metrics
+       * @description Boolean value indicating if model metrics should be calculated
+       * @default false
+       */
+      calculate_model_metrics?: boolean;
     };
     /** TestRunPayloadV2 */
     TestRunPayloadV2: {
@@ -2520,6 +2576,60 @@ export interface operations {
       path: {
         /** @description ID of test run */
         test_run_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["TestRunItem"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Update Test Run
+   * @description Update a Test Run
+   * Returns:
+   *     the updated Test Run
+   */
+  update_test_run_v0_test_runs__test_run_id__put: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        /** @description The ID of the test run to modify */
+        test_run_id: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TestRunPayload"];
       };
     };
     responses: {
