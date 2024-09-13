@@ -67,10 +67,6 @@ export interface ModelInvocation {
      * Full model response, including any metadata returned with model's output
      */
     model_output_metadata?: Record<string, any> | unknown[] | string;
-    /**
-     * Optional session ID for the model invocation
-     */
-    session_id?: string;
 }
 
 export interface OpenAIModel extends BaseModel {
@@ -114,10 +110,23 @@ export interface CustomModel extends BaseModel {
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     invoke?: (input: Record<string, any> | unknown[] | string) => ModelInvocation; // allows a Promise or direct return in the response
 }
+export interface CustomMultiturnTarget extends BaseModel {
+    type: "custom_target";
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    invoke?: (messages: { [key: string]: any }[]) => ModelInvocation; 
+}
+
+export interface DriverParameters {
+    driver_temperature?: number;
+    repeats?: number;
+    max_turns?: number;
+    first_turn?: string;
+}
+
 export interface MultiTurnDriver extends BaseModel {
     type: "driver";
-    target: OpenAIModel | CustomModel | GenerationModel;
-    driver_params: Record<string, any>;
+    target: OpenAIModel | CustomMultiturnTarget | GenerationModel;
+    driver_params?: DriverParameters;
 }
 
 export interface ModelUnderTestProps {
@@ -226,7 +235,7 @@ export class ModelUnderTest {
     }
 
     private isCustom(mType: any): boolean {
-        return (mType === "custom" || (mType === "driver" && this.mut?.models?.driver.target['type'] === "custom"));
+        return (mType === "custom" || (mType === "driver" && this.mut?.models?.driver.target['type'] === "custom_target"));
     }
 
     private async connectNats(natsJwt: string, seed: string): Promise<nats.NatsConnection> {
