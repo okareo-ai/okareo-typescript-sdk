@@ -1,6 +1,6 @@
 import { Okareo } from '../dist';
 import { getProjectId } from './setup-env';
-import { OpenAIModel, TestRunType, MultiTurnDriver, DriverParameters, ModelInvocation, RunTestProps, CustomMultiturnTarget } from "../dist";
+import { OpenAIModel, TestRunType, MultiTurnDriver, ModelInvocation, RunTestProps, CustomMultiturnTarget } from "../dist";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const UNIQUE_BUILD_ID = (process.env.SDK_BUILD_ID || `local.${(Math.random() + 1).toString(36).substring(7)}`);
@@ -19,9 +19,9 @@ describe('Drivers', () => {
     beforeAll(async () => {
         project_id = await getProjectId();
     });
-    
-    test('Run Driver Test', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY});
+
+    test('Run Driver Test', async () => {
+        const okareo = new Okareo({ api_key: OKAREO_API_KEY });
         const sData: any = await okareo.create_scenario_set(
             {
                 name: `TS Driver Test - ${UNIQUE_BUILD_ID}`,
@@ -35,10 +35,8 @@ describe('Drivers', () => {
             project_id: project_id,
             models: {
                 type: "driver",
-                driver_params: {
-                    driver_temperature: 0,
-                    repeats: 1,
-                } as DriverParameters,
+                driver_temperature: 0,
+                repeats: 1,
                 target: {
                     type: "openai",
                     model_id: "gpt-4o-mini",
@@ -48,9 +46,9 @@ describe('Drivers', () => {
             } as MultiTurnDriver,
             update: true,
         });
-        
+
         const data: any = await model.run_test({
-            model_api_key: {"openai": OPENAI_API_KEY},
+            model_api_key: { "openai": OPENAI_API_KEY },
             name: `TS Driver Test - ${UNIQUE_BUILD_ID}`,
             project_id: project_id,
             scenario_id: sData.scenario_id,
@@ -81,15 +79,12 @@ describe('Drivers', () => {
 
         const polite_chatbot = {
             type: 'custom_target',
-            invoke: async (input_: any[]) => {
-                const common_response_args = {
-                    model_input: input_,
-                    model_output_metadata: {},
-                }
+            invoke: async (input_) => {
                 if (input_.length < 2) {
                     return {
                         model_prediction: "Hi! I'm a chatbot that can help you with WebBizz, an e-commerce platform. Ask me anything about WebBizz!",
-                        ...common_response_args
+                        model_input: input_,
+                        model_output_metadata: {},
                     } as ModelInvocation;
                 }
                 const message_data = input_[input_.length - 1];
@@ -102,7 +97,8 @@ describe('Drivers', () => {
                 }
                 return {
                     model_prediction: response,
-                    ...common_response_args
+                    model_input: input_,
+                    model_output_metadata: {},
                 } as ModelInvocation;
             }
         } as CustomMultiturnTarget;
@@ -112,11 +108,9 @@ describe('Drivers', () => {
             project_id: project_id || '',
             models: {
                 type: 'driver',
-                driver_params: {
-                    driver_temperature: 1,
-                    max_turns: 3,
-                    repeats: 1,
-                } as DriverParameters,
+                driver_temperature: 1,
+                max_turns: 3,
+                repeats: 1,
                 target: polite_chatbot
             } as MultiTurnDriver,
             update: true,
