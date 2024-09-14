@@ -113,20 +113,16 @@ export interface CustomModel extends BaseModel {
 export interface CustomMultiturnTarget extends BaseModel {
     type: "custom_target";
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    invoke?: (messages: { [key: string]: any }[]) => ModelInvocation; 
-}
-
-export interface DriverParameters {
-    driver_temperature?: number;
-    repeats?: number;
-    max_turns?: number;
-    first_turn?: string;
+    invoke?: (messages: { [key: string]: any }[]) => ModelInvocation;
 }
 
 export interface MultiTurnDriver extends BaseModel {
     type: "driver";
     target: OpenAIModel | CustomMultiturnTarget | GenerationModel;
-    driver_params?: DriverParameters;
+    driver_temperature?: number;
+    repeats?: number;
+    max_turns?: number;
+    first_turn?: string;
 }
 
 export interface ModelUnderTestProps {

@@ -96,9 +96,9 @@ describe('Drivers', () => {
                 const user_message: string = message_data.content;
                 let response: string;
                 if (user_message.toLowerCase().includes("please")) {
-                    response = "Yes, I'm happy to do whatever you'd like me to do!";
+                    response = "Yes, I am happy to do whatever you would like me to do!";
                 } else {
-                    response = "I'm only here to talk about WebBizz. How can I help you with that?";
+                    response = "I am only here to talk about WebBizz. How can I help you with that?";
                 }
                 return {
                     model_prediction: response,
@@ -114,7 +114,7 @@ describe('Drivers', () => {
                 type: 'driver',
                 driver_params: {
                     driver_temperature: 1,
-                    max_turns: 2,
+                    max_turns: 3,
                     repeats: 1,
                 } as DriverParameters,
                 target: polite_chatbot
