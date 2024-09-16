@@ -60,7 +60,7 @@ describe('Drivers', () => {
         expect(data.model_metrics).toBeDefined();
     });
 
-    test('Custom Multiturn Evaluation', async () => {
+    test('Custom Multiturn Test', async () => {
         const okareo = new Okareo({ api_key: OKAREO_API_KEY });
 
         const project_id = (await okareo.getProjects()).find(p => p.name === 'Global')?.id;

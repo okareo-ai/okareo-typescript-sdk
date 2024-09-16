@@ -256,7 +256,8 @@ export class ModelUnderTest {
         const subscription = natsConnection.subscribe(`invoke.${this.mut?.id}`);
         for await (const msg of subscription) {
             try {
-                const data = JSON.parse(msg.data.toString());
+                // Use a more robust parsing method
+                const data = this.safeParseJSON(msg.data);
                 if (data.close) {
                     await msg.respond(nats.StringCodec().encode(JSON.stringify({ status: "disconnected" })));
                     await natsConnection.close()
@@ -271,6 +272,18 @@ export class ModelUnderTest {
                 console.error(errorMsg);
                 await msg.respond(nats.StringCodec().encode(JSON.stringify({ error: errorMsg })));
             }
+        }
+    }
+
+    private safeParseJSON(data: Uint8Array): any {
+        try {
+            // First, try to parse it as a UTF-8 string
+            const jsonString = new TextDecoder().decode(data);
+            return JSON.parse(jsonString);
+        } catch (e) {
+            // If that fails, try to parse it as a Buffer
+            const jsonString = Buffer.from(data).toString('utf-8');
+            return JSON.parse(jsonString);
         }
     }
 
