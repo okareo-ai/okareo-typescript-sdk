@@ -70,7 +70,7 @@ describe('Drivers', () => {
         const off_topic_directive = 'You should only engage in conversation about WebBizz, the e-commerce platform.';
 
         const scenario: any = await okareo.create_scenario_set({
-            name: `Multi-turn Demo Scenario - ${(Math.random() + 1).toString(36).substring(7)}`,
+            name: `Custom MultiTurnDriver - ${UNIQUE_BUILD_ID}`,
             project_id: project_id || '',
             seed_data: [
                 { input: prompt_template("Rudely"), result: off_topic_directive },
@@ -104,7 +104,7 @@ describe('Drivers', () => {
         } as CustomMultiturnTarget;
 
         const model = await okareo.register_model({
-            name: 'Demo MultiTurnDrivera',
+            name: `Custom MultiTurnDriver - ${UNIQUE_BUILD_ID}`,
             project_id: project_id || '',
             models: {
                 type: 'driver',
@@ -117,7 +117,7 @@ describe('Drivers', () => {
         });
 
         const data: any = await model.run_test({
-            name: 'Multi-turn Demo Evaluation',
+            name: `Custom MultiTurnDriver - ${UNIQUE_BUILD_ID}`,
             project_id: project_id,
             scenario_id: scenario.scenario_id,
             calculate_metrics: true,
