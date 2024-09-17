@@ -67,6 +67,10 @@ export interface ModelInvocation {
      * Full model response, including any metadata returned with model's output
      */
     model_output_metadata?: Record<string, any> | unknown[] | string;
+    /**
+     * List of tool calls made during the model invocation, if any
+     */
+    tool_calls?: any[];
 }
 
 export interface OpenAIModel extends BaseModel {
@@ -76,6 +80,7 @@ export interface OpenAIModel extends BaseModel {
     system_prompt_template: string;
     user_prompt_template: string;
     dialog_template: string;
+    tools?: unknown[];
 }
 export interface GenerationModel extends BaseModel {
     type: "generation";
@@ -84,6 +89,7 @@ export interface GenerationModel extends BaseModel {
     system_prompt_template: string;
     user_prompt_template: string;
     dialog_template: string;
+    tools?: unknown[];
 }
 export interface CohereModel extends BaseModel {
     type: "cohere";
