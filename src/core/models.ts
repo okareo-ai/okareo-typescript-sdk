@@ -68,9 +68,9 @@ export interface ModelInvocation {
      */
     model_output_metadata?: Record<string, any> | unknown[] | string;
     /**
-     * Optional session ID for the model invocation
+     * List of tool calls made during the model invocation, if any
      */
-    session_id?: string;
+    tool_calls?: any[];
 }
 
 export interface OpenAIModel extends BaseModel {
@@ -80,6 +80,7 @@ export interface OpenAIModel extends BaseModel {
     system_prompt_template: string;
     user_prompt_template: string;
     dialog_template: string;
+    tools?: unknown[];
 }
 export interface GenerationModel extends BaseModel {
     type: "generation";
@@ -88,6 +89,7 @@ export interface GenerationModel extends BaseModel {
     system_prompt_template: string;
     user_prompt_template: string;
     dialog_template: string;
+    tools?: unknown[];
 }
 export interface CohereModel extends BaseModel {
     type: "cohere";
@@ -114,10 +116,19 @@ export interface CustomModel extends BaseModel {
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     invoke?: (input: Record<string, any> | unknown[] | string) => ModelInvocation; // allows a Promise or direct return in the response
 }
+export interface CustomMultiturnTarget extends BaseModel {
+    type: "custom_target";
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    invoke?: (messages: { [key: string]: any }[]) => ModelInvocation;
+}
+
 export interface MultiTurnDriver extends BaseModel {
     type: "driver";
-    target: OpenAIModel | CustomModel | GenerationModel;
-    driver_params: Record<string, any>;
+    target: OpenAIModel | CustomMultiturnTarget | GenerationModel;
+    driver_temperature?: number;
+    repeats?: number;
+    max_turns?: number;
+    first_turn?: string;
 }
 
 export interface ModelUnderTestProps {
@@ -226,7 +237,7 @@ export class ModelUnderTest {
     }
 
     private isCustom(mType: any): boolean {
-        return (mType === "custom" || (mType === "driver" && this.mut?.models?.driver.target['type'] === "custom"));
+        return (mType === "custom" || (mType === "driver" && this.mut?.models?.driver.target['type'] === "custom_target"));
     }
 
     private async connectNats(natsJwt: string, seed: string): Promise<nats.NatsConnection> {
@@ -251,7 +262,8 @@ export class ModelUnderTest {
         const subscription = natsConnection.subscribe(`invoke.${this.mut?.id}`);
         for await (const msg of subscription) {
             try {
-                const data = JSON.parse(msg.data.toString());
+                // Use a more robust parsing method
+                const data = this.safeParseJSON(msg.data);
                 if (data.close) {
                     await msg.respond(nats.StringCodec().encode(JSON.stringify({ status: "disconnected" })));
                     await natsConnection.close()
@@ -266,6 +278,18 @@ export class ModelUnderTest {
                 console.error(errorMsg);
                 await msg.respond(nats.StringCodec().encode(JSON.stringify({ error: errorMsg })));
             }
+        }
+    }
+
+    private safeParseJSON(data: Uint8Array): any {
+        try {
+            // First, try to parse it as a UTF-8 string
+            const jsonString = new TextDecoder().decode(data);
+            return JSON.parse(jsonString);
+        } catch (e) {
+            // If that fails, try to parse it as a Buffer
+            const jsonString = Buffer.from(data).toString('utf-8');
+            return JSON.parse(jsonString);
         }
     }
 

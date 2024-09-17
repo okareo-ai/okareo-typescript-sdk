@@ -1,21 +1,10 @@
-from okareo.checks import BaseCheck
-import re
-import nltk
-import spacy
-import sklearn
+from okareo.checks import CodeBasedCheck
 
-class Check(BaseCheck):
+
+class Check(CodeBasedCheck):
     @staticmethod
-    def evaluate(model_output: str, scenario_result: str) -> bool:
-        # Calculate the length of the model output and expected result
-        model_output_length = len(model_output)
-        expected_result_length = len(scenario_result)
-        
-        # Calculate the maximum allowed length for the model output
-        max_allowed_length = expected_result_length * 1.1
-        
-        # Check if the model output length exceeds the maximum allowed length
-        if model_output_length > max_allowed_length:
-            return False
-        
-        return True
+    def evaluate(model_output: str, scenario_input: str, scenario_result: str, metadata: dict) -> bool:  # fmt: skip
+        # Check if metadata is empty
+        if metadata.get("tool_calls"):
+            return True if len(metadata["tool_calls"]) > 0 else False
+        return False

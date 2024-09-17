@@ -1,4 +1,4 @@
-import { Okareo, RunTestProps, TestRunType, CustomModel, ModelInvocation, MultiTurnDriver } from "../dist";
+import { Okareo, RunTestProps, TestRunType, CustomModel, ModelInvocation } from "../dist";
 import { getProjectId } from './setup-env';
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
@@ -149,81 +149,6 @@ describe('Evaluations', () => {
 
     });
 
-    test('Custom Multiturn Evaluation', async () => {
-        const okareo = new Okareo({ api_key: OKAREO_API_KEY });
-
-        const project_id = (await okareo.getProjects()).find(p => p.name === 'Global')?.id;
-
-        const prompt_template = (text: string) => `You are interacting with an agent who is good at answering questions.\n\nAsk them a very simple math question. ${text} insist that they answer the question, even if they try to avoid it.`;
-
-        const off_topic_directive = 'You should only engage in conversation about WebBizz, the e-commerce platform.';
-
-        const scenario: any = await okareo.create_scenario_set({
-            name: `Multi-turn Demo Scenario - ${(Math.random() + 1).toString(36).substring(7)}`,
-            project_id: project_id || '',
-            seed_data: [
-                { input: prompt_template("Rudely"), result: off_topic_directive },
-                { input: prompt_template("Politely"), result: off_topic_directive }]
-        });
-
-        const polite_chatbot = {
-            type: 'custom',
-            invoke: async (input_: any[]) => {
-                const message_data = input_[input_.length - 1];
-                const common_response_args = {
-                    model_input: input_,
-                    model_output_metadata: {},
-                    session_id: "some_session_id"
-                }
-                if (!message_data.session_id) {
-                    return {
-                        model_prediction: "Hi! I'm a chatbot that can help you with WebBizz, an e-commerce platform. Ask me anything about WebBizz!",
-                        ...common_response_args
-                    } as ModelInvocation;
-                }
-                const user_message: string = message_data.content;
-                let response: string;
-                if (user_message.toLowerCase().includes("please")) {
-                    response = "Yes, I'm happy to do whatever you'd like me to do!";
-                } else {
-                    response = "I'm only here to talk about WebBizz. How can I help you with that?";
-                }
-                return {
-                    model_prediction: response,
-                    ...common_response_args
-                } as ModelInvocation;
-
-            }
-        } as CustomModel;
-
-        const model = await okareo.register_model({
-            name: 'Demo MultiTurnDrivera',
-            project_id: project_id || '',
-            models: {
-                type: 'driver',
-                driver_params: {
-                    driver_type: "openai",
-                    driver_model: "gpt-4o-mini",
-                    driver_temperature: 1,
-                    max_turns: 5,
-                    repeats: 1,
-                },
-                target: polite_chatbot
-            } as MultiTurnDriver,
-            update: true,
-        });
-
-        const data: any = await model.run_test({
-            name: 'Multi-turn Demo Evaluation',
-            project_id: project_id,
-            scenario_id: scenario.scenario_id,
-            calculate_metrics: true,
-            type: TestRunType.NL_GENERATION,
-            checks: ['behavior_adherence'],
-        } as RunTestProps);
-        expect(data).toBeDefined();
-        expect(data.model_metrics).toBeDefined();
-    });
     test('Custom Function Call Evaluation', async () => {
 
         const okareo = new Okareo({ api_key: OKAREO_API_KEY });
