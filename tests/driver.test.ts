@@ -1,4 +1,4 @@
-import { Okareo } from '../dist';
+import { Okareo, StopConfig } from '../dist';
 import { getProjectId } from './setup-env';
 import { OpenAIModel, TestRunType, MultiTurnDriver, ModelInvocation, RunTestProps, CustomMultiturnTarget } from "../dist";
 
@@ -37,6 +37,10 @@ describe('Drivers', () => {
                 type: "driver",
                 driver_temperature: 0,
                 repeats: 1,
+                stop_check: {
+                    check_name: 'model_refusal',
+                    stop_on: false,
+                } as StopConfig,
                 target: {
                     type: "openai",
                     model_id: "gpt-4o-mini",
@@ -111,6 +115,10 @@ describe('Drivers', () => {
                 driver_temperature: 1,
                 max_turns: 3,
                 repeats: 1,
+                stop_check: {
+                    check_name: 'behavior_adherence',
+                    stop_on: true,
+                } as StopConfig,
                 target: polite_chatbot
             } as MultiTurnDriver,
             update: true,

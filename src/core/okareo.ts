@@ -114,7 +114,6 @@ export class Okareo {
             modelInvoker = register_payload["models"]["driver"]["target"]["invoke"];
             delete register_payload["models"]["driver"]["target"]["invoke"];
         }
-
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data: response, error } = await client.POST("/v0/register_model", {
             params: {
