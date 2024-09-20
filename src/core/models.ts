@@ -121,10 +121,14 @@ export interface CustomMultiturnTarget extends BaseModel {
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     invoke?: (messages: { [key: string]: any }[]) => ModelInvocation;
 }
-
+export interface StopConfig {
+    check_name: string;
+    stop_on: boolean;
+}
 export interface MultiTurnDriver extends BaseModel {
     type: "driver";
     target: OpenAIModel | CustomMultiturnTarget | GenerationModel;
+    stop_check: StopConfig;
     driver_temperature?: number;
     repeats?: number;
     max_turns?: number;
