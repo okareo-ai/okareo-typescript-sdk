@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 import type { paths, components } from "../api/v1/okareo_endpoints";
 import FormData from "form-data";
 import * as fs from "fs";
-import { ModelUnderTest, BaseModel, CustomModel, CheckOutputType } from "./models";
+import { ModelUnderTest, BaseModel, CustomModel } from "./models";
 
 const CHECK_DEPRECATION_WARNING = "The `evaluator` naming convention is deprecated and will not be supported in a future release. " +
 "Please use `check` in place of `evaluator` when invoking this method.";
@@ -101,7 +101,7 @@ export class Okareo {
         
         const register_payload: any = JSON.parse(JSON.stringify(props)); // Create a deep clone of props 
         register_payload["models"] = {};
-        for (let model of models) {
+        for (const model of models) {
             register_payload["models"][model.type] = model
             delete register_payload["models"][model.type].type;
         }
@@ -110,11 +110,10 @@ export class Okareo {
             delete (register_payload["models"]["custom"] as CustomModel).invoke;
         }
         if ("driver" in register_payload["models"] &&
-            register_payload["models"]["driver"]["target"]["type"] === "custom") {
+            register_payload["models"]["driver"]["target"]["type"] === "custom_target") {
             modelInvoker = register_payload["models"]["driver"]["target"]["invoke"];
             delete register_payload["models"]["driver"]["target"]["invoke"];
         }
-
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data: response, error } = await client.POST("/v0/register_model", {
             params: {

@@ -9,7 +9,7 @@ const UNIQUE_BUILD_ID = (process.env.SDK_BUILD_ID || `local.${(Math.random() + 1
 let project_id: string;
 
 const SYSTEM_PROMPT: string = `You will get some a long passage of text.  As an expert at distilling information to the most basic results, provide a short one sentence summary of the provided material.`;
-const USER_PROMPT: string = `{input}`;
+const USER_PROMPT: string = `{scenario_input}`;
 
 let model: any;
 

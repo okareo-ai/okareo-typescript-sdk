@@ -38,7 +38,7 @@ const TEST_SEED_DATA = [
 
 
 
-const USER_PROMPT_TEMPLATE = `{input}`
+const USER_PROMPT_TEMPLATE = `{scenario_input}`
 
 const CLASSIFICATION_CONTEXT_TEMPLATE = `
 You will be provided a question from a customer.
