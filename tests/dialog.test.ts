@@ -59,7 +59,7 @@ describe('Test Dialog', () => {
               type: "openai",
               model_id:"gpt-3.5-turbo",
               temperature:0.5,
-              dialog_template: "{input}"
+              dialog_template: "{scenario_input}"
             } as OpenAIModel],
           update: true,
       });
