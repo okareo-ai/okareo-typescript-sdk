@@ -162,7 +162,6 @@ const generation_reporter = (
   const { model_metrics } = eval_run;
   if (!(model_metrics && model_metrics.mean_scores)) {
     //throw new Error("Invalid Generation TestRunItem");
-    console.log("Warning: must be a driver model");
     return {
       pass: true,
       errors: 0,
