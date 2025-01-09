@@ -178,6 +178,7 @@ export class ModelUnderTest {
         const client = createClient<paths>({ baseUrl: this.endpoint });
 
         let natsConnection: nats.NatsConnection | null = null;
+        const results: any = { model_data: {} };
 
         try {
             const modelKeys = Object.getOwnPropertyNames(this.mut?.models)
@@ -187,7 +188,7 @@ export class ModelUnderTest {
             }
 
 
-            if (this.isCustom(mType)) {
+            if (this.isCustom(mType) && mType === "driver") {
                 const { data: creds, error: credsError } = await client.GET("/v0/internal_custom_model_listener", {
                     params: {
                         header: {
@@ -209,6 +210,38 @@ export class ModelUnderTest {
 
                     this.startCustomModelListener(natsConnection);
                 }
+            } else if (this.isCustom(mType)) {
+                const { scenario_id = "NONE" } = props;
+                delete props.scenario;
+                /*
+                const seed_data = await this.okareo.get_scenario_data_points(scenario_id);
+                */
+                const scenario_results = await client.GET("/v0/scenario_data_points/{scenario_id}", {
+                    params: {
+                        header: {
+                            "api-key": this.api_key
+                        },
+                        path: { scenario_id: scenario_id }
+                    }
+                });
+                if (scenario_results.error) {
+                    throw scenario_results.error;
+                }
+                const seed_data = scenario_results.data;
+                // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+                for (let i = 0; i < seed_data.length; i++) {
+                    const { id, input, result } = seed_data[i];
+                    const invoke = (this.mut.models?.custom as unknown as CustomModel).invoke;
+                    if (invoke) {
+                        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+                        const modelInvocation: ModelInvocation = await invoke(input);
+                        results.model_data[id] = {
+                            "actual": modelInvocation.model_prediction,
+                            "model_input": modelInvocation.model_input,
+                            "model_response": modelInvocation.model_output_metadata,
+                        };
+                    }
+                }
             }
 
             const mKey = props.model_api_key ?? "NONE";
@@ -217,7 +250,7 @@ export class ModelUnderTest {
                 ...props,
                 mut_id: this.mut.id,
                 api_keys: (this.isCustom(mType)) ? undefined : await this.validateRunTestParams(mKey, props.type),
-                model_results: { 'model_data': {} },
+                model_results: results,
                 checks: props.checks,
             } as unknown as components["schemas"]["TestRunPayloadV2"];
             const { data, error } = await client.POST("/v0/test_run", {
