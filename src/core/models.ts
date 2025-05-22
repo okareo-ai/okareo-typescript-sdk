@@ -318,7 +318,7 @@ export class ModelUnderTest {
         } else {
             // Connect to NGS with JWT authentication
             const natsOptions: nats.ConnectionOptions = {
-                servers: ["wss://connect.ngs.global:443"],
+                servers: ["wss://connect.ngs.global"],
                 authenticator: nats.jwtAuthenticator(userJwt, Uint8Array.from(Buffer.from(seed))),
                 timeout: 30000, // 30 seconds
                 reconnect: true,
