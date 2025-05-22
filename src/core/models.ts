@@ -202,11 +202,12 @@ export class ModelUnderTest {
                 if (credsError) {
                     throw credsError;
                 }
-                if (creds && typeof creds === 'object' && 'jwt' in creds && 'seed' in creds) {
+                if (creds && typeof creds === 'object' && 'jwt' in creds && 'seed' in creds && 'local_nats' in creds) {
                     const natsJwt = creds.jwt as string;
                     const seed = creds.seed as string;
+                    const localNats = creds.local_nats as string;
 
-                    natsConnection = await this.connectNats(natsJwt, seed);
+                    natsConnection = await this.connectNats(natsJwt, seed, localNats);
 
                     this.startCustomModelListener(natsConnection);
                 }
@@ -277,22 +278,58 @@ export class ModelUnderTest {
         return (mType === "custom" || (mType === "driver" && this.mut?.models?.driver.target['type'] === "custom_target"));
     }
 
-    private async connectNats(natsJwt: string, seed: string): Promise<nats.NatsConnection> {
-        const natsOptions: nats.ConnectionOptions = {
-            servers: ["wss://connect.ngs.global"],
-            authenticator: nats.jwtAuthenticator(natsJwt, Uint8Array.from(Buffer.from(seed))),
-            timeout: 30000,
-            reconnect: true,
-            maxReconnectAttempts: 5,
-            reconnectTimeWait: 1000,
-        };
-        try {
-            const nc = await nats.connect(natsOptions);
-            return nc;
-        } catch (error) {
-            console.error('Failed to connect to NATS:', error);
-            throw error;
+    private async connectNats(userJwt: string, seed: string, localNats: string): Promise<nats.NatsConnection> {
+        let nc: nats.NatsConnection;
+        if (localNats !== "") {
+            // Parse the URL to extract credentials if present
+            let serverUrl = localNats;
+            let username = undefined;
+            let password = undefined;
+            
+            try {
+                const parsedUrl = new URL(localNats);
+                if (parsedUrl.username && parsedUrl.password) {
+                    username = parsedUrl.username;
+                    password = parsedUrl.password;
+                    // Recreate URL without credentials
+                    parsedUrl.username = '';
+                    parsedUrl.password = '';
+                    serverUrl = parsedUrl.toString();
+                }
+            } catch (e) {
+                console.error("Failed to parse NATS URL:", e);
+            }
+            
+            const natsOptions: nats.ConnectionOptions = {
+                servers: [serverUrl],
+                timeout: 120000,
+                reconnect: true,
+                maxReconnectAttempts: 10,
+                reconnectTimeWait: 10000,
+            };
+            
+            // Only add credentials if they were found in the URL
+            if (username && password) {
+                natsOptions.user = username;
+                natsOptions.pass = password;
+            }
+            
+            nc = await nats.connect(natsOptions);
+        } else {
+            // Connect to NGS with JWT authentication
+            const natsOptions: nats.ConnectionOptions = {
+                servers: ["wss://connect.ngs.global:443"],
+                authenticator: nats.jwtAuthenticator(userJwt, Uint8Array.from(Buffer.from(seed))),
+                timeout: 30000, // 30 seconds
+                reconnect: true,
+                maxReconnectAttempts: 5,
+                reconnectTimeWait: 1000, // 1 second
+            };
+            
+            nc = await nats.connect(natsOptions);
         }
+        
+        return nc;
     }
 
     private async startCustomModelListener(natsConnection: nats.NatsConnection): Promise<void> {
