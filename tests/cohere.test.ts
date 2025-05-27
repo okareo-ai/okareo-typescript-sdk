@@ -107,9 +107,9 @@ describe('Cohere Tests', () => {
       } as CohereModel,
       { 
         type: "pinecone",
-        index_name: "my-test-index",
-        region: "gcp-starter",
-        project_id: "kwnp6kx",
+        index_name: "okareo-ci",
+        region: "aped-4627-b74a",
+        project_id: "ggr8s2p",
         top_k: 3,
       }as PineconeDB]
     });
