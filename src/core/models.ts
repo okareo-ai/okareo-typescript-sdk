@@ -1,12 +1,14 @@
-import createClient from 'openapi-fetch';
+import createClient from "openapi-fetch";
 import type { paths, components } from "../api/v1/okareo_endpoints";
-import * as nats from 'nats';
+import * as nats from "nats";
 
-
-const CHECK_IN_RUN_TEST_WARNING = "The `checks` parameter was passed to `run_test` for an unsupported TestRunType. " +
+const CHECK_IN_RUN_TEST_WARNING =
+    "The `checks` parameter was passed to `run_test` for an unsupported TestRunType. " +
     "Currently, `checks` are only used when type=TestRunType.NL_GENERATION.";
 
-export function ScenarioSetCreate(props: components["schemas"]["ScenarioSetCreate"]): components["schemas"]["ScenarioSetCreate"] {
+export function ScenarioSetCreate(
+    props: components["schemas"]["ScenarioSetCreate"],
+): components["schemas"]["ScenarioSetCreate"] {
     return props;
 }
 
@@ -14,11 +16,15 @@ export function SeedData(props: components["schemas"]["SeedData"]): components["
     return props;
 }
 
-export function ScenarioSetGenerate(props: components["schemas"]["ScenarioSetGenerate"]): components["schemas"]["ScenarioSetGenerate"] {
+export function ScenarioSetGenerate(
+    props: components["schemas"]["ScenarioSetGenerate"],
+): components["schemas"]["ScenarioSetGenerate"] {
     return props;
 }
 
-export function DatapointSearch(props: components["schemas"]["DatapointSearch"]): components["schemas"]["DatapointSearch"] {
+export function DatapointSearch(
+    props: components["schemas"]["DatapointSearch"],
+): components["schemas"]["DatapointSearch"] {
     return props;
 }
 
@@ -43,8 +49,8 @@ export enum TestRunType {
     INVARIANT = "invariant",
     MULTI_CLASS_CLASSIFICATION = "MULTI_CLASS_CLASSIFICATION",
     NL_GENERATION = "NL_GENERATION",
+    MULTI_TURN = "MULTI_TURN",
 }
-
 
 export interface BaseModel {
     type: string;
@@ -155,24 +161,34 @@ export interface RunTestProps {
 }
 
 export class ModelUnderTest {
-    api_key: string = '';
-    endpoint: string = '';
+    api_key: string = "";
+    endpoint: string = "";
     mut: components["schemas"]["ModelUnderTestResponse"] | undefined;
 
     constructor(props: ModelUnderTestProps) {
-        if (!props.api_key || props.api_key.length === 0) { throw new Error("API Key is required"); }
+        if (!props.api_key || props.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const { api_key, endpoint } = props;
         this.api_key = api_key;
         this.endpoint = endpoint;
         this.mut = props.mut;
     }
 
-
     async run_test(props: RunTestProps): Promise<components["schemas"]["TestRunItem"]> {
         let result: any;
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
-        if (!this.mut) { throw new Error("A registered model is required"); }
-        if (props.type !== TestRunType.NL_GENERATION && props.checks && props.checks.length > 0) {
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
+        if (!this.mut) {
+            throw new Error("A registered model is required");
+        }
+        if (
+            props.type !== TestRunType.NL_GENERATION &&
+            props.type !== TestRunType.MULTI_TURN &&
+            props.checks &&
+            props.checks.length > 0
+        ) {
             console.warn(CHECK_IN_RUN_TEST_WARNING);
         }
         const client = createClient<paths>({ baseUrl: this.endpoint });
@@ -181,28 +197,27 @@ export class ModelUnderTest {
         const results: any = { model_data: {} };
 
         try {
-            const modelKeys = Object.getOwnPropertyNames(this.mut?.models)
+            const modelKeys = Object.getOwnPropertyNames(this.mut?.models);
             const mType = modelKeys[0];
             if (!props.scenario_id && props.scenario) {
                 props.scenario_id = props.scenario.scenario_id;
             }
 
-
             if (this.isCustom(mType) && mType === "driver") {
                 const { data: creds, error: credsError } = await client.GET("/v0/internal_custom_model_listener", {
                     params: {
                         header: {
-                            "api-key": this.api_key
+                            "api-key": this.api_key,
                         },
                         query: {
-                            mut_id: this.mut.id
-                        }
-                    }
+                            mut_id: this.mut.id,
+                        },
+                    },
                 });
                 if (credsError) {
                     throw credsError;
                 }
-                if (creds && typeof creds === 'object' && 'jwt' in creds && 'seed' in creds && 'local_nats' in creds) {
+                if (creds && typeof creds === "object" && "jwt" in creds && "seed" in creds && "local_nats" in creds) {
                     const natsJwt = creds.jwt as string;
                     const seed = creds.seed as string;
                     const localNats = creds.local_nats as string;
@@ -220,10 +235,10 @@ export class ModelUnderTest {
                 const scenario_results = await client.GET("/v0/scenario_data_points/{scenario_id}", {
                     params: {
                         header: {
-                            "api-key": this.api_key
+                            "api-key": this.api_key,
                         },
-                        path: { scenario_id: scenario_id }
-                    }
+                        path: { scenario_id: scenario_id },
+                    },
                 });
                 if (scenario_results.error) {
                     throw scenario_results.error;
@@ -237,9 +252,9 @@ export class ModelUnderTest {
                         // eslint-disable-next-line  @typescript-eslint/no-explicit-any
                         const modelInvocation: ModelInvocation = await invoke(input);
                         results.model_data[id] = {
-                            "actual": modelInvocation.model_prediction,
-                            "model_input": modelInvocation.model_input,
-                            "model_response": modelInvocation.model_output_metadata,
+                            actual: modelInvocation.model_prediction,
+                            model_input: modelInvocation.model_input,
+                            model_response: modelInvocation.model_output_metadata,
                         };
                     }
                 }
@@ -250,14 +265,14 @@ export class ModelUnderTest {
             const body: components["schemas"]["TestRunPayloadV2"] = {
                 ...props,
                 mut_id: this.mut.id,
-                api_keys: (this.isCustom(mType)) ? undefined : await this.validateRunTestParams(mKey, props.type),
+                api_keys: this.isCustom(mType) ? undefined : await this.validateRunTestParams(mKey, props.type),
                 model_results: results,
                 checks: props.checks,
             } as unknown as components["schemas"]["TestRunPayloadV2"];
             const { data, error } = await client.POST("/v0/test_run", {
                 params: {
                     header: {
-                        "api-key": this.api_key
+                        "api-key": this.api_key,
                     },
                 },
                 body: body,
@@ -275,7 +290,9 @@ export class ModelUnderTest {
     }
 
     private isCustom(mType: any): boolean {
-        return (mType === "custom" || (mType === "driver" && this.mut?.models?.driver.target['type'] === "custom_target"));
+        return (
+            mType === "custom" || (mType === "driver" && this.mut?.models?.driver.target["type"] === "custom_target")
+        );
     }
 
     private async connectNats(userJwt: string, seed: string, localNats: string): Promise<nats.NatsConnection> {
@@ -285,21 +302,21 @@ export class ModelUnderTest {
             let serverUrl = localNats;
             let username = undefined;
             let password = undefined;
-            
+
             try {
                 const parsedUrl = new URL(localNats);
                 if (parsedUrl.username && parsedUrl.password) {
                     username = parsedUrl.username;
                     password = parsedUrl.password;
                     // Recreate URL without credentials
-                    parsedUrl.username = '';
-                    parsedUrl.password = '';
+                    parsedUrl.username = "";
+                    parsedUrl.password = "";
                     serverUrl = parsedUrl.toString();
                 }
             } catch (e) {
                 console.error("Failed to parse NATS URL:", e);
             }
-            
+
             const natsOptions: nats.ConnectionOptions = {
                 servers: [serverUrl],
                 timeout: 120000,
@@ -307,13 +324,13 @@ export class ModelUnderTest {
                 maxReconnectAttempts: 10,
                 reconnectTimeWait: 10000,
             };
-            
+
             // Only add credentials if they were found in the URL
             if (username && password) {
                 natsOptions.user = username;
                 natsOptions.pass = password;
             }
-            
+
             nc = await nats.connect(natsOptions);
         } else {
             // Connect to NGS with JWT authentication
@@ -325,10 +342,10 @@ export class ModelUnderTest {
                 maxReconnectAttempts: 5,
                 reconnectTimeWait: 1000, // 1 second
             };
-            
+
             nc = await nats.connect(natsOptions);
         }
-        
+
         return nc;
     }
 
@@ -340,7 +357,7 @@ export class ModelUnderTest {
                 const data = this.safeParseJSON(msg.data);
                 if (data.close) {
                     await msg.respond(nats.StringCodec().encode(JSON.stringify({ status: "disconnected" })));
-                    await natsConnection.close()
+                    await natsConnection.close();
                     return;
                 }
                 const args = data.args || [];
@@ -362,7 +379,7 @@ export class ModelUnderTest {
             return JSON.parse(jsonString);
         } catch (e) {
             // If that fails, try to parse it as a Buffer
-            const jsonString = Buffer.from(data).toString('utf-8');
+            const jsonString = Buffer.from(data).toString("utf-8");
             return JSON.parse(jsonString);
         }
     }
@@ -374,7 +391,7 @@ export class ModelUnderTest {
         }
         const customTarget = this.mut?.models?.driver.target as CustomModel | undefined;
         if (customTarget && customTarget.invoke) {
-            return await customTarget.invoke(args)
+            return await customTarget.invoke(args);
         }
         throw new Error("Custom model invoke function not found");
     }
@@ -383,42 +400,44 @@ export class ModelUnderTest {
         if (Array.isArray(result)) {
             return result;
         }
-        if (typeof result === 'object' && result !== null && 'length' in result) {
+        if (typeof result === "object" && result !== null && "length" in result) {
             return Array.from(result);
         }
         return {
             actual: result.model_prediction || result["actual"],
             model_input: result.model_input || args,
-            model_result: result.model_output_metadata || result.model_response || '',
-            ...(result.session_id ? { session_id: result.session_id } : {})
+            model_result: result.model_output_metadata || result.model_response || "",
+            ...(result.session_id ? { session_id: result.session_id } : {}),
         };
     }
 
-
     private async validateRunTestParams(
         model_api_key: string | { [key: string]: string },
-        testRunType: TestRunType
+        testRunType: TestRunType,
     ): Promise<{ [key: string]: string }> {
         const modelNames = this.mut?.models ? Object.keys(this.mut?.models) : [];
 
         let runApiKeys: { [key: string]: string };
-        runApiKeys = typeof model_api_key === 'object' ? model_api_key :
-            typeof model_api_key === 'string' ? { [modelNames[0]]: model_api_key } :
-                {};
-
+        runApiKeys =
+            typeof model_api_key === "object"
+                ? model_api_key
+                : typeof model_api_key === "string"
+                  ? { [modelNames[0]]: model_api_key }
+                  : {};
 
         if (!modelNames.includes("custom") && modelNames.length !== Object.keys(runApiKeys).length) {
             throw new Error("Number of models and API keys does not match");
         }
 
-        if (testRunType === TestRunType.INFORMATION_RETRIEVAL &&
-            ["pinecone", "qdrant", "custom"].every(db => !modelNames.includes(db))) {
+        if (
+            testRunType === TestRunType.INFORMATION_RETRIEVAL &&
+            ["pinecone", "qdrant", "custom"].every((db) => !modelNames.includes(db))
+        ) {
             throw new Error("No vector database specified");
         }
 
         return runApiKeys;
     }
-
 }
 
 export enum CheckOutputType {
