@@ -2,6 +2,10 @@ import createClient from "openapi-fetch";
 import type { paths, components } from "../api/v1/okareo_endpoints";
 import * as nats from "nats";
 
+type PostPaths = {
+    [K in keyof paths]: "post" extends keyof paths[K] ? K : never;
+}[keyof paths];
+
 const CHECK_IN_RUN_TEST_WARNING =
     "The `checks` parameter was passed to `run_test` for an unsupported TestRunType. " +
     "Currently, `checks` are only used when type=TestRunType.NL_GENERATION.";
@@ -50,6 +54,11 @@ export enum TestRunType {
     MULTI_CLASS_CLASSIFICATION = "MULTI_CLASS_CLASSIFICATION",
     NL_GENERATION = "NL_GENERATION",
     MULTI_TURN = "MULTI_TURN",
+}
+
+export enum CheckOutputType {
+    SCORE = "score",
+    PASS_FAIL = "pass_fail",
 }
 
 export interface BaseModel {
@@ -160,6 +169,10 @@ export interface RunTestProps {
     checks?: string[];
 }
 
+export interface RunTestInternalProps extends RunTestProps {
+    endpoint: PostPaths;
+}
+
 export class ModelUnderTest {
     api_key: string = "";
     endpoint: string = "";
@@ -175,7 +188,22 @@ export class ModelUnderTest {
         this.mut = props.mut;
     }
 
+    async submit_test(props: RunTestProps): Promise<components["schemas"]["TestRunItem"]> {
+        const modelType = Object.getOwnPropertyNames(this.mut?.models ?? {})[0];
+
+        if (props.type === TestRunType.MULTI_TURN && this.isCustom(modelType)) {
+            console.warn("submit_test does not support MULTI_TURN with custom models");
+            return this.run_test(props);
+        }
+
+        return this.runTestInternal({ ...props, endpoint: "/v0/test_run/submit" });
+    }
+
     async run_test(props: RunTestProps): Promise<components["schemas"]["TestRunItem"]> {
+        return this.runTestInternal({ ...props, endpoint: "/v0/test_run" });
+    }
+
+    private async runTestInternal(props: RunTestInternalProps): Promise<components["schemas"]["TestRunItem"]> {
         let result: any;
         if (!this.api_key || this.api_key.length === 0) {
             throw new Error("API Key is required");
@@ -246,11 +274,13 @@ export class ModelUnderTest {
                 const seed_data = scenario_results.data;
                 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
                 for (let i = 0; i < seed_data.length; i++) {
-                    const { id, input, result } = seed_data[i];
+                    const { id, input } = seed_data[i];
                     const invoke = (this.mut.models?.custom as unknown as CustomModel).invoke;
                     if (invoke) {
-                        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-                        const modelInvocation: ModelInvocation = await invoke(input);
+                        const modelInvocation: ModelInvocation = await invoke(
+                            // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+                            input as string | Record<string, any> | unknown[],
+                        );
                         results.model_data[id] = {
                             actual: modelInvocation.model_prediction,
                             model_input: modelInvocation.model_input,
@@ -269,7 +299,7 @@ export class ModelUnderTest {
                 model_results: results,
                 checks: props.checks,
             } as unknown as components["schemas"]["TestRunPayloadV2"];
-            const { data, error } = await client.POST("/v0/test_run", {
+            const { data, error } = await client.POST(props.endpoint, {
                 params: {
                     header: {
                         "api-key": this.api_key,
@@ -438,9 +468,4 @@ export class ModelUnderTest {
 
         return runApiKeys;
     }
-}
-
-export enum CheckOutputType {
-    SCORE = "score",
-    PASS_FAIL = "pass_fail",
 }
