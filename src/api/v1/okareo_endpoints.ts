@@ -45,6 +45,37 @@ export interface paths {
     /** Generate Api Token */
     post: operations["generate_api_token_v0_generate_api_token_post"];
   };
+  "/v0/onboarding_status": {
+    /**
+     * Update Onboarding Status
+     * @description Update the onboarding completion status for the organization
+     *
+     * Args:
+     *     status (str): The new onboarding completion status
+     *
+     * Returns:
+     *     str: The updated onboarding completion status
+     */
+    put: operations["update_onboarding_status_v0_onboarding_status_put"];
+  };
+  "/v0/generate_slack_auth_url": {
+    /**
+     * Generate Slack Auth Url
+     * @description Generates a Slack authentication URL with a temporary authorization token.
+     *
+     * Args:
+     *     request: The HTTP request containing project_id in the body
+     *     db: Database session
+     *
+     * Returns:
+     *     dict: Contains the Slack authentication URL
+     */
+    post: operations["generate_slack_auth_url_v0_generate_slack_auth_url_post"];
+  };
+  "/v0/slack": {
+    /** Slack Oauth Callback */
+    get: operations["slack_oauth_callback_v0_slack_get"];
+  };
   "/v0/scenario_sets": {
     /**
      * Get Scenario Sets
@@ -120,8 +151,9 @@ export interface paths {
   "/v0/scenario_sets_generate": {
     /**
      * Generate Scenario Set
-     * @description Triggers a generation of a scenario set based on source scenario ID, could be long running.
-     * A registered model can now use this scenario set for testing.
+     * @description Triggers a generation of a scenario set based on either a source scenario ID or a list of source scenario rows.
+     * Generation can run long depending on number of source rows, number of examples, and generation type/prompt.
+     * Optionally save the generated scenario, allowing a registered model to use the generated scenario set for testing.
      *
      * Returns:
      *     Object: generation result with '201 Created' status code on success.
@@ -138,10 +170,108 @@ export interface paths {
      */
     post: operations["get_datapoints_v0_find_datapoints_post"];
   };
+  "/v0/find_datapoints_filter": {
+    /**
+     * Get Datapoints Filter
+     * @description Gets all the datapoints for given search criteria.
+     *
+     * Returns:
+     *     list: An array of datapoint objects.
+     */
+    post: operations["get_datapoints_filter_v0_find_datapoints_filter_post"];
+  };
+  "/v0/filter_counts": {
+    /**
+     * Get Datapoint Counts
+     * @description Gets only the counts for datapoints matching given filter criteria without retrieving the actual data.
+     *
+     * Returns:
+     *     dict: Object containing filtered_count and total_count
+     */
+    post: operations["get_datapoint_counts_v0_filter_counts_post"];
+  };
+  "/v0/filters": {
+    /**
+     * Get Filters
+     * @description Get all datapoint filters for a project.
+     * Defaults to a 90-day lookback window.
+     *
+     * Args:
+     *     request: The FastAPI request object
+     *     project_id: UUID of the project to get filters for
+     *
+     * Returns:
+     *     List of filter items for the project
+     */
+    get: operations["get_filters_v0_filters_get"];
+    /**
+     * Create Filter
+     * @description Create a new datapoint filter.
+     *
+     * Args:
+     *     request: The FastAPI request object
+     *     payload: Filter creation payload containing conditions and metadata
+     *
+     * Returns:
+     *     The created filter objects
+     */
+    post: operations["create_filter_v0_filters_post"];
+    /**
+     * Delete Filter
+     * @description Delete a datapoint filter.
+     *
+     * Args:
+     *     request: The FastAPI request object
+     *     payload: Filter deletion payload containing filter ID
+     */
+    delete: operations["delete_filter_v0_filters_delete"];
+  };
+  "/v0/filters/{filter_group_id}": {
+    /**
+     * Get Filter
+     * @description Get a specific datapoint filter.
+     *
+     * Args:
+     *     request: The FastAPI request object
+     *     project_id: UUID of the project the filter belongs to
+     *     filter_group_id: UUID of the specific filter group to retrieve
+     *
+     * Returns:
+     *     The requested filter item
+     */
+    get: operations["get_filter_v0_filters__filter_group_id__get"];
+    /**
+     * Update Filter
+     * @description Update an existing datapoint filter. Allows update on the name, description, and checks fields.
+     *
+     * Args:
+     *     request: The FastAPI request object
+     *     filter_group_id: UUID of the filter group to update
+     *     payload: Filter creation payload containing conditions and metadata
+     *
+     * Returns:
+     *     The created filter object
+     */
+    put: operations["update_filter_v0_filters__filter_group_id__put"];
+  };
+  "/v0/filters/metadata": {
+    /**
+     * Get Filters Metadata
+     * @description Get all viable user-defined metadata column names for filters.
+     *
+     * Args:
+     *     request: The FastAPI request object
+     *
+     * Returns:
+     *     List of key names of across all user metadata columns
+     */
+    get: operations["get_filters_metadata_v0_filters_metadata_get"];
+  };
   "/v0/summary_datapoints": {
     /**
      * Get Datapoints Summary
-     * @description Expects a date range and returns a summary of datapoint counts by day and feedback range.
+     * @description Expects a date range and returns a summary of datapoint counts by group and feedback range.
+     * Defaults to 90-day lookback window.
      *
      * Returns:
      *     list: An array of datapoint objects.
@@ -157,6 +287,20 @@ export interface paths {
      *     Empty ressponse with 201 status code on success.
      */
     post: operations["add_datapoint_v0_datapoints_post"];
+  };
+  "/v0/datapoints/{datapoint_id}": {
+    /**
+     * Update Datapoint
+     * @description Update a datapoint
+     *
+     * Returns:
+     *     the updated datapoint
+     */
+    put: operations["update_datapoint_v0_datapoints__datapoint_id__put"];
+  };
+  "/v0/traces": {
+    /** Receive Traces */
+    post: operations["receive_traces_v0_traces_post"];
   };
   "/v0/register_model": {
     /**
@@ -196,14 +340,74 @@ export interface paths {
      */
     get: operations["get_all_models_under_test_v0_models_under_test_get"];
   };
-  "/v0/find_test_runs": {
+  "/v0/groups": {
     /**
-     * Find Test Run
-     * @description Find Test Runs
+     * Get Groups
+     * @description Get all groups for the current organization and project.
      *
      * Returns:
-     *     a list of Test Runs
+     *     A list of groups
      */
+    get: operations["get_groups_v0_groups_get"];
+    /**
+     * Create Group
+     * @description Create a new group for models under test or return existing group with the same name.
+     *
+     * Returns:
+     *     The group's details (either newly created or existing)
+     */
+    post: operations["create_group_v0_groups_post"];
+  };
+  "/v0/groups/{group_id}/models": {
+    /**
+     * Get Models In Group
+     * @description Get all models in a specific group.
+     *
+     * Returns:
+     *     A list of models in the group
+     */
+    get: operations["get_models_in_group_v0_groups__group_id__models_get"];
+    /**
+     * Add Model To Group
+     * @description Add a model to a group.
+     *
+     * Returns:
+     *     A success message
+     */
+    post: operations["add_model_to_group_v0_groups__group_id__models_post"];
+  };
+  "/v0/groups/{group_id}": {
+    /**
+     * Update Group
+     * @description Update a group
+     *
+     * Returns:
+     *     the updated group
+     */
+    put: operations["update_group_v0_groups__group_id__put"];
+  };
+  "/v0/groups/{group_id}/trace_eval": {
+    /**
+     * Create Trace Eval
+     * @description Create a trace evaluation for a group
+     *
+     * Returns:
+     *     The created trace evaluation details
+     */
+    post: operations["create_trace_eval_v0_groups__group_id__trace_eval_post"];
+  };
+  "/v0/traces/{group_id}/datapoints": {
+    /**
+     * Get Datapoints In Group Trace
+     * @description Get all datapoints in a specific group.
+     *
+     * Returns:
+     *     A list of datapoints in the group
+     */
+    get: operations["get_datapoints_in_group_trace_v0_traces__group_id__datapoints_get"];
+  };
+  "/v0/find_test_runs": {
+    /** Find Test Run */
     post: operations["find_test_run_v0_find_test_runs_post"];
   };
   "/v0/test_runs/{test_run_id}": {
@@ -223,17 +427,35 @@ export interface paths {
      */
     put: operations["update_test_run_v0_test_runs__test_run_id__put"];
   };
-  "/v0/test_run": {
+  "/v0/test_runs": {
     /**
-     * Run Test
-     * @description Runs tests on a model (mut_id) using previously generated scenario.
-     * Feeds the scenario data (scenario_id) into the model and evaulates results
-     * depending on the test type specified.
+     * Delete Test Run
+     * @description Deletes one or more test runs and cascades deletes to all related entities, including datapoints.
      *
-     * Returns:
-     *     The test run data which includes the evaluated metrics from the run.
+     * !! Use With Caution !!
+     *
+     * Args:
+     *     test_run_ids: List of UUIDs to delete
+     *
+     * Raises:
+     *     HTTPException: 404 if any test_run_id is not found
+     *     HTTPException: 422 if test_run_ids list is empty or invalid
+     *
+     * Returns: 204 status code on successful deletion
      */
+    delete: operations["delete_test_run_v0_test_runs_delete"];
+  };
+  "/v0/test_run": {
+    /** Run Test */
     post: operations["run_test_v0_test_run_post"];
+  };
+  "/v0/test_run/submit": {
+    /** Submit Test */
+    post: operations["submit_test_v0_test_run_submit_post"];
+  };
+  "/v0/evaluate": {
+    /** Evaluate */
+    post: operations["evaluate_v0_evaluate_post"];
   };
   "/v0/test_run/create_failure_scenario/{test_run_id}": {
     /**
@@ -350,6 +572,70 @@ export interface paths {
      */
     post: operations["check_upload_v0_check_upload_post"];
   };
+  "/v0/setup_filter_group_notification": {
+    /**
+     * Setup Filter Group Notification
+     * @description Set up or manage a notification for a specific filter group.
+     *
+     * Args:
+     *     request: The HTTP request
+     *     filter_group_id: The ID of the filter group to set up notifications for
+     *     notification_type: The type of notification channel ("slack" or "email" only for now)
+     *     status: Whether to enable ("on") or disable ("off") notifications
+     *     cooldown_seconds: The cooldown period in seconds for notifications (default of 0 will use default cooldowns of 24 hours (email) and 1 minute (slack)).
+     *
+     * Returns:
+     *     dict: Details about the notification configuration
+     */
+    post: operations["setup_filter_group_notification_v0_setup_filter_group_notification_post"];
+  };
+  "/v0/filter_group_notifications": {
+    /**
+     * Get Filter Group Notifications
+     * @description Get all notification settings for filter groups in the current project.
+     *
+     * This endpoint retrieves information about all filter groups with notification
+     * configurations, including their enabled status and channel types (email/slack).
+     *
+     * Args:
+     *     request: The HTTP request
+     *
+     * Returns:
+     *     list: A list of dictionaries containing notification settings for each filter group
+     */
+    get: operations["get_filter_group_notifications_v0_filter_group_notifications_get"];
+  };
+  "/v0/notifications": {
+    /**
+     * Get All Notification
+     * @description Retrieve a specific notification configuration.
+     */
+    get: operations["get_all_notification__v0_notifications_get"];
+    /**
+     * Update Notification Settings
+     * @description Update notification settings for the current project.
+     */
+    put: operations["update_notification_settings_v0_notifications_put"];
+    /**
+     * Delete Notification History Config
+     * @description Update notification settings for the current project.
+     */
+    delete: operations["delete_notification_history_config_v0_notifications_delete"];
+  };
+  "/v0/notification_history": {
+    /**
+     * Get Notification History
+     * @description Get notification history for the current project and organization.
+     * Only returns records where contents is populated.
+     *
+     * Args:
+     *     request: The HTTP request
+     *
+     * Returns:
+     *     list: A list of notification history records with populated contents
+     */
+    get: operations["get_notification_history_v0_notification_history_get"];
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -446,6 +732,257 @@ export interface components {
        */
       project_id?: string;
     };
+    /**
+     * ComparisonOperator
+     * @description An enumeration.
+     * @enum {string}
+     */
+    ComparisonOperator: "greater_than" | "less_than" | "equal" | "not_equal" | "contains" | "not_contains" | "is_set" | "not_set";
+    /**
+     * DatapointField
+     * @description An enumeration.
+     * @enum {string}
+     */
+    DatapointField: "id" | "input" | "input_datetime" | "result" | "result_datetime" | "feedback" | "error_message" | "error_code" | "error_type" | "context_token" | "time_created" | "model_metadata" | "latency" | "input_tokens" | "output_tokens" | "source" | "temperature" | "provider" | "request_model_name" | "response_model_name" | "tags" | "cost" | "input_tools" | "result_tool_calls" | "user_metadata" | "issue_type";
+    /** DatapointFilterCreate */
+    DatapointFilterCreate: {
+      /**
+       * Filters
+       * @description List of filter conditions to apply
+       */
+      filters: components["schemas"]["FilterCondition"][];
+      /**
+       * Name
+       * @description Optional name describing this filter
+       */
+      name?: string;
+      /**
+       * Description
+       * @description Optional description of the filter
+       */
+      description?: string;
+      /**
+       * Checks
+       * @description Optional list of checks to apply to datapoints in the filter
+       */
+      checks?: string[];
+      /**
+       * Slack Enabled
+       * @description Whether to enable Slack notifications for this filter group. Default is False (off).
+       * @default false
+       */
+      slack_enabled?: boolean;
+      /**
+       * Email Enabled
+       * @description Whether to enable Email notifications for this filter group. Default is False (off).
+       * @default false
+       */
+      email_enabled?: boolean;
+      /**
+       * Project Id
+       * Format: uuid
+       * @description Project ID these filters belong to
+       */
+      project_id?: string;
+    };
+    /** DatapointFilterDelete */
+    DatapointFilterDelete: {
+      /**
+       * Filter Group Id
+       * Format: uuid
+       * @description ID of the filter to delete
+       */
+      filter_group_id: string;
+    };
+    /** DatapointFilterItem */
+    DatapointFilterItem: {
+      /**
+       * Filters
+       * @description List of filter conditions to apply
+       */
+      filters: components["schemas"]["FilterCondition"][];
+      /**
+       * Name
+       * @description Optional name describing this filter
+       */
+      name?: string;
+      /**
+       * Description
+       * @description Optional description for this filter
+       */
+      description?: string;
+      /**
+       * Checks
+       * @description Checks to apply to datapoints in the filter.
+       */
+      checks?: string[];
+      /**
+       * Project Id
+       * Format: uuid
+       * @description Project ID these filters belong to
+       */
+      project_id?: string;
+      /**
+       * Filter Group Id
+       * Format: uuid
+       * @description Group ID for filter
+       */
+      filter_group_id?: string;
+      /**
+       * Latest Test Run
+       * @description Group ID for filter
+       */
+      latest_test_run?: unknown;
+      /**
+       * Datapoint Count
+       * @description Group ID for filter
+       */
+      datapoint_count?: unknown;
+      /**
+       * Issue Count
+       * @description Count of issues for this filter
+       */
+      issue_count?: unknown;
+      /**
+       * Error Count
+       * @description Count of errors for this filter
+       */
+      error_count?: unknown;
+      /**
+       * Average Metrics
+       * @description Metrics for checks in this filter
+       */
+      average_metrics?: unknown;
+      /**
+       * Failed Checks
+       * @description Array of failed cheßck names
+       * @default []
+       */
+      failed_checks?: unknown;
+      /**
+       * Avg Latency
+       * @description Average latency for completions
+       */
+      avg_latency?: unknown;
+      /**
+       * Total Cost
+       * @description Total dollar cost of all completions
+       */
+      total_cost?: unknown;
+      /**
+       * Avg Num Turns
+       * @description Average number of turns for completions
+       */
+      avg_num_turns?: unknown;
+      /**
+       * Slack Enabled
+       * @description Whether Slack notifications are enabled for this filter group
+       */
+      slack_enabled?: boolean;
+      /**
+       * Email Enabled
+       * @description Whether Email notifications are enabled for this filter group
+       */
+      email_enabled?: boolean;
+      /**
+       * Time Created
+       * Format: date-time
+       * @description Created datetime for this filter group
+       */
+      time_created?: string;
+      /**
+       * Time Updated
+       * Format: date-time
+       * @description Last updated datetime for this filter group
+       */
+      time_updated?: string;
+    };
+    /** DatapointFilterSearch */
+    DatapointFilterSearch: {
+      /**
+       * Filters
+       * @description List of filter conditions to apply
+       */
+      filters: components["schemas"]["FilterCondition"][];
+      /**
+       * Project Id
+       * Format: uuid
+       * @description Project ID to search within
+       */
+      project_id?: string;
+      /**
+       * Offset
+       * @description Offset for pagination
+       */
+      offset?: number;
+      /**
+       * Limit
+       * @description Limit for pagination
+       */
+      limit?: number;
+      /**
+       * Issues Only
+       * @description Only return issues
+       * @default false
+       */
+      issues_only?: boolean;
+      /**
+       * Errors Only
+       * @description Only return errors
+       * @default false
+       */
+      errors_only?: boolean;
+      /**
+       * Checks
+       * @description List of checks to only flag issues for
+       */
+      checks?: unknown[];
+      /**
+       * Filter Group Id
+       * Format: uuid
+       * @description Filter group ID to search with
+       */
+      filter_group_id?: string;
+    };
+    /** DatapointFilterUpdate */
+    DatapointFilterUpdate: {
+      /**
+       * Filters
+       * @description List of filter conditions to apply
+       */
+      filters?: components["schemas"]["FilterCondition"][];
+      /**
+       * Name
+       * @description Optional name describing this filter
+       */
+      name?: string;
+      /**
+       * Description
+       * @description Optional description of the filter
+       */
+      description?: string;
+      /**
+       * Checks
+       * @description Optional list of checks to apply to datapoints in the filter
+       */
+      checks?: string[];
+      /**
+       * Slack Enabled
+       * @description Whether to enable Slack notifications for this filter group.
+       */
+      slack_enabled?: boolean;
+      /**
+       * Email Enabled
+       * @description Whether to enable Email notifications for this filter group.
+       */
+      email_enabled?: boolean;
+      /**
+       * Project Id
+       * Format: uuid
+       * @description Project ID these filters belong to
+       */
+      project_id?: string;
+    };
     /** DatapointListItem */
     DatapointListItem: {
       /**
@@ -459,14 +996,14 @@ export interface components {
        */
       tags?: string[];
       /** Input */
-      input?: Record<string, never> | unknown[] | string;
+      input?: unknown;
       /**
        * Input Datetime
        * Format: date-time
        */
       input_datetime?: string;
       /** Result */
-      result?: Record<string, never> | unknown[] | string;
+      result?: unknown;
       /**
        * Result Datetime
        * Format: date-time
@@ -478,30 +1015,99 @@ export interface components {
       error_message?: string;
       /** Error Code */
       error_code?: string;
+      /** Error Type */
+      error_type?: string;
+      /** Context Token */
+      context_token?: string;
       /**
        * Time Created
        * Format: date-time
        */
       time_created?: string;
-      /** Context Token */
-      context_token?: string;
-      /**
-       * Mut Id
-       * Format: uuid
-       */
-      mut_id?: string;
+      /** Model Metadata */
+      model_metadata?: unknown;
       /**
        * Project Id
        * Format: uuid
        */
       project_id?: string;
       /**
+       * Mut Id
+       * Format: uuid
+       */
+      mut_id?: string;
+      /**
        * Test Run Id
        * Format: uuid
        */
       test_run_id?: string;
+      /**
+       * Group Id
+       * Format: uuid
+       */
+      group_id?: string;
+      /**
+       * Scenario Data Point Id
+       * Format: uuid
+       */
+      scenario_data_point_id?: string;
+      /** Latency */
+      latency?: number;
+      /** Input Tokens */
+      input_tokens?: number;
+      /** Output Tokens */
+      output_tokens?: number;
+      /** Source */
+      source?: string;
+      /** Temperature */
+      temperature?: string;
+      /** Input Tools */
+      input_tools?: Record<string, never>[];
+      /** Result Tool Calls */
+      result_tool_calls?: Record<string, never>[];
+      /** Result Embeddings */
+      result_embeddings?: Record<string, never>[];
+      /**
+       * Checks
+       * @default {}
+       */
+      checks?: Record<string, never>;
+      /** Agent Metadata */
+      agent_metadata?: unknown;
+      /** Provider */
+      provider?: string;
       /** Total Search Count */
       total_search_count?: number;
+      /** Total Datapoint Count */
+      total_datapoint_count?: number;
+      /** Request Model Name */
+      request_model_name?: string;
+      /** Response Model Name */
+      response_model_name?: string;
+      /** Cost */
+      cost?: number;
+      /**
+       * Status
+       * @default
+       */
+      status?: string;
+      /**
+       * Failed Checks
+       * @description Array of failed check names
+       * @default []
+       */
+      failed_checks?: string[];
+      /**
+       * Resolved
+       * @description Manual marking from user on resolved status
+       * @default false
+       */
+      resolved?: boolean;
+      /**
+       * User Metadata
+       * @description User-provided metadata provided as context to the completion call.
+       */
+      user_metadata?: unknown;
     };
     /** DatapointResponse */
     DatapointResponse: {
@@ -579,6 +1185,30 @@ export interface components {
        * @description ID of testrun
        */
       test_run_id?: string;
+      /**
+       * Group Id
+       * Format: uuid
+       * @description ID of the group
+       */
+      group_id?: string;
+      /**
+       * Model Metadata
+       * Format: json-string
+       * @description Additional metadata about the model used for this datapoint
+       */
+      model_metadata?: string;
+      /**
+       * Input Metadata
+       * Format: json-string
+       * @description Metadata about the input
+       */
+      input_metadata?: string;
+      /**
+       * Result Metadata
+       * Format: json-string
+       * @description Metadata about the result
+       */
+      result_metadata?: string;
     };
     /** DatapointSearch */
     DatapointSearch: {
@@ -645,26 +1275,128 @@ export interface components {
        * @description Limit for pagination
        */
       limit?: number;
+      /**
+       * Datapoint Ids
+       * @description List of datapoint IDs to filter by
+       */
+      datapoint_ids?: string[];
     };
     /** DatapointSummaryItem */
     DatapointSummaryItem: {
       /**
-       * Date
-       * Format: date-time
-       * @description The date for the data summary.
+       * Group
+       * @description The group name or datetime for the data summary.
        */
-      date: string;
+      group: string;
       /**
        * Feedback Ranges
        * @description List of feedback range summaries for the date.
-       * @default []
        */
       feedback_ranges?: components["schemas"]["FeedbackRangeSummary"][];
+      /**
+       * Datapoints
+       * @description The total count of datapoints for the group.
+       */
+      datapoints: number;
+      /**
+       * Issues
+       * @description The total count of issues for the group.
+       */
+      issues: number;
+      /**
+       * Errors
+       * @description The total count of errors for the group.
+       */
+      errors: number;
+      /**
+       * Avg Latency
+       * @description The average latency for the group.
+       */
+      avg_latency?: number;
+      /**
+       * Sum Cost
+       * @description The total cost for the group.
+       */
+      sum_cost?: number;
+      /**
+       * User Metadata
+       * @description Number of distinct values found for each key in user metadata for the group.
+       */
+      user_metadata?: unknown;
+    };
+    /** DatapointTagsSchema */
+    DatapointTagsSchema: {
+      /**
+       * Tags
+       * @description Tags are strings that can be used to filter datapoints in the Okareo app
+       * @default []
+       */
+      tags?: string[];
+      /**
+       * Resolved
+       * @description If the datapoint is resolved or not
+       */
+      resolved?: boolean;
     };
     /** ErrorResponse */
     ErrorResponse: {
       /** Detail */
       detail: string;
+    };
+    /** EvaluationPayload */
+    EvaluationPayload: {
+      /**
+       * Scenario Id
+       * Format: uuid
+       * @description ID of the scenario set to evaluate
+       */
+      scenario_id?: string;
+      /**
+       * Datapoint Ids
+       * @description List of datapoint IDs to filter by
+       */
+      datapoint_ids?: string[];
+      /**
+       * Metrics Kwargs
+       * @description Dictionary of metrics to be measured
+       * @default {}
+       */
+      metrics_kwargs?: {
+        [key: string]: number[] | string[];
+      };
+      /**
+       * Filter Group Id
+       * Format: uuid
+       * @description ID of the datapoint filter group to apply
+       */
+      filter_group_id?: string;
+      /**
+       * Tags
+       * @description Tags are strings that can be used to filter test runs in the Okareo app
+       * @default []
+       */
+      tags?: string[];
+      /**
+       * Checks
+       * @description List of checks to include in the test run.
+       */
+      checks?: string[];
+      /**
+       * @description The type of test run will determine which relevant model metrics should be calculated
+       * @default MULTI_CLASS_CLASSIFICATION
+       */
+      type?: components["schemas"]["TestRunType"];
+      /**
+       * Name
+       * @description Name of the test run
+       */
+      name?: string;
+      /**
+       * Project Id
+       * Format: uuid
+       * @description Project ID
+       */
+      project_id?: string;
     };
     /** EvaluatorBriefResponse */
     EvaluatorBriefResponse: {
@@ -692,6 +1424,11 @@ export interface components {
       time_created?: string;
       /** Check Config */
       check_config?: Record<string, never>;
+      /**
+       * Is Predefined
+       * @default false
+       */
+      is_predefined?: boolean;
     };
     /** EvaluatorDetailedResponse */
     EvaluatorDetailedResponse: {
@@ -735,6 +1472,11 @@ export interface components {
       warning?: string;
       /** Check Config */
       check_config?: Record<string, never>;
+      /**
+       * Is Predefined
+       * @default false
+       */
+      is_predefined?: boolean;
     };
     /** EvaluatorGenerateResponse */
     EvaluatorGenerateResponse: {
@@ -750,6 +1492,10 @@ export interface components {
       output_data_type?: string;
       /** Generated Code */
       generated_code?: string;
+      /** Generated Prompt */
+      generated_prompt?: string;
+      /** Warning */
+      warning?: string;
     };
     /** EvaluatorSpecRequest */
     EvaluatorSpecRequest: {
@@ -787,6 +1533,12 @@ export interface components {
        * @description ID for the project
        */
       project_id?: string;
+      /**
+       * Check Type
+       * @description model or code based check
+       * @default code
+       */
+      check_type?: string;
     };
     /** FeedbackRangeSummary */
     FeedbackRangeSummary: {
@@ -800,6 +1552,23 @@ export interface components {
        * @description The total count of feedbacks in the specified range for the given date.
        */
       count: number;
+    };
+    /** FilterCondition */
+    FilterCondition: {
+      /** @description Field to filter on */
+      field: components["schemas"]["DatapointField"];
+      /**
+       * Field Key
+       * @description Key of the User Metadata field to filter on. Ignored for other 'field' values
+       */
+      field_key?: string;
+      /** @description Comparison operator to use */
+      operator: components["schemas"]["ComparisonOperator"];
+      /**
+       * Value
+       * @description Value to compare against
+       */
+      value: string;
     };
     /** FindTestDataPointPayload */
     FindTestDataPointPayload: {
@@ -842,7 +1611,7 @@ export interface components {
        * Scenario Data Point Id
        * Format: uuid
        */
-      scenario_data_point_id: string;
+      scenario_data_point_id?: string;
       /**
        * Test Run Id
        * Format: uuid
@@ -857,9 +1626,17 @@ export interface components {
       /** Model Result */
       model_result?: unknown;
       /** Scenario Input */
-      scenario_input: Record<string, never> | unknown[] | string;
+      scenario_input?: Record<string, never> | unknown[] | string;
       /** Scenario Result */
-      scenario_result: Record<string, never> | unknown[] | string;
+      scenario_result?: Record<string, never> | unknown[] | string;
+      /** Model Metadata */
+      model_metadata?: unknown;
+      /** Time Created */
+      time_created?: string;
+      /** Checks */
+      checks?: unknown;
+      /** End Time */
+      end_time?: unknown;
     };
     /** GeneralFindPayload */
     GeneralFindPayload: {
@@ -912,6 +1689,20 @@ export interface components {
      * @enum {unknown}
      */
     GenerationTone: "Neutral" | "Formal" | "Informal" | "Abbreviated Informal" | "Persuasive" | "Empathetic";
+    /** GroupSchema */
+    GroupSchema: {
+      /**
+       * Name
+       * @description Name of the group
+       */
+      name?: string;
+      /**
+       * Tags
+       * @description Tags are strings that can be used to filter groups in the Okareo app
+       * @default []
+       */
+      tags?: string[];
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -997,6 +1788,10 @@ export interface components {
        * @default []
        */
       tags?: string[];
+      /** Num Evals */
+      num_evals?: number;
+      /** Onboarding Status */
+      onboarding_status: string;
     };
     /** ProjectSchema */
     ProjectSchema: {
@@ -1020,9 +1815,9 @@ export interface components {
        */
       id: string;
       /** Input */
-      input: Record<string, never> | unknown[] | string;
+      input?: unknown;
       /** Result */
-      result: Record<string, never> | unknown[] | string;
+      result?: unknown;
       /**
        * Meta Data
        * @default {}
@@ -1047,6 +1842,11 @@ export interface components {
        * @description Seed data is a list of dictionaries, each with an input and result
        */
       seed_data: components["schemas"]["SeedData"][];
+      /**
+       * @description Generation type of the uploaded scenario. Default is SEED.
+       * @default SEED
+       */
+      generation_type?: components["schemas"]["ScenarioType"];
     };
     /** ScenarioSetGenerate */
     ScenarioSetGenerate: {
@@ -1059,9 +1859,25 @@ export interface components {
       /**
        * Source Scenario Id
        * Format: uuid
-       * @description ID for the scenario set that the generated scenario set will use as a source
+       * @description ID for the scenario set that the generated scenario set will use as a source. Will throw an exception if 'source_scenario_rows' is also provided.
        */
-      source_scenario_id: string;
+      source_scenario_id?: string;
+      /**
+       * Source Scenario Rows
+       * @description Rows for the scenario set that the generated scenario set will use as a source. Will throw an exception if 'source_scenario_id' is also provided.
+       */
+      source_scenario_rows?: components["schemas"]["ScenarioDataPoinResponse"][];
+      /**
+       * Synonym Sets
+       * @description 2D list used by the generator to determine synonyms. Used with the SYNONYMS generation type.
+       */
+      synonym_sets?: string[][];
+      /**
+       * Save Generated Scenario
+       * @description Whether to save the generated scenarios. Defaults to True.
+       * @default true
+       */
+      save_generated_scenario?: boolean;
       /**
        * Name
        * @description Name of the generated scenario set
@@ -1102,6 +1918,18 @@ export interface components {
        * @description Template for post-processing scenario after generator before it's saved
        */
       post_template?: string;
+      /**
+       * Lock Result
+       * @description Whether to lock the result of the generated scenario. Used in the Custom Generator type.
+       * @default false
+       */
+      lock_result?: boolean;
+      /**
+       * Checks
+       * @description List of check names or check configs to run on the generated scenarios
+       * @default []
+       */
+      checks?: (string | Record<string, never>)[];
     };
     /** ScenarioSetResponse */
     ScenarioSetResponse: {
@@ -1109,7 +1937,7 @@ export interface components {
        * Scenario Id
        * Format: uuid
        */
-      scenario_id: string;
+      scenario_id?: string;
       /**
        * Project Id
        * Format: uuid
@@ -1134,6 +1962,16 @@ export interface components {
        * @default []
        */
       seed_data?: components["schemas"]["SeedData"][];
+      /**
+       * Scenario Data
+       * @default []
+       */
+      scenario_data?: components["schemas"]["ScenarioDataPoinResponse"][];
+      /**
+       * Failed Data
+       * @default []
+       */
+      failed_data?: components["schemas"]["ScenarioDataPoinResponse"][];
       /**
        * Scenario Count
        * @default 0
@@ -1199,13 +2037,13 @@ export interface components {
      * @description An enumeration.
      * @enum {unknown}
      */
-    ScenarioType: "SEED" | "REPHRASE_INVARIANT" | "CONDITIONAL" | "TEXT_REVERSE_QUESTION" | "TEXT_REVERSE_LABELED" | "TEXT_REVERSE_QUESTION_ANSWER" | "TERM_RELEVANCE_INVARIANT" | "COMMON_CONTRACTIONS" | "COMMON_MISSPELLINGS" | "OFF_TOPIC" | "ADVERSARIAL_QUESTION" | "WORD_INFLECTIONS" | "WORD_QWERTY_MISSPELL" | "WORD_CHARACTER_INSERTION" | "WORD_SYNONYM_EMBEDDING" | "CUSTOM_GENERATOR" | "LABEL_REVERSE_INVARIANT" | "ROUNDTRIP_INVARIANT" | "NEGATION" | "NAMED_ENTITY_SUBSTITUTION";
+    ScenarioType: "SEED" | "REPHRASE_INVARIANT" | "CONDITIONAL" | "TEXT_REVERSE_QUESTION" | "TEXT_REVERSE_LABELED" | "TEXT_REVERSE_QUESTION_ANSWER" | "TERM_RELEVANCE_INVARIANT" | "COMMON_CONTRACTIONS" | "COMMON_MISSPELLINGS" | "SYNONYMS" | "OFF_TOPIC" | "ADVERSARIAL_QUESTION" | "WORD_INFLECTIONS" | "WORD_QWERTY_MISSPELL" | "WORD_CHARACTER_INSERTION" | "WORD_SYNONYM_EMBEDDING" | "CUSTOM_GENERATOR" | "CUSTOM_MULTI_CHUNK_GENERATOR" | "DRIVER" | "LABEL_REVERSE_INVARIANT" | "ROUNDTRIP_INVARIANT" | "NEGATION" | "NAMED_ENTITY_SUBSTITUTION";
     /** SeedData */
     SeedData: {
       /** Input */
-      input: Record<string, never> | unknown[] | string;
+      input?: unknown;
       /** Result */
-      result: Record<string, never> | unknown[] | string;
+      result?: unknown;
     };
     /** SummaryDatapointSearch */
     SummaryDatapointSearch: {
@@ -1234,6 +2072,38 @@ export interface components {
        * @description Latest date
        */
       to_date?: string;
+      /**
+       * Filters
+       * @description List of filter conditions to apply. Defaults to None (i.e., all datapoints).
+       */
+      filters?: components["schemas"]["FilterCondition"][];
+      /**
+       * Checks
+       * @description List of checks to only flag issues for. Defaults to None (i.e., all checks).
+       */
+      checks?: unknown[];
+      /**
+       * Timezone
+       * @description IANA timezone to use for date filtering/aggregation (e.g., 'America/New_York'). Defaults to None (i.e., UTC).
+       */
+      timezone?: string;
+      /**
+       * Precision
+       * @description Time precision for the summary. Valid values include ['day', 'hour', 'minute']. Defaults to 'day'.
+       * @default day
+       */
+      precision?: string;
+      /**
+       * Filter Group Id
+       * Format: uuid
+       * @description Filter group ID to search with
+       */
+      filter_group_id?: string;
+      /**
+       * Group Column
+       * @description Column to group by for the summary. Overwrites the default time-based grouping for the summary.
+       */
+      group_column?: string;
     };
     /** TestDataPointItem */
     TestDataPointItem: {
@@ -1258,6 +2128,8 @@ export interface components {
       metric_type: string;
       /** Metric Value */
       metric_value: Record<string, never>;
+      /** Checks */
+      checks?: unknown;
     };
     /** TestDataPointPayload */
     TestDataPointPayload: {
@@ -1305,12 +2177,17 @@ export interface components {
        * Mut Id
        * Format: uuid
        */
-      mut_id: string;
+      mut_id?: string;
       /**
        * Scenario Set Id
        * Format: uuid
        */
-      scenario_set_id: string;
+      scenario_set_id?: string;
+      /**
+       * Filter Group Id
+       * Format: uuid
+       */
+      filter_group_id?: string;
       /** Name */
       name?: string;
       /**
@@ -1329,13 +2206,39 @@ export interface components {
        * End Time
        * Format: date-time
        */
-      end_time?: string;
+      end_time?: string | null;
       /** Test Data Point Count */
       test_data_point_count?: number;
       /** Model Metrics */
       model_metrics?: Record<string, never>;
       /** Error Matrix */
       error_matrix?: unknown[];
+      /** Status */
+      status?: string;
+      /**
+       * Num Generated
+       * @description Number of data points generated by the model for this test run
+       * @default 0
+       */
+      num_generated?: number;
+      /**
+       * Num Evaluated
+       * @description Number of generated data points evaluated by Okareo for this test run
+       * @default 0
+       */
+      num_evaluated?: number;
+      /**
+       * Num Expected
+       * @description Number of data points expected to be evaluated by Okareo for this test run
+       * @default 0
+       */
+      num_expected?: number;
+      /**
+       * Progress
+       * @description Number in percent of progress of test run
+       * @default 0
+       */
+      progress?: number;
       /**
        * App Link
        * @description This URL links to the Okareo webpage for this test run
@@ -1451,21 +2354,20 @@ export interface components {
      * @description An enumeration.
      * @enum {string}
      */
-    TestRunType: "MULTI_CLASS_CLASSIFICATION" | "INFORMATION_RETRIEVAL" | "NL_GENERATION" | "AGENT_EVAL" | "invariant";
+    TestRunType: "MULTI_CLASS_CLASSIFICATION" | "INFORMATION_RETRIEVAL" | "NL_GENERATION" | "MULTI_TURN" | "AGENT_EVAL" | "invariant";
     /** UpdateTestDataPointPayload */
     UpdateTestDataPointPayload: {
       /**
-       * Id
-       * Format: uuid
-       * @description ID of the datapoint
+       * Ids
+       * @description IDs of the datapoints to update
        */
-      id?: string;
+      ids?: string[];
       /**
        * Tags
        * @description Tags are strings that can be used to filter test data points in the Okareo app
        * @default []
        */
-      tags?: string[];
+      tags?: string[][];
     };
     /** ValidationError */
     ValidationError: {
@@ -1704,6 +2606,157 @@ export interface operations {
       200: {
         content: {
           "application/json": string;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Update Onboarding Status
+   * @description Update the onboarding completion status for the organization
+   *
+   * Args:
+   *     status (str): The new onboarding completion status
+   *
+   * Returns:
+   *     str: The updated onboarding completion status
+   */
+  update_onboarding_status_v0_onboarding_status_put: {
+    parameters: {
+      query: {
+        status: string;
+      };
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": string;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Generate Slack Auth Url
+   * @description Generates a Slack authentication URL with a temporary authorization token.
+   *
+   * Args:
+   *     request: The HTTP request containing project_id in the body
+   *     db: Database session
+   *
+   * Returns:
+   *     dict: Contains the Slack authentication URL
+   */
+  generate_slack_auth_url_v0_generate_slack_auth_url_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": Record<string, never>;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": Record<string, never>;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /** Slack Oauth Callback */
+  slack_oauth_callback_v0_slack_get: {
+    parameters: {
+      query: {
+        code: string;
+        state: string;
+      };
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": Record<string, never>;
         };
       };
       /** @description Input data is incorrect */
@@ -2101,8 +3154,9 @@ export interface operations {
   };
   /**
    * Generate Scenario Set
-   * @description Triggers a generation of a scenario set based on source scenario ID, could be long running.
-   * A registered model can now use this scenario set for testing.
+   * @description Triggers a generation of a scenario set based on either a source scenario ID or a list of source scenario rows.
+   * Generation can run long depending on number of source rows, number of examples, and generation type/prompt.
+   * Optionally save the generated scenario, allowing a registered model to use the generated scenario set for testing.
    *
    * Returns:
    *     Object: generation result with '201 Created' status code on success.
@@ -2203,8 +3257,436 @@ export interface operations {
     };
   };
   /**
+   * Get Datapoints Filter
+   * @description Gets all the datapoints for given search criteria.
+   *
+   * Returns:
+   *     list: An array of datapoint objects.
+   */
+  get_datapoints_filter_v0_find_datapoints_filter_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DatapointFilterSearch"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["DatapointListItem"][];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Datapoint Counts
+   * @description Gets only the counts for datapoints matching given filter criteria without retrieving the actual data.
+   *
+   * Returns:
+   *     dict: Object containing filtered_count and total_count
+   */
+  get_datapoint_counts_v0_filter_counts_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DatapointFilterSearch"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": Record<string, never>;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Filters
+   * @description Get all datapoint filters for a project.
+   * Defaults to a 90-day lookback window.
+   *
+   * Args:
+   *     request: The FastAPI request object
+   *     project_id: UUID of the project to get filters for
+   *
+   * Returns:
+   *     List of filter items for the project
+   */
+  get_filters_v0_filters_get: {
+    parameters: {
+      query?: {
+        lookback_start?: number;
+        lookback_end?: number;
+        get_baseline_metrics?: boolean;
+        timezone?: string;
+      };
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["DatapointFilterItem"][];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Create Filter
+   * @description Create a new datapoint filter.
+   *
+   * Args:
+   *     request: The FastAPI request object
+   *     payload: Filter creation payload containing conditions and metadata
+   *
+   * Returns:
+   *     The created filter objects
+   */
+  create_filter_v0_filters_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DatapointFilterCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["DatapointFilterItem"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Delete Filter
+   * @description Delete a datapoint filter.
+   *
+   * Args:
+   *     request: The FastAPI request object
+   *     payload: Filter deletion payload containing filter ID
+   */
+  delete_filter_v0_filters_delete: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DatapointFilterDelete"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      204: {
+        content: never;
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Filter
+   * @description Get a specific datapoint filter.
+   *
+   * Args:
+   *     request: The FastAPI request object
+   *     project_id: UUID of the project the filter belongs to
+   *     filter_group_id: UUID of the specific filter group to retrieve
+   *
+   * Returns:
+   *     The requested filter item
+   */
+  get_filter_v0_filters__filter_group_id__get: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        filter_group_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["DatapointFilterItem"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Update Filter
+   * @description Update an existing datapoint filter. Allows update on the name, description, and checks fields.
+   *
+   * Args:
+   *     request: The FastAPI request object
+   *     filter_group_id: UUID of the filter group to update
+   *     payload: Filter creation payload containing conditions and metadata
+   *
+   * Returns:
+   *     The created filter object
+   */
+  update_filter_v0_filters__filter_group_id__put: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        /** @description The ID of the filter group to update */
+        filter_group_id: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DatapointFilterUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["DatapointFilterItem"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Filters Metadata
+   * @description Get all viable user-defined metadata column names for filters.
+   *
+   * Args:
+   *     request: The FastAPI request object
+   *
+   * Returns:
+   *     List of key names of across all user metadata columns
+   */
+  get_filters_metadata_v0_filters_metadata_get: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": string[];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
    * Get Datapoints Summary
-   * @description Expects a date range and returns a summary of datapoint counts by day and feedback range.
+   * @description Expects a date range and returns a summary of datapoint counts by group and feedback range.
+   * Defaults to 90-day lookback window.
    *
    * Returns:
    *     list: An array of datapoint objects.
@@ -2276,6 +3758,101 @@ export interface operations {
       201: {
         content: {
           "application/json": components["schemas"]["DatapointResponse"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Update Datapoint
+   * @description Update a datapoint
+   *
+   * Returns:
+   *     the updated datapoint
+   */
+  update_datapoint_v0_datapoints__datapoint_id__put: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        /** @description The ID of the datapoint */
+        datapoint_id: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["DatapointTagsSchema"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": string;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /** Receive Traces */
+  receive_traces_v0_traces_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": unknown;
         };
       };
       /** @description Input data is incorrect */
@@ -2511,12 +4088,376 @@ export interface operations {
     };
   };
   /**
-   * Find Test Run
-   * @description Find Test Runs
+   * Get Groups
+   * @description Get all groups for the current organization and project.
    *
    * Returns:
-   *     a list of Test Runs
+   *     A list of groups
    */
+  get_groups_v0_groups_get: {
+    parameters: {
+      query: {
+        /** @description The ID of the project */
+        project_id: string;
+      };
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": Record<string, never>[];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Create Group
+   * @description Create a new group for models under test or return existing group with the same name.
+   *
+   * Returns:
+   *     The group's details (either newly created or existing)
+   */
+  create_group_v0_groups_post: {
+    parameters: {
+      query: {
+        /** @description The name of the group */
+        name: string;
+        /** @description Tags for the group */
+        tags?: string[];
+      };
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody?: {
+      content: {
+        "application/json": Record<string, never>;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": Record<string, never>;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Models In Group
+   * @description Get all models in a specific group.
+   *
+   * Returns:
+   *     A list of models in the group
+   */
+  get_models_in_group_v0_groups__group_id__models_get: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        /** @description The ID of the group */
+        group_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["ModelUnderTestResponse"][];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Add Model To Group
+   * @description Add a model to a group.
+   *
+   * Returns:
+   *     A success message
+   */
+  add_model_to_group_v0_groups__group_id__models_post: {
+    parameters: {
+      query: {
+        /** @description The ID of the model to add */
+        model_id: string;
+      };
+      header: {
+        "api-key": string;
+      };
+      path: {
+        /** @description The ID of the group */
+        group_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": Record<string, never>;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Update Group
+   * @description Update a group
+   *
+   * Returns:
+   *     the updated group
+   */
+  update_group_v0_groups__group_id__put: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        /** @description The ID of the group */
+        group_id: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["GroupSchema"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": string;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Create Trace Eval
+   * @description Create a trace evaluation for a group
+   *
+   * Returns:
+   *     The created trace evaluation details
+   */
+  create_trace_eval_v0_groups__group_id__trace_eval_post: {
+    parameters: {
+      query: {
+        /** @description The context token for the trace */
+        context_token: string;
+      };
+      header: {
+        "api-key": string;
+      };
+      path: {
+        /** @description The ID of the group */
+        group_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": Record<string, never>;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Datapoints In Group Trace
+   * @description Get all datapoints in a specific group.
+   *
+   * Returns:
+   *     A list of datapoints in the group
+   */
+  get_datapoints_in_group_trace_v0_traces__group_id__datapoints_get: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+      path: {
+        /** @description The ID of the group */
+        group_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /** Find Test Run */
   find_test_run_v0_find_test_runs_post: {
     parameters: {
       header: {
@@ -2532,7 +4473,7 @@ export interface operations {
       /** @description Successful Response */
       201: {
         content: {
-          "application/json": components["schemas"]["TestRunItem"][];
+          "application/json": unknown;
         };
       };
       /** @description Input data is incorrect */
@@ -2666,14 +4607,62 @@ export interface operations {
     };
   };
   /**
-   * Run Test
-   * @description Runs tests on a model (mut_id) using previously generated scenario.
-   * Feeds the scenario data (scenario_id) into the model and evaulates results
-   * depending on the test type specified.
+   * Delete Test Run
+   * @description Deletes one or more test runs and cascades deletes to all related entities, including datapoints.
    *
-   * Returns:
-   *     The test run data which includes the evaluated metrics from the run.
+   * !! Use With Caution !!
+   *
+   * Args:
+   *     test_run_ids: List of UUIDs to delete
+   *
+   * Raises:
+   *     HTTPException: 404 if any test_run_id is not found
+   *     HTTPException: 422 if test_run_ids list is empty or invalid
+   *
+   * Returns: 204 status code on successful deletion
    */
+  delete_test_run_v0_test_runs_delete: {
+    parameters: {
+      query: {
+        /** @description List of Test Run IDs to delete */
+        test_run_ids: string[];
+      };
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      204: {
+        content: never;
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /** Run Test */
   run_test_v0_test_run_post: {
     parameters: {
       header: {
@@ -2683,6 +4672,96 @@ export interface operations {
     requestBody: {
       content: {
         "application/json": components["schemas"]["TestRunPayloadV2"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["TestRunItem"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /** Submit Test */
+  submit_test_v0_test_run_submit_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TestRunPayloadV2"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        content: {
+          "application/json": components["schemas"]["TestRunItem"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /** Evaluate */
+  evaluate_v0_evaluate_post: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["EvaluationPayload"];
       };
     };
     responses: {
@@ -3271,6 +5350,296 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["EvaluatorDetailedResponse"];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Setup Filter Group Notification
+   * @description Set up or manage a notification for a specific filter group.
+   *
+   * Args:
+   *     request: The HTTP request
+   *     filter_group_id: The ID of the filter group to set up notifications for
+   *     notification_type: The type of notification channel ("slack" or "email" only for now)
+   *     status: Whether to enable ("on") or disable ("off") notifications
+   *     cooldown_seconds: The cooldown period in seconds for notifications (default of 0 will use default cooldowns of 24 hours (email) and 1 minute (slack)).
+   *
+   * Returns:
+   *     dict: Details about the notification configuration
+   */
+  setup_filter_group_notification_v0_setup_filter_group_notification_post: {
+    parameters: {
+      query: {
+        filter_group_id: string;
+        notification_type: string;
+        status: string;
+        cooldown_seconds?: number;
+      };
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": Record<string, never>;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Filter Group Notifications
+   * @description Get all notification settings for filter groups in the current project.
+   *
+   * This endpoint retrieves information about all filter groups with notification
+   * configurations, including their enabled status and channel types (email/slack).
+   *
+   * Args:
+   *     request: The HTTP request
+   *
+   * Returns:
+   *     list: A list of dictionaries containing notification settings for each filter group
+   */
+  get_filter_group_notifications_v0_filter_group_notifications_get: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": Record<string, never>[];
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get All Notification
+   * @description Retrieve a specific notification configuration.
+   */
+  get_all_notification__v0_notifications_get: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Update Notification Settings
+   * @description Update notification settings for the current project.
+   */
+  update_notification_settings_v0_notifications_put: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Delete Notification History Config
+   * @description Update notification settings for the current project.
+   */
+  delete_notification_history_config_v0_notifications_delete: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description Input data is incorrect */
+      400: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Okareo API token has failed authentication */
+      401: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Data is not found */
+      404: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Input data is invalid */
+      422: {
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  /**
+   * Get Notification History
+   * @description Get notification history for the current project and organization.
+   * Only returns records where contents is populated.
+   *
+   * Args:
+   *     request: The HTTP request
+   *
+   * Returns:
+   *     list: A list of notification history records with populated contents
+   */
+  get_notification_history_v0_notification_history_get: {
+    parameters: {
+      header: {
+        "api-key": string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": Record<string, never>[];
         };
       };
       /** @description Input data is incorrect */

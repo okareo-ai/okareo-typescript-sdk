@@ -1,17 +1,18 @@
-import createClient from 'openapi-fetch';
-import fetch from 'node-fetch';
+import createClient from "openapi-fetch";
+import fetch from "node-fetch";
 import type { paths, components } from "../api/v1/okareo_endpoints";
 import FormData from "form-data";
 import * as fs from "fs";
 import { ModelUnderTest, BaseModel, CustomModel } from "./models";
 
-const CHECK_DEPRECATION_WARNING = "The `evaluator` naming convention is deprecated and will not be supported in a future release. " +
-"Please use `check` in place of `evaluator` when invoking this method.";
+const CHECK_DEPRECATION_WARNING =
+    "The `evaluator` naming convention is deprecated and will not be supported in a future release. " +
+    "Please use `check` in place of `evaluator` when invoking this method.";
 
 export interface OkareoProps {
     api_key: string;
     endpoint?: string;
-   // project_id?: string | undefined;
+    // project_id?: string | undefined;
 }
 
 export interface UploadScenarioSetProps {
@@ -20,7 +21,6 @@ export interface UploadScenarioSetProps {
     name?: string;
     file_path: string;
 }
-
 
 export interface UploadEvaluatorProps {
     project_id: string;
@@ -58,7 +58,6 @@ export interface RegisterModelProps {
     update?: boolean;
 }
 
-
 export interface CreateScenarioProps {
     name: string;
     project_id: string;
@@ -74,11 +73,13 @@ export interface CreateScenarioProps {
  * It provides methods for registering models, finding test runs, and creating projects.
  */
 export class Okareo {
-    api_key: string = '';
-    endpoint: string = '';
+    api_key: string = "";
+    endpoint: string = "";
 
     constructor(props: OkareoProps) {
-        if (!props.api_key || props.api_key.length === 0) { throw new Error("API Key is required"); }
+        if (!props.api_key || props.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const base_endpoint = process.env.OKAREO_BASE_URL || "https://api.okareo.com/";
         const { api_key, endpoint = base_endpoint /*, project_id */ } = props;
         this.api_key = api_key;
@@ -91,26 +92,27 @@ export class Okareo {
      * Thee are multiple models that can be registered and used for evaluation.
      * The model types include CustomModel, OpenAIModel, CohereModel, PineconeDB, and QDrant
      * Models are only updated if the update flag is set to true.
-     * @param props 
-     * @returns 
+     * @param props
+     * @returns
      */
     async register_model(props: RegisterModelProps): Promise<ModelUnderTest> {
-
         const models = Array.isArray(props.models) ? props.models : [props.models];
         let modelInvoker: any = null;
-        
-        const register_payload: any = JSON.parse(JSON.stringify(props)); // Create a deep clone of props 
+
+        const register_payload: any = JSON.parse(JSON.stringify(props)); // Create a deep clone of props
         register_payload["models"] = {};
         for (const model of models) {
-            register_payload["models"][model.type] = model
+            register_payload["models"][model.type] = model;
             delete register_payload["models"][model.type].type;
         }
         if ("custom" in register_payload["models"]) {
-            modelInvoker = (register_payload["models"]["custom"] as CustomModel).invoke
+            modelInvoker = (register_payload["models"]["custom"] as CustomModel).invoke;
             delete (register_payload["models"]["custom"] as CustomModel).invoke;
         }
-        if ("driver" in register_payload["models"] &&
-            register_payload["models"]["driver"]["target"]["type"] === "custom_target") {
+        if (
+            "driver" in register_payload["models"] &&
+            register_payload["models"]["driver"]["target"]["type"] === "custom_target"
+        ) {
             modelInvoker = register_payload["models"]["driver"]["target"]["invoke"];
             delete register_payload["models"]["driver"]["target"]["invoke"];
         }
@@ -118,10 +120,10 @@ export class Okareo {
         const { data: response, error } = await client.POST("/v0/register_model", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
             },
-            body: register_payload
+            body: register_payload,
         });
         if (error) {
             throw error;
@@ -144,36 +146,41 @@ export class Okareo {
             endpoint: this.endpoint,
             mut: response as components["schemas"]["ModelUnderTestResponse"],
         });
+    }
 
-    } 
-
-    async find_test_runs(find_runs: components["schemas"]["GeneralFindPayload"]): Promise<components["schemas"]["TestRunItem"][]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+    async find_test_runs(
+        find_runs: components["schemas"]["GeneralFindPayload"],
+    ): Promise<components["schemas"]["TestRunItem"][]> {
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.POST("/v0/find_test_runs", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
             },
-            body: find_runs
+            body: find_runs,
         });
         if (error) {
             throw error;
         }
-        return data || [];
+        return (data as components["schemas"]["TestRunItem"][]) ?? [];
     }
 
     async get_test_run(test_run_id: string): Promise<components["schemas"]["TestRunItem"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.GET("/v0/test_runs/{test_run_id}", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
-                path: { test_run_id: test_run_id }
-            }
+                path: { test_run_id: test_run_id },
+            },
         });
         if (error) {
             throw error;
@@ -182,14 +189,16 @@ export class Okareo {
     }
 
     async getProjects(): Promise<components["schemas"]["ProjectResponse"][]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.GET("/v0/projects", {
             params: {
                 header: {
-                    "api-key": this.api_key
-                }
-            }
+                    "api-key": this.api_key,
+                },
+            },
         });
         if (error) {
             throw error;
@@ -198,21 +207,23 @@ export class Okareo {
     }
 
     async updateProject(props: UpdateProjectProps): Promise<components["schemas"]["ProjectResponse"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
-        const { project_id, name, tags = [] } = props
-        const body: { name: string, tags: string[] } = {
+        const { project_id, name, tags = [] } = props;
+        const body: { name: string; tags: string[] } = {
             name: name,
-            tags: tags
+            tags: tags,
         };
         const { data, error } = await client.PUT("/v0/projects/{project_id}", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
-                path: { project_id: project_id }
+                path: { project_id: project_id },
             },
-            body: body
+            body: body,
         });
         if (error) {
             throw error;
@@ -221,19 +232,22 @@ export class Okareo {
     }
 
     async createProject(props: CreateProjectProps): Promise<components["schemas"]["ProjectResponse"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
-        const client = createClient<paths>({ baseUrl: this.endpoint });
-        const { name, tags = [] } = props
-        const body: { name: string, tags: string[]} = {
-            name, tags
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
         }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+        const { name, tags = [] } = props;
+        const body: { name: string; tags: string[] } = {
+            name,
+            tags,
+        };
         const { data, error } = await client.POST("/v0/projects", {
             params: {
                 header: {
-                    "api-key": this.api_key
-                }
+                    "api-key": this.api_key,
+                },
             },
-            body: body
+            body: body,
         });
         if (error) {
             throw error;
@@ -242,17 +256,18 @@ export class Okareo {
     }
 
     async create_scenario_set(props: CreateScenarioProps): Promise<components["schemas"]["ScenarioSetResponse"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const create_scenario_payload: any = JSON.parse(JSON.stringify(props));
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.POST("/v0/scenario_sets", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
             },
-            body: create_scenario_payload
-            
+            body: create_scenario_payload,
         });
         if (error) {
             throw error;
@@ -263,17 +278,20 @@ export class Okareo {
         return data || {};
     }
 
-    async generate_scenario_set(props: components["schemas"]["ScenarioSetGenerate"]): Promise<components["schemas"]["ScenarioSetResponse"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+    async generate_scenario_set(
+        props: components["schemas"]["ScenarioSetGenerate"],
+    ): Promise<components["schemas"]["ScenarioSetResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.POST("/v0/scenario_sets_generate", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
             },
-            body: props
-            
+            body: props,
         });
         if (error) {
             throw error;
@@ -281,21 +299,28 @@ export class Okareo {
         return data || {};
     }
 
-    async get_scenario_sets(props: { project_id: string, scenario_id?:string} ): Promise<components["schemas"]["ScenarioSetResponse"][]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
-        const { project_id, scenario_id = "" } = props;
-        const query: { project_id: string, scenario_id?:string } = {
-            project_id
+    async get_scenario_sets(props: {
+        project_id: string;
+        scenario_id?: string;
+    }): Promise<components["schemas"]["ScenarioSetResponse"][]> {
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
         }
-        if (scenario_id.length > 0) { query.scenario_id = scenario_id; }
+        const { project_id, scenario_id = "" } = props;
+        const query: { project_id: string; scenario_id?: string } = {
+            project_id,
+        };
+        if (scenario_id.length > 0) {
+            query.scenario_id = scenario_id;
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.GET("/v0/scenario_sets", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
-                query
-            }
+                query,
+            },
         });
         if (error) {
             throw error;
@@ -304,17 +329,21 @@ export class Okareo {
     }
 
     async get_scenario_data_points(scenario_id: string): Promise<components["schemas"]["ScenarioDataPoinResponse"][]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
-        if (!scenario_id || scenario_id.length === 0) { throw new Error("API Key is required"); }
-        
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
+        if (!scenario_id || scenario_id.length === 0) {
+            throw new Error("API Key is required");
+        }
+
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.GET("/v0/scenario_data_points/{scenario_id}", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
-                path: { scenario_id: scenario_id }
-            }
+                path: { scenario_id: scenario_id },
+            },
         });
         if (error) {
             throw error;
@@ -322,17 +351,20 @@ export class Okareo {
         return data || [];
     }
 
-    async find_datapoints(props: components["schemas"]["DatapointSearch"]): Promise<components["schemas"]["DatapointListItem"][]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+    async find_datapoints(
+        props: components["schemas"]["DatapointSearch"],
+    ): Promise<components["schemas"]["DatapointListItem"][]> {
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.POST("/v0/find_datapoints", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
             },
-            body: props
-            
+            body: props,
         });
         if (error) {
             throw error;
@@ -340,47 +372,50 @@ export class Okareo {
         return data || {};
     }
 
-    
     async upload_scenario_set(props: UploadScenarioSetProps): Promise<components["schemas"]["ScenarioSetResponse"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const eLength = this.endpoint.length;
-        const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/scenario_sets_upload";
-        
-        if (!fs.existsSync(props.file_path))
-            throw new Error("File not found");
+        const api_endpoint =
+            (this.endpoint.substring(eLength - 1) === "/" ? this.endpoint.substring(0, eLength - 1) : this.endpoint) +
+            "/v0/scenario_sets_upload";
+
+        if (!fs.existsSync(props.file_path)) throw new Error("File not found");
         const altFile = fs.readFileSync(props.file_path);
 
-        console.log("Found File: "+altFile.toString().substring(0, 50)+"...");
+        console.log("Found File: " + altFile.toString().substring(0, 50) + "...");
 
         const file = fs.createReadStream(props.file_path);
-        
-            if (!file)
-                throw new Error("File read error");
 
-            if (props.scenario_name && props.scenario_name.length > 0) { 
-                console.log("Warning: deprecated property.  Please use 'name' instead."); 
-                props.name = props.scenario_name;
-            }
-            const { name = props.scenario_name } = props;
+        if (!file) throw new Error("File read error");
 
-            const form = new FormData();
-            form.append("name", name);
-            form.append("project_id", props.project_id);
-            form.append(
-                'file', file
-            );
-            const headers = Object.assign({
-                'api-key': `${this.api_key}`,
-            }, form.getHeaders());
+        if (props.scenario_name && props.scenario_name.length > 0) {
+            console.log("Warning: deprecated property.  Please use 'name' instead.");
+            props.name = props.scenario_name;
+        }
+        const { name = props.scenario_name } = props;
 
-            const reqOptions = {
-                method: 'POST',
-                headers: headers,
-                'body':form,
-            };
-            
-            return fetch(`${api_endpoint}`, reqOptions)
-                .then(response => response.json())
+        const form = new FormData();
+        form.append("name", name);
+        form.append("project_id", props.project_id);
+        form.append("file", file);
+        const headers = Object.assign(
+            {
+                "api-key": `${this.api_key}`,
+            },
+            form.getHeaders(),
+        );
+
+        const reqOptions = {
+            method: "POST",
+            headers: headers,
+            body: form,
+        };
+
+        return (
+            fetch(`${api_endpoint}`, reqOptions)
+                .then((response) => response.json())
                 // eslint-disable-next-line  @typescript-eslint/no-explicit-any
                 .then((data: any) => {
                     if (data && data.warning) {
@@ -394,22 +429,24 @@ export class Okareo {
                 .catch((error) => {
                     console.error(error);
                     throw error;
-                });
+                })
+        );
     }
 
-
-    async get_all_models(project_id: string ): Promise<components["schemas"]["ModelUnderTestResponse"][]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+    async get_all_models(project_id: string): Promise<components["schemas"]["ModelUnderTestResponse"][]> {
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.GET("/v0/models_under_test", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
                 query: {
-                    project_id: project_id
-                }
-            }
+                    project_id: project_id,
+                },
+            },
         });
         if (error) {
             throw error;
@@ -417,16 +454,18 @@ export class Okareo {
         return data || [];
     }
 
-    async get_model(mut_id: string ): Promise<components["schemas"]["ModelUnderTestResponse"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+    async get_model(mut_id: string): Promise<components["schemas"]["ModelUnderTestResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.GET("/v0/models_under_test/{mut_id}", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
-                path: { mut_id: mut_id }
-            }
+                path: { mut_id: mut_id },
+            },
         });
         if (error) {
             throw error;
@@ -434,42 +473,48 @@ export class Okareo {
         return data || {};
     }
 
-    
-    async generate_check(props: components["schemas"]["EvaluatorSpecRequest"]): Promise<components["schemas"]["EvaluatorGenerateResponse"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+    async generate_check(
+        props: components["schemas"]["EvaluatorSpecRequest"],
+    ): Promise<components["schemas"]["EvaluatorGenerateResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.POST("/v0/check_generate", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
             },
-            body: props
-            
+            body: props,
         });
         if (error) {
             throw error;
         }
-        return data as components["schemas"]["EvaluatorGenerateResponse"] || {};
+        return (data as components["schemas"]["EvaluatorGenerateResponse"]) || {};
     }
 
-
-    async generate_evaluator(props: components["schemas"]["EvaluatorSpecRequest"]): Promise<components["schemas"]["EvaluatorGenerateResponse"]> {
+    async generate_evaluator(
+        props: components["schemas"]["EvaluatorSpecRequest"],
+    ): Promise<components["schemas"]["EvaluatorGenerateResponse"]> {
         console.warn(CHECK_DEPRECATION_WARNING);
         return this.generate_check(props);
     }
 
-    async create_or_update_check(props: components["schemas"]["CheckCreateUpdateSchema"]): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+    async create_or_update_check(
+        props: components["schemas"]["CheckCreateUpdateSchema"],
+    ): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.POST("/v0/check_create_or_update", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
             },
-            body: props
-            
+            body: props,
         });
         if (error) {
             throw error;
@@ -478,14 +523,16 @@ export class Okareo {
     }
 
     async get_all_checks(): Promise<components["schemas"]["EvaluatorBriefResponse"][]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.GET("/v0/checks", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
-            }
+            },
         });
         if (error) {
             throw error;
@@ -493,18 +540,18 @@ export class Okareo {
         return data || {};
     }
 
-
-
     async get_check(check_id: string): Promise<components["schemas"]["EvaluatorDetailedResponse"]> {
-        if (!this.api_key || this.api_key.length === 0) { throw new Error("API Key is required"); }
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
         const client = createClient<paths>({ baseUrl: this.endpoint });
         const { data, error } = await client.GET("/v0/check/{check_id}", {
             params: {
                 header: {
-                    "api-key": this.api_key
+                    "api-key": this.api_key,
                 },
-                path: { check_id: check_id }
-            }
+                path: { check_id: check_id },
+            },
         });
         if (error) {
             throw error;
@@ -512,37 +559,39 @@ export class Okareo {
         return data || {};
     }
 
-
     async delete_check(check_id: string, check_name: string): Promise<string> {
         const eLength = this.endpoint.length;
-        const api_endpoint = ((this.endpoint.substring(eLength-1) === "/")?this.endpoint.substring(0, eLength-1):this.endpoint)+"/v0/check/"+check_id;
+        const api_endpoint =
+            (this.endpoint.substring(eLength - 1) === "/" ? this.endpoint.substring(0, eLength - 1) : this.endpoint) +
+            "/v0/check/" +
+            check_id;
 
         const form = new FormData();
         form.append("name", check_name);
-        const headers = Object.assign({
-            'api-key': `${this.api_key}`,
-        }, form.getHeaders());
+        const headers = Object.assign(
+            {
+                "api-key": `${this.api_key}`,
+            },
+            form.getHeaders(),
+        );
 
         const reqOptions = {
-            method: 'DELETE',
+            method: "DELETE",
             headers: headers,
-            'body':form,
+            body: form,
         };
 
         return await fetch(`${api_endpoint}`, reqOptions)
-            .then(response => {
+            .then((response) => {
                 if (response.status !== 204) {
-                    console.log('error deleting check');
+                    console.log("error deleting check");
                     throw new Error(`Check deletion failed with code ${response.status}`);
                 }
-                return  "Check deletion was successful";
+                return "Check deletion was successful";
             })
             .catch((error) => {
                 console.error("Error deleting check: " + error);
                 throw error;
             });
-            
     }
-
-
 }
