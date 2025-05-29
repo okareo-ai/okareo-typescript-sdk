@@ -81,20 +81,20 @@ export interface ModelInvocation {
 
 export interface OpenAIModel extends BaseModel {
     type: "openai";
-    model_id: string;
-    temperature: number;
+    model_id?: string;
+    temperature?: number;
     system_prompt_template: string;
-    user_prompt_template: string;
-    dialog_template: string;
+    user_prompt_template?: string;
+    dialog_template?: string;
     tools?: unknown[];
 }
 export interface GenerationModel extends BaseModel {
     type: "generation";
-    model_id: string;
-    temperature: number;
+    model_id?: string;
+    temperature?: number;
     system_prompt_template: string;
-    user_prompt_template: string;
-    dialog_template: string;
+    user_prompt_template?: string;
+    dialog_template?: string;
     tools?: unknown[];
 }
 export interface CohereModel extends BaseModel {
@@ -129,7 +129,7 @@ export interface CustomMultiturnTarget extends BaseModel {
 }
 export interface StopConfig {
     check_name: string;
-    stop_on: boolean;
+    stop_on?: boolean;
 }
 export interface MultiTurnDriver extends BaseModel {
     type: "driver";
