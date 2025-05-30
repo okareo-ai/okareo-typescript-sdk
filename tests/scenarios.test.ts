@@ -51,7 +51,7 @@ describe('Scenarios', () => {
   test('Create New Scenario Seed', async () =>  {
       const okareo = new Okareo({api_key:OKAREO_API_KEY});
       const data: any = await okareo.create_scenario_set({
-          name: `CI: Scenario Seed ${UNIQUE_BUILD_ID}`,
+          name: `CI : Scenario Seed ${UNIQUE_BUILD_ID}`,
           project_id: project_id,
           seed_data: TEST_SEED_DATA
       });
@@ -61,12 +61,12 @@ describe('Scenarios', () => {
   test('Generate Scenario Set From Existing Scenario', async () =>  {
       const okareo = new Okareo({api_key:OKAREO_API_KEY});
       const sData: any = await okareo.create_scenario_set({
-        name: `CI: Scenario Prepare Generation ${UNIQUE_BUILD_ID}`,
+        name: `CI : Scenario Prepare Generation ${UNIQUE_BUILD_ID}`,
         project_id: project_id,
         seed_data: TEST_SEED_DATA
       });
     const data: any = await okareo.generate_scenario_set({
-      name: `CI: Scenario Generate ${UNIQUE_BUILD_ID}`,
+      name: `CI : Scenario Generate ${UNIQUE_BUILD_ID}`,
       project_id: project_id,
       source_scenario_id: sData.scenario_id,
       number_examples: 2,
@@ -90,12 +90,12 @@ describe('Scenarios', () => {
   test('Custom Generator Test', async () =>  {
       const okareo = new Okareo({api_key:OKAREO_API_KEY});
       const sData: any = await okareo.create_scenario_set({
-        name: `CI: Scenario Prepare Custom Generation ${UNIQUE_BUILD_ID}`,
+        name: `CI : Scenario Prepare Custom Generation ${UNIQUE_BUILD_ID}`,
         project_id: project_id,
         seed_data: TEST_SEED_DATA_CUSTOM
       });
     const data: any = await okareo.generate_scenario_set({
-      name: `CI: Scenario Custom Generator ${UNIQUE_BUILD_ID}`,
+      name: `CI : Scenario Custom Generator ${UNIQUE_BUILD_ID}`,
       generation_type: "CUSTOM_GENERATOR",
       project_id: project_id,
       source_scenario_id: sData.scenario_id,
@@ -123,7 +123,7 @@ describe('Scenarios', () => {
     
     const data: any = await okareo.upload_scenario_set(
       {
-        name: `CI: Scenario Upload ${UNIQUE_BUILD_ID}`,
+        name: `CI : Scenario Upload ${UNIQUE_BUILD_ID}`,
         file_path: "./tests/upload_file.jsonl",
         project_id: project_id
       }
@@ -136,7 +136,7 @@ describe('Scenarios', () => {
   test('Get Scenario Datapoints', async () =>  {
     const okareo = new Okareo({api_key:OKAREO_API_KEY});
     const sData: any = await okareo.create_scenario_set({
-      name: `CI: Scenario Prepare Generation ${UNIQUE_BUILD_ID}`,
+      name: `CI : Scenario Prepare Generation ${UNIQUE_BUILD_ID}`,
       project_id: project_id,
       seed_data: TEST_SEED_DATA
     });
