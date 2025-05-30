@@ -142,7 +142,7 @@ export interface StopConfig {
 }
 export interface MultiTurnDriver extends BaseModel {
     type: "driver";
-    target: OpenAIModel | CustomMultiturnTarget | GenerationModel;
+    target: OpenAIModel | CustomMultiturnTarget | GenerationModel | CustomEndpointTarget;
     stop_check: StopConfig;
     driver_temperature?: number;
     repeats?: number;
@@ -168,7 +168,30 @@ export interface RunTestProps {
     tags?: string[];
     checks?: string[];
 }
+export interface SessionConfig {
+    url: string;
+    method: string;
+    headers: string | Record<string, any>;
+    response_session_id_path: string;
+    body?: string; 
+    status_code?: number;
+}
 
+export interface TurnConfig {
+    url: string;
+    method: string;
+    headers: string | Record<string, any>;
+    body: string;
+    response_message_path: string;
+    status_code?: number;
+    response_tool_calls_path?: string;
+}
+
+export interface CustomEndpointTarget extends BaseModel {
+    type: "custom_endpoint";
+    start_session_params: SessionConfig;
+    next_message_params: TurnConfig;
+}
 export interface RunTestInternalProps extends RunTestProps {
     endpoint: PostPaths;
 }
