@@ -11,7 +11,7 @@ import {
   import { uniqueName } from "./test-utils";
   
   const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
-  const BASE_URL = process.env.BASE_URL || "http://localhost:8000";
+  const BASE_URL = process.env.BASE_URL || "https://api.okareo.com";
   
   let project_id: string;
   
