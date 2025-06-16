@@ -2,6 +2,7 @@
     "name": "okareo-ts-sdk",
     "version": "0.0.58",
     "main": "dist/index.min.js",
+    "type": "module",
     "module": "dist/index.es.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -21,7 +22,7 @@
         "gen-api": "npx openapi-typescript https://api.okareo.com/openapi.json -o ./src/api/v1/okareo_endpoints.ts",
         "build": "rm -rf dist && rollup -c rollup.config.js",
         "release": "yarn build && npm publish --provenance --access public",
-        "test": "yarn build && jest",
+        "test": "node --experimental-vm-modules $(yarn bin jest) --coverage",
         "test:ci": "cross-env CI=1 jest",
         "test:ts": "tsc --noEmit",
         "lint": "eslint",
@@ -51,6 +52,7 @@
         "rollup-plugin-terser": "^7.0.2",
         "rollup-plugin-typescript2": "^0.34.1",
         "ts-jest": "^29.0.5",
+        "ts-node": "^10.9.2",
         "tslib": "^2.5.0",
         "typescript": "^5.4.5",
         "typescript-eslint": "^7.8.0"

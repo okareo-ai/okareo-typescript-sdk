@@ -7,14 +7,14 @@
 
 > **npm**: [https://www.npmjs.com/package/okareo-ts-sdk](https://www.npmjs.com/package/okareo-ts-sdk)
 
-TypeScript / JavaScript client for interacting with **Okareo APIs**.
+TypeScript / JavaScript client for interacting with **Okareo APIs**.
 
 ---
 
 ## Documentation
 
-- **Platform docs** – [https://docs.okareo.com](https://docs.okareo.com)
-- **TypeScript SDK docs** – [https://docs.okareo.com/docs/sdk/okareo_typescript](https://docs.okareo.com/docs/sdk/okareo_typescript)
+- **Platform docs** – [https://docs.okareo.com](https://docs.okareo.com)
+- **TypeScript SDK docs** – [https://docs.okareo.com/docs/sdk/okareo_typescript](https://docs.okareo.com/docs/sdk/okareo_typescript)
 
 ---
 
@@ -35,5 +35,4 @@ pnpm add -D okareo-ts-sdk
 
 ## License
 
-© Okareo Inc – all rights reserved.
-
+© Okareo Inc – all rights reserved.

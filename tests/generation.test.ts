@@ -1,13 +1,24 @@
 import { readFileSync } from "fs";
-import { CheckCreateUpdateProps, CheckOutputType, GenerationModel, Okareo, TestRunType } from "../dist";
-import { RunTestProps } from "../dist";
-import { OpenAIModel } from "../dist";
-import { getProjectId } from "./setup-env";
-import { join } from "path";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+import {
+    CheckCreateUpdateProps,
+    CheckOutputType,
+    GenerationModel,
+    Okareo,
+    TestRunType,
+    RunTestProps,
+    OpenAIModel,
+} from "../src";
+import { getProjectId } from "./utils/setup-env";
+import { uniqueName } from "./utils/test-utils";
+
+// 👇 ES module replacement for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
-const UNIQUE_BUILD_ID = process.env.SDK_BUILD_ID || `local.${(Math.random() + 1).toString(36).substring(7)}`;
 let project_id: string;
 
 const SYSTEM_PROMPT: string = `You will get some a long passage of text.  As an expert at distilling information to the most basic results, provide a short one sentence summary of the provided material.`;
@@ -21,15 +32,15 @@ describe("Evaluations", () => {
     test("Generation", async () => {
         const okareo = new Okareo({ api_key: OKAREO_API_KEY });
         const upload_scenario: any = await okareo.upload_scenario_set({
-            scenario_name: `CI: Upload WebBizz Scenario Generation ${UNIQUE_BUILD_ID}`,
-            file_path: "./tests/generation_scenario.jsonl",
-            project_id: project_id,
+            scenario_name: uniqueName("CI: Upload WebBizz Scenario Generation"),
+            file_path: "./tests/fixtures/generation-scenario.jsonl",
+            project_id,
         });
 
         const model = await okareo.register_model({
-            name: `CI: Generation ${UNIQUE_BUILD_ID}`,
-            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
-            project_id: project_id,
+            name: uniqueName("CI: Generation"),
+            tags: ["TS-SDK", "CI", "Testing"],
+            project_id,
             models: [
                 {
                     type: "openai",
@@ -42,11 +53,11 @@ describe("Evaluations", () => {
             update: true,
         });
 
-        const data: any = await model.run_test({
+        const data = await model.run_test({
             model_api_key: OPENAI_API_KEY,
-            name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
-            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
-            project_id: project_id,
+            name: uniqueName("CI: Custom Test Run"),
+            tags: ["TS-SDK", "CI", "Testing"],
+            project_id,
             scenario: upload_scenario,
             calculate_metrics: true,
             type: TestRunType.NL_GENERATION,
@@ -59,11 +70,13 @@ describe("Evaluations", () => {
     test("Generation w/ tools", async () => {
         const okareo = new Okareo({ api_key: OKAREO_API_KEY });
         const upload_scenario: any = await okareo.upload_scenario_set({
-            scenario_name: `CI: Upload WebBizz Scenario Tools ${UNIQUE_BUILD_ID}`,
-            file_path: "./tests/generation_scenario.jsonl",
-            project_id: project_id,
+            scenario_name: uniqueName("CI: Upload WebBizz Scenario Tools"),
+            file_path: "./tests/fixtures/generation-scenario.jsonl",
+            project_id,
         });
-        const filePath = join(__dirname, "example_eval.py");
+
+        // ✅ Fixed path resolution for ESM
+        const filePath = join(__dirname, "fixtures", "example_eval.py");
         const code_contents = readFileSync(filePath, "utf8");
         const check_config = {
             code_contents,
@@ -71,7 +84,7 @@ describe("Evaluations", () => {
         };
         const check_info = {
             project_id,
-            name: `CI: Uploaded Code-based Check - ${UNIQUE_BUILD_ID}`,
+            name: uniqueName("CI: Uploaded Code-based Check"),
             description: "Pass if the model result length is within 10% of the expected result.",
             check_config,
         } as CheckCreateUpdateProps;
@@ -79,9 +92,9 @@ describe("Evaluations", () => {
         await okareo.create_or_update_check(check_info);
 
         const model = await okareo.register_model({
-            name: `CI: Generation ${UNIQUE_BUILD_ID}`,
-            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
-            project_id: project_id,
+            name: uniqueName("CI: Generation"),
+            tags: ["TS-SDK", "CI", "Testing"],
+            project_id,
             models: [
                 {
                     type: "openai",
@@ -119,13 +132,13 @@ describe("Evaluations", () => {
 
         const data: any = await model.run_test({
             model_api_key: OPENAI_API_KEY,
-            name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
-            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
-            project_id: project_id,
+            name: uniqueName("CI: Custom Test Run"),
+            tags: ["TS-SDK", "CI", "Testing"],
+            project_id,
             scenario: upload_scenario,
             calculate_metrics: true,
             type: TestRunType.NL_GENERATION,
-            checks: [`CI: Uploaded Code-based Check - ${UNIQUE_BUILD_ID}`],
+            checks: [check_info.name],
         } as RunTestProps);
 
         expect(data).toBeDefined();
@@ -134,15 +147,15 @@ describe("Evaluations", () => {
     test("Generation LiteLLM", async () => {
         const okareo = new Okareo({ api_key: OKAREO_API_KEY });
         const upload_scenario: any = await okareo.upload_scenario_set({
-            scenario_name: `CI: Upload WebBizz Scenario LiteLLM ${UNIQUE_BUILD_ID}`,
-            file_path: "./tests/generation_scenario.jsonl",
+            scenario_name: uniqueName("CI: Upload WebBizz Scenario LiteLLM"),
+            file_path: "./tests/fixtures/generation-scenario.jsonl",
             project_id: project_id,
         });
 
         const model = await okareo.register_model({
-            name: `CI: Generation ${UNIQUE_BUILD_ID}`,
-            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
-            project_id: project_id,
+            name: uniqueName("CI: Generation"),
+            tags: ["TS-SDK", "CI", "Testing"],
+            project_id,
             models: [
                 {
                     type: "generation",
@@ -155,11 +168,11 @@ describe("Evaluations", () => {
             update: true,
         });
 
-        const data: any = await model.run_test({
+        const data = await model.run_test({
             model_api_key: OPENAI_API_KEY,
-            name: `CI: Custom Test Run ${UNIQUE_BUILD_ID}`,
-            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
-            project_id: project_id,
+            name: uniqueName("CI: Custom Test Run"),
+            tags: ["TS-SDK", "CI", "Testing"],
+            project_id,
             scenario: upload_scenario,
             calculate_metrics: true,
             type: TestRunType.NL_GENERATION,

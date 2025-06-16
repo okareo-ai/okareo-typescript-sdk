@@ -1,7 +1,16 @@
-import { GenerationModel, Okareo, StopConfig } from "../dist";
-import { getProjectId } from "./setup-env";
-import { TestRunType, MultiTurnDriver, ModelInvocation, RunTestProps, CustomMultiturnTarget } from "../dist";
-import { waitForRunToFinish, uniqueName } from "./test-utils";
+import { jest } from "@jest/globals";
+import {
+    GenerationModel,
+    Okareo,
+    StopConfig,
+    TestRunType,
+    MultiTurnDriver,
+    ModelInvocation,
+    RunTestProps,
+    CustomMultiturnTarget,
+} from "../src";
+import { getProjectId } from "./utils/setup-env";
+import { waitForRunToFinish, uniqueName } from "./utils/test-utils";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
@@ -27,13 +36,13 @@ describe("Drivers", () => {
 
             const sData: any = await okareo.create_scenario_set({
                 name,
-                project_id: project_id,
+                project_id,
                 seed_data: SEED_DATA,
             });
 
             const model = await okareo.register_model({
                 name,
-                project_id: project_id,
+                project_id,
                 models: {
                     type: "driver",
                     driver_temperature: 0,
@@ -52,7 +61,7 @@ describe("Drivers", () => {
                 update: true,
             });
 
-            const data: any = await model.run_test({
+            const data = await model.run_test({
                 model_api_key: { openai: OPENAI_API_KEY },
                 name,
                 project_id: project_id,
@@ -197,7 +206,7 @@ describe("Drivers", () => {
         });
 
         test.concurrent("Custom model (multi-turn)", async () => {
-            const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+            const consoleSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
             const okareo = new Okareo({ api_key: OKAREO_API_KEY });
             const name = uniqueName("Custom MultiTurnDriver");
 

@@ -1,6 +1,6 @@
-import { Okareo, TestRunType, ModelInvocation, RunTestProps, OpenAIModel, CustomModel } from "../dist";
-import { getProjectId } from "./setup-env";
-import { waitForRunToFinish, uniqueName } from "./test-utils";
+import { Okareo, TestRunType, ModelInvocation, RunTestProps, OpenAIModel, CustomModel } from "../src";
+import { getProjectId } from "./utils/setup-env";
+import { waitForRunToFinish, uniqueName } from "./utils/test-utils";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
@@ -19,7 +19,7 @@ describe("submit_test", () => {
         const scenario = await okareo.upload_scenario_set({
             project_id,
             scenario_name: name,
-            file_path: "./tests/generation_scenario.jsonl",
+            file_path: "./tests/fixtures/generation-scenario.jsonl",
         });
 
         const model = await okareo.register_model({
@@ -58,7 +58,6 @@ describe("submit_test", () => {
 
     test.concurrent("Custom model (single-turn)", async () => {
         const okareo = new Okareo({ api_key: OKAREO_API_KEY });
-        const name = uniqueName("Custom model (single-turn) scenario");
 
         const seed_data = [
             {
@@ -68,7 +67,7 @@ describe("submit_test", () => {
         ];
 
         const scenario = await okareo.create_scenario_set({
-            name,
+            name: uniqueName("Custom model (single-turn) scenario"),
             project_id,
             seed_data,
         });
@@ -96,7 +95,7 @@ describe("submit_test", () => {
             type: TestRunType.NL_GENERATION,
             calculate_metrics: true,
             checks: ["behavior_adherence"],
-            tags: ["TS-SDK", "Driver", `Build:${name}`],
+            tags: ["TS-SDK", "Driver"],
         } as RunTestProps);
 
         expect(submitResp.status).not.toBe("FINISHED");
