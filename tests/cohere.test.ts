@@ -1,13 +1,11 @@
-import { Okareo, QDrant } from "../dist";
-import { getProjectId } from "./setup-env";
-import { CohereModel, PineconeDB, SeedData, RunTestProps, TestRunType } from "../dist";
+import { Okareo, CohereModel, PineconeDB, RunTestProps, TestRunType } from "../src";
+import { getProjectId } from "./utils/setup-env";
+import { uniqueName } from "./utils/test-utils";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
 const COHERE_API_KEY = process.env.COHERE_API_KEY || "<YOUR_COHERE_KEY>";
 const PINECONE_API_KEY = process.env.PINECONE_API_KEY || "<YOUR_PINECONE_KEY>";
-const QDRANT_API_KEY = process.env.QDRANT_API_KEY || "<YOUR_QDRANT_KEY>";
 
-const UNIQUE_BUILD_ID = process.env.SDK_BUILD_ID || `local.${(Math.random() + 1).toString(36).substring(7)}`;
 let project_id: string;
 
 const TEST_CLASS_DATA = [
@@ -49,13 +47,13 @@ describe("Cohere Tests", () => {
         const okareo = new Okareo({ api_key: OKAREO_API_KEY });
 
         const sData: any = await okareo.create_scenario_set({
-            name: `CI: Cohere Classification ${UNIQUE_BUILD_ID}`,
+            name: uniqueName("CI: Cohere Classification"),
             project_id: project_id,
             seed_data: TEST_CLASS_DATA,
         });
 
         const cohere_model = await okareo.register_model({
-            name: `CI: Cohere Classify Run ${UNIQUE_BUILD_ID}`,
+            name: uniqueName("CI: Cohere Classify Run"),
             tags: [],
             project_id: project_id,
             models: {
@@ -69,8 +67,8 @@ describe("Cohere Tests", () => {
 
         const data: any = await cohere_model.run_test({
             model_api_key: COHERE_API_KEY,
-            name: `CI: Cohere Classification Run ${UNIQUE_BUILD_ID}`,
-            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+            name: uniqueName(`CI: Cohere Classification Run`),
+            tags: ["TS-SDK", "CI", "Testing"],
             project_id: project_id,
             scenario_id: sData.scenario_id,
             calculate_metrics: true,
@@ -84,13 +82,13 @@ describe("Cohere Tests", () => {
         const okareo = new Okareo({ api_key: OKAREO_API_KEY });
 
         const sData: any = await okareo.create_scenario_set({
-            name: `CI: Cohere IR + Pinecone ${UNIQUE_BUILD_ID}`,
+            name: uniqueName("CI: Cohere IR + Pinecone"),
             project_id: project_id,
             seed_data: TEST_IR_DATA,
         });
 
         const cohere_model = await okareo.register_model({
-            name: `CI: Cohere + Pinecone Retrieval Run ${UNIQUE_BUILD_ID}`,
+            name: uniqueName("CI: Cohere + Pinecone Retrieval Run"),
             tags: [],
             project_id: project_id,
             models: [
@@ -117,8 +115,8 @@ describe("Cohere Tests", () => {
                 cohere: COHERE_API_KEY,
                 pinecone: PINECONE_API_KEY,
             },
-            name: `CI: Cohere + Pinecone Retrieval Run ${UNIQUE_BUILD_ID}`,
-            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+            name: uniqueName("CI: Cohere + Pinecone Retrieval Run"),
+            tags: ["TS-SDK", "CI", "Testing"],
             project_id: project_id,
             scenario_id: sData.scenario_id,
             calculate_metrics: true,
@@ -138,64 +136,4 @@ describe("Cohere Tests", () => {
         expect(data.model_metrics["MAP@k"][2]).toBeDefined();
         expect(data.model_metrics["MAP@k"][3]).toBeUndefined();
     });
-    /*
-  test('Cohere + QDrant retrieval run', async () => {
-    const okareo = new Okareo({ api_key: OKAREO_API_KEY });
-
-    const sData: any = await okareo.create_scenario_set(
-      {
-        name: `CI: Cohere IR + QDrant ${UNIQUE_BUILD_ID}`,
-        project_id: project_id,
-        seed_data: TEST_IR_DATA
-      }
-    );
-
-    const cohere_model = await okareo.register_model({
-      name: `CI: Cohere + QDrant Retrieval Run ${UNIQUE_BUILD_ID}`,
-      tags: [],
-      project_id: project_id,
-      models: [{
-        type: "cohere",
-        model_id: "embed-english-light-v3.0",
-        model_type: "embed",
-        input_type: "search_query"
-      } as CohereModel,
-      {
-        type: "qdrant",
-        collection_name: "ci_test_collection",
-        url: "https://366662aa-e06e-4d40-a1d0-dc6aedbef44e.us-east4-0.gcp.cloud.qdrant.io:6333",
-        top_k: 3
-      }as QDrant]
-    });
-
-    expect(cohere_model).toBeDefined();
-
-    const data: any = await cohere_model.run_test({
-      model_api_key: {
-        "cohere": COHERE_API_KEY,
-        "qdrant": QDRANT_API_KEY,
-      },
-      name: `CI: Cohere + QDrant Retrieval Run ${UNIQUE_BUILD_ID}`,
-      tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
-      project_id: project_id,
-      scenario_id: sData.scenario_id,
-      calculate_metrics: true,
-      type: TestRunType.INFORMATION_RETRIEVAL,
-      metrics_kwargs: {
-        "mrr_at_k": [5, 10, 15],
-        "map_at_k": [3, 9],
-    }
-    } as RunTestProps);
-
-    expect(data).toBeDefined();
-    expect(data.model_metrics).toBeDefined();
-    expect(data.model_metrics['MRR@k']).toBeDefined();
-    expect(data.model_metrics['MRR@k'][5]).toBeDefined();
-    expect(data.model_metrics['MRR@k'][1]).toBeUndefined();
-    expect(data.model_metrics['MAP@k']).toBeDefined();
-    expect(data.model_metrics['MAP@k'][3]).toBeDefined();
-    expect(data.model_metrics['MAP@k'][1]).toBeUndefined();
-
-  });
-*/
 });

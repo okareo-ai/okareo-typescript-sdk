@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: ".env", override: true });
 
-import { Okareo } from "../dist";
+import { Okareo } from "../../src";
 
 export async function getProjectId(): Promise<string> {
     const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";

@@ -1,4 +1,4 @@
-import { Okareo } from "../dist";
+import { Okareo } from "../../src";
 
 export const UNIQUE_BUILD_ID = process.env.SDK_BUILD_ID || `local.${(Math.random() + 1).toString(36).substring(7)}`;
 

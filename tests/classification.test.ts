@@ -1,44 +1,40 @@
-import { Okareo } from '../dist';
-import { getProjectId } from './setup-env';
-import { RunTestProps } from '../dist';
-import { OpenAIModel, SeedData, TestRunType,BaseModel } from "../dist";
+import { getProjectId } from "./utils/setup-env";
+import { Okareo, OpenAIModel, TestRunType } from "../src";
+import { uniqueName } from "./utils/test-utils";
 
 const OKAREO_API_KEY = process.env.OKAREO_API_KEY || "<YOUR_OKAREO_KEY>";
-const UNIQUE_BUILD_ID = (process.env.SDK_BUILD_ID || `local.${(Math.random() + 1).toString(36).substring(7)}`);
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "<YOUR_OPENAI_KEY>";
 
 let project_id: string;
 
 const TEST_SEED_DATA = [
     {
-        "input": "Can I connect to my SalesForce?",
-        "result": "Technical Support"
+        input: "Can I connect to my SalesForce?",
+        result: "Technical Support",
     },
     {
-        "input": "Do you have a way to send marketing emails?",
-        "result": "Technical Support"
+        input: "Do you have a way to send marketing emails?",
+        result: "Technical Support",
     },
     {
-        "input": "Can I get invoiced instead of using a credit card?",
-        "result": "Billing"
+        input: "Can I get invoiced instead of using a credit card?",
+        result: "Billing",
     },
     {
-        "input": "My CRM integration is not working.",
-        "result": "Technical Support"
+        input: "My CRM integration is not working.",
+        result: "Technical Support",
     },
     {
-        "input": "Do you have SOC II type 2 certification?",
-        "result": "Account Management"
+        input: "Do you have SOC II type 2 certification?",
+        result: "Account Management",
     },
     {
-        "input": "I like the product. Please connect me to your enterprise team.",
-        "result": "General Inquiry"
-    }
+        input: "I like the product. Please connect me to your enterprise team.",
+        result: "General Inquiry",
+    },
 ];
 
-
-
-const USER_PROMPT_TEMPLATE = `{scenario_input}`
+const USER_PROMPT_TEMPLATE = `{scenario_input}`;
 
 const CLASSIFICATION_CONTEXT_TEMPLATE = `
 You will be provided a question from a customer.
@@ -76,49 +72,43 @@ Feedback
 Speak to a human
 `;
 
-describe('Evaluations', () => {
+describe("Evaluations", () => {
     beforeAll(async () => {
         project_id = await getProjectId();
     });
-    
-    test('Classification', async () =>  {
-        const okareo = new Okareo({api_key:OKAREO_API_KEY });
-        const sData: any = await okareo.create_scenario_set(
-            {
-                name: "CI Small Class Scenario Set",
-                project_id: project_id,
-                seed_data: TEST_SEED_DATA
-            }
-        );
-        
+
+    test("Classification", async () => {
+        const okareo = new Okareo({ api_key: OKAREO_API_KEY });
+        const sData: any = await okareo.create_scenario_set({
+            name: uniqueName("CI Small Class Scenario Set"),
+            project_id: project_id,
+            seed_data: TEST_SEED_DATA,
+        });
+
         const model = await okareo.register_model({
-            name: `CI: Classification Model`,
-            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+            name: uniqueName("CI: Classification Model"),
+            tags: ["TS-SDK", "CI", "Testing"],
             project_id: project_id,
             models: {
                 type: "openai",
-                model_id:"gpt-3.5-turbo",
-                temperature:0.5,
-                system_prompt_template:CLASSIFICATION_CONTEXT_TEMPLATE,
-                user_prompt_template:USER_PROMPT_TEMPLATE
+                model_id: "gpt-3.5-turbo",
+                temperature: 0.5,
+                system_prompt_template: CLASSIFICATION_CONTEXT_TEMPLATE,
+                user_prompt_template: USER_PROMPT_TEMPLATE,
             } as OpenAIModel,
             update: true,
         });
-        
-        const data: any = await model.run_test({
+
+        const data = await model.run_test({
             model_api_key: OPENAI_API_KEY,
-            name: `CI: Classification Run ${UNIQUE_BUILD_ID}`,
-            tags: ["TS-SDK", "CI", "Testing", `Build:${UNIQUE_BUILD_ID}`],
+            name: uniqueName("CI: Classification Run"),
+            tags: ["TS-SDK", "CI", "Testing"],
             project_id: project_id,
             scenario_id: sData.scenario_id,
             calculate_metrics: true,
             type: TestRunType.MULTI_CLASS_CLASSIFICATION,
         });
-        expect({}).toBeDefined();
+
+        expect(data).toBeDefined();
     });
-
 });
-
-
-
-
