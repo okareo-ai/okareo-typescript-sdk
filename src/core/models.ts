@@ -143,11 +143,12 @@ export interface StopConfig {
 export interface MultiTurnDriver extends BaseModel {
     type: "driver";
     target: OpenAIModel | CustomMultiturnTarget | GenerationModel | CustomEndpointTarget;
-    stop_check: StopConfig;
+    stop_check?: StopConfig;
     driver_temperature?: number;
     repeats?: number;
     max_turns?: number;
     first_turn?: string;
+    checks_at_every_turn?: boolean;
 }
 
 export interface ModelUnderTestProps {
