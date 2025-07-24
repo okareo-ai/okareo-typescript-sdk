@@ -393,7 +393,6 @@ export class ModelUnderTest {
                 timeout: 30000, // 30 seconds
                 reconnect: true,
                 maxReconnectAttempts: 5,
-                reconnectTimeWait: 1000, // 1 second
             };
 
             nc = await nats.connect(natsOptions);
