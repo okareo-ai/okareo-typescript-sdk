@@ -134,7 +134,9 @@ export interface CustomModel extends BaseModel {
 export interface CustomMultiturnTarget extends BaseModel {
     type: "custom_target";
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    invoke?: (messages: { [key: string]: any }[]) => ModelInvocation;
+    invoke?: (messages: { [key: string]: any }[], scenario_input?: Record<string, any> | any[] | string, session_id?: string) => ModelInvocation;
+    start_session?: (input: Record<string, any> | unknown[] | string) => [string, ModelInvocation];
+    end_session?: (session_id: string) => null;
 }
 export interface StopConfig {
     check_name: string;
@@ -413,7 +415,8 @@ export class ModelUnderTest {
                     return;
                 }
                 const args = data.args || [];
-                const result = await this.callCustomInvoker(args);
+                const call_type = data.call_type || "invoke";
+                const result = await this.callCustomInvoker(args, call_type);
                 const jsonEncodableResult = this.getParamsFromCustomResult(result, args);
                 await msg.respond(nats.StringCodec().encode(JSON.stringify(jsonEncodableResult)));
             } catch (e) {
@@ -436,14 +439,23 @@ export class ModelUnderTest {
         }
     }
 
-    private async callCustomInvoker(args: any[]): Promise<any> {
+    private async callCustomInvoker(args: any[], call_type: string): Promise<any> {
         const customModel = this.mut?.models?.custom as CustomModel | undefined;
         if (customModel && customModel.invoke) {
             return await customModel.invoke(args);
         }
-        const customTarget = this.mut?.models?.driver.target as CustomModel | undefined;
-        if (customTarget && customTarget.invoke) {
-            return await customTarget.invoke(args);
+        const customTarget = this.mut?.models?.driver.target as CustomMultiturnTarget | undefined;
+        if (customTarget) {
+            if (call_type === "invoke" && customTarget.invoke) {
+                return await customTarget.invoke(args);
+            }
+            if (call_type === "start_session" && customTarget.start_session) {
+                return await customTarget.start_session(args);
+            }
+            if (call_type === "end_session" && customTarget.end_session) {
+                return await customTarget.end_session(args);
+            }
+
         }
         throw new Error("Custom model invoke function not found");
     }

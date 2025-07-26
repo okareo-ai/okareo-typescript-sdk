@@ -67,6 +67,14 @@ export interface CreateScenarioProps {
     }[];
 }
 
+export interface FindTestDataPointsProps {
+  id?: string;
+  test_run_id?: string;
+  scenario_data_point_id?: string;
+  metric_type?: string;
+  full_data_point?: boolean;
+}
+
 /**
  * Okareo SDK
  * The Okareo class is the main entry point for the Okareo SDK.
@@ -98,6 +106,8 @@ export class Okareo {
     async register_model(props: RegisterModelProps): Promise<ModelUnderTest> {
         const models = Array.isArray(props.models) ? props.models : [props.models];
         let modelInvoker: any = null;
+        let modelSessionStarter: any = null;
+        let modelSessionEnder: any = null;
 
         const register_payload: any = JSON.parse(JSON.stringify(props)); // Create a deep clone of props
         register_payload["models"] = {};
@@ -114,6 +124,8 @@ export class Okareo {
             register_payload["models"]["driver"]["target"]["type"] === "custom_target"
         ) {
             modelInvoker = register_payload["models"]["driver"]["target"]["invoke"];
+            modelSessionStarter = register_payload["models"]["driver"]["target"]["start_session"];
+            modelSessionEnder = register_payload["models"]["driver"]["target"]["end_session"];
             delete register_payload["models"]["driver"]["target"]["invoke"];
         }
         const client = createClient<paths>({ baseUrl: this.endpoint });
@@ -139,6 +151,8 @@ export class Okareo {
             (response.models.custom as any).invoke = modelInvoker;
         } else if (modelInvoker && response.models && response.models.driver) {
             (response.models.driver.target as any).invoke = modelInvoker;
+            (response.models.driver.target as any).start_session = modelSessionStarter;
+            (response.models.driver.target as any).end_session = modelSessionEnder;
         }
 
         return new ModelUnderTest({
@@ -180,6 +194,33 @@ export class Okareo {
                     "api-key": this.api_key,
                 },
                 path: { test_run_id: test_run_id },
+            },
+        });
+        if (error) {
+            throw error;
+        }
+        return data || {};
+    }
+
+    async get_test_data_points(props: FindTestDataPointsProps): Promise<components["schemas"]["TestRunItem"]> {
+        if (!this.api_key || this.api_key.length === 0) {
+            throw new Error("API Key is required");
+        }
+        const client = createClient<paths>({ baseUrl: this.endpoint });
+
+        const body: components["schemas"]["DatapointSearch"] = {
+            id: props.id,
+            test_run_id: props.test_run_id,
+            scenario_data_point_id: props.scenario_data_point_id,
+            metric_type: props.metric_type,
+            full_data_point: props.full_data_point || false,
+        };
+        const { data, error } = await client.GET("/v0/find_test_data_points", {
+            params: {
+                header: {
+                    "api-key": this.api_key,
+                },
+                body,
             },
         });
         if (error) {
